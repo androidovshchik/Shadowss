@@ -17,10 +17,15 @@ public class SARR implements Serializable {
 
 
     private static final RGI1Data[] _zeroData = new RGI1Data[0];
+
     public short rnd;
+
     public String form;
+
     public String error;
+
     public String dataerr;
+
     public RGI1Data[] data;
 
     /**
