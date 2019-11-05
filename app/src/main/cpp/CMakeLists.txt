@@ -10,4 +10,4 @@ cmake_minimum_required(VERSION 3.4.1)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
-add_library(bin SHARED Colfer.c main.cpp)
+add_library(cbin SHARED Colfer.c main.cpp)
