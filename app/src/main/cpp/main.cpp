@@ -2,6 +2,13 @@
 #include <cerrno>
 #include "Colfer.h"
 
+colfer_text to_text(JNIEnv *env, jstring javaString) {
+    colfer_text text;
+    const char *nativeString = env->GetStringUTFChars(javaString, nullptr);
+    env->ReleaseStringUTFChars(javaString, nativeString);
+    return nativeString;
+}
+
 /*
    For accessing primitive types from class use following field descriptors
    +---+---------+
@@ -16,8 +23,7 @@
    +-------------+
 */
 jboolean main_marsh(JNIEnv *env, jobject obj, jbyteArray bytes, bool serialize) {
-    jint result = -1;
-    auto *array = (uint8_t *) env->GetByteArrayElements(bytes, nullptr);
+    auto *array = env->GetByteArrayElements(bytes, nullptr);
     const char *name = env->GetStringUTFChars(className, nullptr);
     jclass cls = env->FindClass(name);
     if (strcmp(name, "defpackage.ASAU") == 0) {
@@ -26,21 +32,19 @@ jboolean main_marsh(JNIEnv *env, jobject obj, jbyteArray bytes, bool serialize) 
         jfieldID id2 = env->GetFieldID(cls, "time", "J");
         jfieldID id3 = env->GetFieldID(cls, "timezone", "F");
         if (serialize) {
-            main.token = env->GetObjectField(obj, id1);
-            char buffer[] = "This is a sample string";
-            env->NewStringUTF(env, buffer);
+            main.token = to_text(env, env->GetObjectField(obj, id1));
             main.time = env->GetLongField(obj, id2);
             main.timezone = env->GetFloatField(obj, id3);
-            result = main_ASAU_marshal(&main, array);
+            main_ASAU_marshal(&main, array);
         } else {
-            result = main_ASAU_unmarshal(&main, array, 0);
-            env->SetLongField(obj, id1, 0);
-            env->SetLongField(obj, id2, 0);
-            env->SetFloatField(obj, id3, 0);
+            main_ASAU_unmarshal(&main, array, 0);
+            env->SetObjectField(obj, id1, env->NewStringUTF(main.token.utf8));
+            env->SetLongField(obj, id2, main.time);
+            env->SetFloatField(obj, id3, main.timezone);
         }
     }
-    env->ReleaseByteArrayElements(bytes, (jbyte *) array, 0);
-    if (result < 0 || result == EWOULDBLOCK || result == EFBIG || result == EILSEQ) {
+    env->ReleaseByteArrayElements(bytes, array, 0);
+    if (errno == EWOULDBLOCK || errno == EFBIG || errno == EILSEQ) {
         return JNI_FALSE;
     } else {
         return JNI_TRUE;
