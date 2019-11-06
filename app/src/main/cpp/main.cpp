@@ -15,29 +15,33 @@
    +-------------+
 */
 template<typename T, typename V>
-T process(JNIEnv *env, V data, jclass cls) {
-    switch (className) {
+T process(JNIEnv *env, V data, jstring className) {
+    const char *name = env->GetStringUTFChars(className, nullptr);
+    jclass cls = env->FindClass(name);
+    switch (name) {
         case "defpackage.ASAU":
-            "Ljava/lang/String"
-            "J"
-            "F"
-            jfieldID fidInt = env->GetFieldID(cls, "iVal", "I");
+            jfieldID fidInt = env->GetFieldID(cls, "token", "Ljava/lang/String");
+            jfieldID fidInt = env->GetFieldID(cls, "time", "J");
+            jfieldID fidInt = env->GetFieldID(cls, "timezone", "F");
             jint iVal = env->GetIntField(env, objarg, fidInt);
             env->SetIntField(env, objarg, fidInt);
             break;
         default:
             break;
     }
+    env->ReleaseStringUTFChars(className, name);
 }
 
 extern "C"
+
 JNIEXPORT jbyteArray JNICALL
-Java_defpackage_CBIN_main_marshal(JNIEnv *env, jobject, jobject obj) {
-    return process(env, obj, env->GetObjectClass(obj));
+Java_defpackage_CBIN_main_marshal(JNIEnv *env, jobject, jobject obj, jstring className) {
+    return process(env, obj, className);
 }
 
 extern "C"
+
 JNIEXPORT jobject JNICALL
 Java_defpackage_CBIN_main_unmarshal(JNIEnv *env, jobject, jbyteArray bytes, jstring className) {
-    return process(env, bytes, cls);
+    return process(env, bytes, className);
 }
