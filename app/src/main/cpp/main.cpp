@@ -15,8 +15,7 @@
    +-------------+
 */
 template<typename T, typename V>
-T process(JNIEnv *env, V data, jstring className) {
-    jclass cls = env->GetObjectClass(env, objarg);
+T process(JNIEnv *env, V data, jclass cls) {
     switch (className) {
         case "defpackage.ASAU":
             "Ljava/lang/String"
@@ -33,12 +32,12 @@ T process(JNIEnv *env, V data, jstring className) {
 
 extern "C"
 JNIEXPORT jbyteArray JNICALL
-Java_defpackage_CBIN_main_marshal(JNIEnv *env, jobject, jobject obj, jstring className) {
-    return process(env, obj, className);
+Java_defpackage_CBIN_main_marshal(JNIEnv *env, jobject, jobject obj) {
+    return process(env, obj, env->GetObjectClass(obj));
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_defpackage_CBIN_main_unmarshal(JNIEnv *env, jobject, jbyteArray bytes, jstring className) {
-    return process(env, bytes, className);
+    return process(env, bytes, cls);
 }
