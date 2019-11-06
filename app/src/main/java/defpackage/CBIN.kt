@@ -1,5 +1,6 @@
 package defpackage
 
+import net.sourceforge.sizeof.SizeOf
 import timber.log.Timber
 
 /**
@@ -8,6 +9,8 @@ import timber.log.Timber
 @Suppress("FunctionName")
 object CBIN {
 
+    private const val MIN_SIZE = 2 * 1024
+
     private const val MAX_SIZE = 16 * 1024 * 1024
 
     init {
@@ -15,8 +18,16 @@ object CBIN {
     }
 
     fun marshal(obj: Any): ByteArray? {
-        // todo limit size
-        val bytes = ByteArray(MAX_SIZE)
+        var bytesSize = MIN_SIZE
+        val objSize = SizeOf.sizeOf(obj)
+        while (bytesSize < objSize) {
+            bytesSize *= 4
+        }
+        if (bytesSize > MAX_SIZE) {
+            Timber.w("marshal too much size ${SizeOf.humanReadable(bytesSize.toLong())}")
+            return null
+        }
+        val bytes = ByteArray(bytesSize)
         return try {
             val result = main_marshal(obj, bytes)
             Timber.d("marshal $result")
