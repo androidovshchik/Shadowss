@@ -1,6 +1,6 @@
 package defpackage
 
-import net.sourceforge.sizeof.SizeOf
+import org.ehcache.sizeof.SizeOf
 import timber.log.Timber
 
 /**
@@ -13,18 +13,20 @@ object CBIN {
 
     private const val MAX_SIZE = 16 * 1024 * 1024
 
+    private val sizeOf = SizeOf.newInstance()
+
     init {
         System.loadLibrary("cbin")
     }
 
     fun marshal(obj: Any): ByteArray? {
         var bytesSize = MIN_SIZE
-        val objSize = SizeOf.deepSizeOf(obj)
+        val objSize = sizeOf.deepSizeOf(obj)
         while (bytesSize < objSize) {
             bytesSize *= 2
         }
         if (bytesSize > MAX_SIZE) {
-            Timber.w("marshal too much size ${SizeOf.humanReadable(objSize)}")
+            Timber.w("marshal too much size $objSize")
             return null
         }
         val bytes = ByteArray(bytesSize)

@@ -33,7 +33,7 @@ jboolean main_marsh(JNIEnv *env, jobject obj, jstring className, jbyteArray byte
     jclass cls = env->GetObjectClass(obj);
     if (strcmp(name, "defpackage.ASAU") == 0) {
         main_ASAU main;
-        jfieldID id1 = env->GetFieldID(cls, "token", "Ljava/lang/String");
+        jfieldID id1 = env->GetFieldID(cls, "token", "Ljava/lang/String;");
         jfieldID id2 = env->GetFieldID(cls, "time", "J");
         jfieldID id3 = env->GetFieldID(cls, "timezone", "F");
         if (serialize) {
@@ -61,15 +61,15 @@ jboolean main_marsh(JNIEnv *env, jobject obj, jstring className, jbyteArray byte
 extern "C"
 
 JNIEXPORT jboolean JNICALL
-Java_defpackage_CBIN_main_marshal(JNIEnv *env, jobject, jobject obj, jstring className,
-                                  jbyteArray bytes) {
+Java_defpackage_CBIN_main_1marshal(JNIEnv *env, jobject, jobject obj, jstring className,
+                                   jbyteArray bytes) {
     return main_marsh(env, obj, className, bytes, true);
 }
 
 extern "C"
 
 JNIEXPORT jboolean JNICALL
-Java_defpackage_CBIN_main_unmarshal(JNIEnv *env, jobject, jobject obj, jstring className,
-                                    jbyteArray bytes) {
+Java_defpackage_CBIN_main_1unmarshal(JNIEnv *env, jobject, jobject obj, jstring className,
+                                     jbyteArray bytes) {
     return main_marsh(env, obj, className, bytes, false);
 }
