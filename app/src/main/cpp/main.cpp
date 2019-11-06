@@ -20,6 +20,8 @@ T main_marsh(JNIEnv *env, V data, jstring className) {
     const char *name = env->GetStringUTFChars(className, nullptr);
     jclass cls = env->FindClass(name);
     T result = nullptr;
+    jbyte a[] = {1, 2, 3, 4, 5, 6};
+    jbyteArray ret = env->NewByteArray(6);
     if (strcmp(name, "defpackage.ASAU") == 0) {
         jfieldID id1 = env->GetFieldID(cls, "token", "Ljava/lang/String");
         jfieldID id2 = env->GetFieldID(cls, "time", "J");
@@ -29,12 +31,9 @@ T main_marsh(JNIEnv *env, V data, jstring className) {
             return result;
         } else {
             jint iVal = env->GetIntField(data, id1);
+            env->SetByteArrayRegion(ret, 0, 6, a);
             return result;
         }
-    } else if (strcmp(name, "Laura") == 0) {
-
-    } else if (strcmp(name, "Mike") == 0) {
-
     }
     env->ReleaseStringUTFChars(className, name);
     return result;
