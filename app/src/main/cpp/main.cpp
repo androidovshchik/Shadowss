@@ -16,7 +16,7 @@
 */
 template<typename T, typename V>
 T main_marsh(JNIEnv *env, V data, jstring className) {
-    bool reverse = typeid(V) != typeid(jobject);
+    bool serialize = typeid(V) == typeid(jobject);
     const char *name = env->GetStringUTFChars(className, nullptr);
     jclass cls = env->FindClass(name);
     T result = nullptr;
@@ -26,12 +26,19 @@ T main_marsh(JNIEnv *env, V data, jstring className) {
         jfieldID id1 = env->GetFieldID(cls, "token", "Ljava/lang/String");
         jfieldID id2 = env->GetFieldID(cls, "time", "J");
         jfieldID id3 = env->GetFieldID(cls, "timezone", "F");
-        if (reverse) {
-            env->SetIntField(data, id1, 0);
-            return result;
+        if (serialize) {
+            main_ASAU main;
+            main.token = env->GetObjectField(data, id1);
+            main.time = env->GetLongField(data, id2);
+            main.timezone = env->GetFloatField(data, id3);
+            main_ASAU_marshal(&main, nullptr);
         } else {
-            jint iVal = env->GetIntField(data, id1);
+            main_ASAU main;
+            main_ASAU_unmarshal(&main, nullptr);
             env->SetByteArrayRegion(ret, 0, 6, a);
+            char buffer[] = "This is a sample string";
+            env->NewStringUTF(env, buffer);
+            env->SetIntField(data, id1, 0);
             return result;
         }
     }
