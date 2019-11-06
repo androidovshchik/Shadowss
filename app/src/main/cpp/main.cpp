@@ -14,8 +14,8 @@
    | D | double  |
    +-------------+
 */
-template<typename T, typename V>
-T main_marsh(JNIEnv *env, V data, jstring className) {
+template<typename T>
+T main_marsh(JNIEnv *env, jobject obj, jbyteArray bytes, bool serialize) {
     bool serialize = typeid(V) == typeid(jobject);
     const char *name = env->GetStringUTFChars(className, nullptr);
     jclass cls = env->FindClass(name);
@@ -49,13 +49,13 @@ T main_marsh(JNIEnv *env, V data, jstring className) {
 extern "C"
 
 JNIEXPORT jbyteArray JNICALL
-Java_defpackage_CBIN_main_marshal(JNIEnv *env, jobject, jobject obj, jstring className) {
-    return main_marsh(env, obj, className);
+Java_defpackage_CBIN_main_marshal(JNIEnv *env, jobject, jobject obj, jbyteArray bytes) {
+    return main_marsh(env, obj, bytes, true);
 }
 
 extern "C"
 
 JNIEXPORT jobject JNICALL
-Java_defpackage_CBIN_main_unmarshal(JNIEnv *env, jobject, jbyteArray bytes, jstring className) {
-    return main_marsh(env, bytes, className);
+Java_defpackage_CBIN_main_unmarshal(JNIEnv *env, jobject, jobject obj, jbyteArray bytes) {
+    return main_marsh(env, obj, bytes, false);
 }

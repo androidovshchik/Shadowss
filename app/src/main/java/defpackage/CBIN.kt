@@ -19,12 +19,12 @@ object CBIN {
 
     fun marshal(obj: Any): ByteArray? {
         var bytesSize = MIN_SIZE
-        val objSize = SizeOf.sizeOf(obj)
+        val objSize = SizeOf.deepSizeOf(obj)
         while (bytesSize < objSize) {
-            bytesSize *= 4
+            bytesSize *= 2
         }
         if (bytesSize > MAX_SIZE) {
-            Timber.w("marshal too much size ${SizeOf.humanReadable(bytesSize.toLong())}")
+            Timber.e("marshal too much size ${SizeOf.humanReadable(objSize)}")
             return null
         }
         val bytes = ByteArray(bytesSize)
