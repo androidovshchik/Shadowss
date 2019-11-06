@@ -10,7 +10,7 @@ object CBIN {
         System.loadLibrary("cbin")
     }
 
-    external fun main_marshal(obj: Any): ByteArray?
+    external fun main_marshal(obj: Any, className: String = obj.javaClass.name): ByteArray?
 
     external fun main_unmarshal(bytes: ByteArray, className: String): Any?
 }
