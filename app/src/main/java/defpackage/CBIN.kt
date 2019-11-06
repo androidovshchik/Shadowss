@@ -8,31 +8,38 @@ import timber.log.Timber
 @Suppress("FunctionName")
 object CBIN {
 
+    private const val MAX_SIZE = 16 * 1024 * 1024
+
     init {
         System.loadLibrary("cbin")
     }
 
     fun marshal(obj: Any): ByteArray? {
-        val bytes = ByteArray()
-        try {
+        // todo limit size
+        val bytes = ByteArray(MAX_SIZE)
+        return try {
             val result = main_marshal(obj, bytes)
             Timber.d("marshal $result")
+            bytes
         } catch (e: Throwable) {
             Timber.e(e)
+            null
         }
-        return bytes
     }
 
-    inline fun <reified T : Any> unmarshal(bytes: ByteArray): Any {
-        val obj = T::class.java.getConstructor(T::class.java)
+    // todo also detect class by 4 bytes
+    inline fun <reified T : Any> unmarshal(bytes: ByteArray): Any? {
+        val cls = T::class.java
+        val obj = cls.getConstructor(cls)
             .newInstance()
-        try {
+        return try {
             val result = main_unmarshal(obj, bytes)
             Timber.d("unmarshal $result")
+            obj
         } catch (e: Throwable) {
             Timber.e(e)
+            null
         }
-        return obj
     }
 
     private external fun main_marshal(obj: Any, bytes: ByteArray): Int
