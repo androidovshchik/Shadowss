@@ -29,9 +29,11 @@ object CBIN {
         }
         val bytes = ByteArray(bytesSize)
         return try {
-            val result = main_marshal(obj, bytes)
-            Timber.d("marshal $result")
-            bytes
+            if (main_marshal(obj, bytes)) {
+                bytes
+            } else {
+                null
+            }
         } catch (e: Throwable) {
             Timber.e(e)
             null
@@ -44,16 +46,18 @@ object CBIN {
         val obj = cls.getConstructor(cls)
             .newInstance()
         return try {
-            val result = main_unmarshal(obj, bytes)
-            Timber.d("unmarshal $result")
-            obj
+            if (main_unmarshal(obj, bytes)) {
+                obj
+            } else {
+                null
+            }
         } catch (e: Throwable) {
             Timber.e(e)
             null
         }
     }
 
-    private external fun main_marshal(obj: Any, bytes: ByteArray): Int
+    private external fun main_marshal(obj: Any, bytes: ByteArray): Boolean
 
-    external fun main_unmarshal(obj: Any, bytes: ByteArray): Int
+    external fun main_unmarshal(obj: Any, bytes: ByteArray): Boolean
 }
