@@ -1,7 +1,7 @@
 package defpackage
 
 /**
- * Важны имена пакета и класса
+ * Важны имена пакета и класса, тоже и в смежных классах
  */
 @Suppress("FunctionName")
 object CBIN {
@@ -10,9 +10,7 @@ object CBIN {
         System.loadLibrary("cbin")
     }
 
-    external fun main_marshal_len(o: Any): Int
+    external fun main_marshal(obj: Any, className: String = obj.javaClass.name): ByteArray?
 
-    external fun main_marshal(o: Any, void* buf): Int
-
-    external fun main_unmarshal(o: Any, const void* data ,  datalen): Int
+    external fun main_unmarshal(bytes: ByteArray, className: String): Any?
 }
