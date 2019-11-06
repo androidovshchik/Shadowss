@@ -9,8 +9,6 @@ import timber.log.Timber
 @Suppress("FunctionName")
 object CBIN {
 
-    private const val MIN_SIZE = 2 * 1024
-
     private const val MAX_SIZE = 16 * 1024 * 1024
 
     private val sizeOf = SizeOf.newInstance()
@@ -20,7 +18,7 @@ object CBIN {
     }
 
     fun marshal(obj: Any): ByteArray? {
-        var bytesSize = MIN_SIZE
+        var bytesSize = 16
         val objSize = sizeOf.deepSizeOf(obj)
         while (bytesSize < objSize) {
             bytesSize *= 2
@@ -45,8 +43,7 @@ object CBIN {
     // todo also detect class by 4 bytes
     inline fun <reified T : Any> unmarshal(bytes: ByteArray): Any? {
         val cls = T::class.java
-        val obj = cls.getConstructor(cls)
-            .newInstance()
+        val obj = cls.newInstance()
         return try {
             if (main_unmarshal(obj, cls.name, bytes)) {
                 obj
