@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <cerrno>
 #include "Colfer.h"
 
 /*
@@ -14,21 +15,8 @@
    | D | double  |
    +-------------+
 */
-
-// on incomplete data
-private
-const val EWOULDBLOCK = 11
-
-// on a breach of either colfer_size_max or colfer_list_max
-private
-const val EFBIG = 27
-
-// on schema mismatch.
-private
-const val EILSEQ = 84
-
 jboolean main_marsh(JNIEnv *env, jobject obj, jbyteArray bytes, bool serialize) {
-    jint result = 0;
+    jint result = -1;
     auto *array = (uint8_t *) env->GetByteArrayElements(bytes, nullptr);
     const char *name = env->GetStringUTFChars(className, nullptr);
     jclass cls = env->FindClass(name);
@@ -46,11 +34,17 @@ jboolean main_marsh(JNIEnv *env, jobject obj, jbyteArray bytes, bool serialize) 
             result = main_ASAU_marshal(&main, array);
         } else {
             result = main_ASAU_unmarshal(&main, array, 0);
-            env->SetIntField(obj, id1, 0);
+            env->SetLongField(obj, id1, 0);
+            env->SetLongField(obj, id2, 0);
+            env->SetFloatField(obj, id3, 0);
         }
     }
     env->ReleaseByteArrayElements(bytes, (jbyte *) array, 0);
-    return result;
+    if (result < 0 || result == EWOULDBLOCK || result == EFBIG || result == EILSEQ) {
+        return JNI_FALSE;
+    } else {
+        return JNI_TRUE;
+    }
 }
 
 extern "C"

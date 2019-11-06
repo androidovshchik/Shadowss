@@ -24,7 +24,7 @@ object CBIN {
             bytesSize *= 2
         }
         if (bytesSize > MAX_SIZE) {
-            Timber.e("marshal too much size ${SizeOf.humanReadable(objSize)}")
+            Timber.w("marshal too much size ${SizeOf.humanReadable(objSize)}")
             return null
         }
         val bytes = ByteArray(bytesSize)
