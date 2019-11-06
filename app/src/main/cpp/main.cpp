@@ -14,35 +14,31 @@
    | D | double  |
    +-------------+
 */
-void process(JNIEnv *env, jobject, jobject obj) {
+template<typename T, typename V>
+T process(JNIEnv *env, V data, jstring className) {
     jclass cls = env->GetObjectClass(env, objarg);
-    switch ("") {
+    switch (className) {
         case "defpackage.ASAU":
             "Ljava/lang/String"
             "J"
             "F"
-            break;
-        case 2:
+            jfieldID fidInt = env->GetFieldID(cls, "iVal", "I");
+            jint iVal = env->GetIntField(env, objarg, fidInt);
+            env->SetIntField(env, objarg, fidInt);
             break;
         default:
             break;
     }
-    /* Get int field
-       Take a look here, we are passing char* with
-       field descriptor - e.g. "I" => int
-     */
-    jfieldID fidInt = env->GetFieldID(cls, "iVal", "I");
-    jint iVal = env->GetIntField(env, objarg, fidInt);
 }
 
 extern "C"
 JNIEXPORT jbyteArray JNICALL
 Java_defpackage_CBIN_main_marshal(JNIEnv *env, jobject, jobject obj, jstring className) {
-
+    return process(env, obj, className);
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_defpackage_CBIN_main_unmarshal(JNIEnv *env, jobject, jbyteArray bytes, jstring className) {
-
+    return process(env, bytes, className);
 }
