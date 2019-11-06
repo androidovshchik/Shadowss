@@ -2,10 +2,14 @@
 #include <cerrno>
 #include "Colfer.h"
 
-colfer_text to_text(JNIEnv *env, jstring javaString) {
+colfer_text main_text(JNIEnv *env, jobject obj, jfieldID id1) {
     colfer_text text;
-    const char *nativeString = env->GetStringUTFChars(javaString, nullptr);
-    env->ReleaseStringUTFChars(javaString, nativeString);
+    auto string = (jstring) env->GetObjectField(obj, id1);
+    const char *chars = env->GetStringUTFChars(string, nullptr);
+    text.utf8 = chars;
+    text.len = strlen(chars);
+    env->ReleaseStringUTFChars(string, chars);
+    env->DeleteLocalRef(string);
     return text;
 }
 
@@ -33,7 +37,7 @@ jboolean main_marsh(JNIEnv *env, jobject obj, jstring className, jbyteArray byte
         jfieldID id2 = env->GetFieldID(cls, "time", "J");
         jfieldID id3 = env->GetFieldID(cls, "timezone", "F");
         if (serialize) {
-            main.token = to_text(env, (jstring) env->GetObjectField(obj, id1));
+            main.token = main_text(env, obj, id1);
             main.time = (uint64_t) env->GetLongField(obj, id2);
             main.timezone = env->GetFloatField(obj, id3);
             main_ASAU_marshal(&main, array);
@@ -44,9 +48,9 @@ jboolean main_marsh(JNIEnv *env, jobject obj, jstring className, jbyteArray byte
             env->SetFloatField(obj, id3, main.timezone);
         }
     }
-    env->DeleteLocalRef(cls);
     env->ReleaseByteArrayElements(bytes, array, 0);
     env->ReleaseStringUTFChars(className, name);
+    env->DeleteLocalRef(cls);
     if (errno == EWOULDBLOCK || errno == EFBIG || errno == EILSEQ) {
         return JNI_FALSE;
     } else {
