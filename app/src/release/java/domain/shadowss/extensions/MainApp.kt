@@ -5,6 +5,6 @@ package domain.shadowss.extensions
 import android.content.Context
 import okhttp3.OkHttpClient
 
-fun Context.debugInit() {}
+fun Context.noopInit() {}
 
-fun OkHttpClient.Builder.debugInit() {}
+fun OkHttpClient.Builder.noopInit() {}
