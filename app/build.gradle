@@ -38,7 +38,12 @@ dependencies {
     implementation "org.jetbrains.anko:anko-commons:0.10.8"
     implementation "org.jetbrains.anko:anko-sdk19:0.10.8"
     implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation "org.kodein.di:kodein-di-generic-jvm:6.3.3"
+    implementation "org.kodein.di:kodein-di-framework-android-core:6.3.3"
     implementation 'com.tinder.scarlet:scarlet:0.1.9'
+    implementation "com.tinder.scarlet:websocket-okhttp:0.1.9"
+    implementation "com.tinder.scarlet:stream-adapter-coroutines:0.1.9"
+    implementation "com.tinder.scarlet:lifecycle-android:0.1.9"
     implementation 'org.ehcache:sizeof:0.3.0'
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation "com.facebook.stetho:stetho:1.5.1"
