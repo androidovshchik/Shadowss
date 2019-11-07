@@ -5,6 +5,7 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 29
     defaultConfig {
+        applicationId "domain.shadowss"
         minSdkVersion 19
         targetSdkVersion 29
         versionCode 1
@@ -23,6 +24,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "${applicationId.substring(applicationId.lastIndexOf(".") + 1)}${variant.versionCode}-${variant.buildType.name}.apk"
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -37,17 +43,27 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.anko:anko-commons:0.10.8"
     implementation "org.jetbrains.anko:anko-sdk19:0.10.8"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation "org.kodein.di:kodein-di-generic-jvm:6.3.3"
     implementation "org.kodein.di:kodein-di-framework-android-core:6.3.3"
+    //noinspection GradleDependency
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.12.6'
     implementation 'com.tinder.scarlet:scarlet:0.1.9'
     implementation "com.tinder.scarlet:websocket-okhttp:0.1.9"
-    implementation "com.tinder.scarlet:stream-adapter-coroutines:0.1.9"
-    implementation "com.tinder.scarlet:lifecycle-android:0.1.9"
+    implementation "com.tinder.scarlet:stream-adapter-rxjava2:0.1.9"
     implementation 'org.ehcache:sizeof:0.3.0'
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation "com.facebook.stetho:stetho:1.5.1"
+    implementation "com.facebook.stetho:stetho-okhttp3:1.5.1"
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        def requested = details.requested
+        if (requested.group == 'com.squareup.okhttp3' && requested.name == 'okhttp') {
+            details.useVersion '3.12.6'
+        }
+    }
 }
