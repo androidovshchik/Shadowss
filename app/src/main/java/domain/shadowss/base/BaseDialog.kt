@@ -1,8 +1,8 @@
-package ru.iqsolution.tkoonline.screens.base
+package domain.shadowss.base
 
 import android.app.Activity
 import android.app.Dialog
-import ru.iqsolution.tkoonline.extensions.activity
+import domain.shadowss.extensions.activity
 
 open class BaseDialog(activity: Activity) : Dialog(activity) {
 

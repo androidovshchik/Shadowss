@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package ru.iqsolution.tkoonline.screens.base
+package domain.shadowss.base
 
 import android.app.Fragment
 import android.os.Bundle
