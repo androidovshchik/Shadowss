@@ -1,6 +1,6 @@
 @file:Suppress("unused", "DEPRECATION")
 
-package ru.iqsolution.tkoonline.extensions
+package domain.shadowss.extension
 
 import android.app.ActivityManager
 import android.app.Service
@@ -14,7 +14,7 @@ inline fun <reified T : Service> ActivityManager.isRunning(): Boolean {
     return false
 }
 
-fun ActivityManager.getActivities(packageName: String): Int {
+fun ActivityManager.getActivityCount(packageName: String): Int {
     for (task in getRunningTasks(Integer.MAX_VALUE)) {
         if (task.baseActivity?.packageName?.startsWith(packageName) == true) {
             return task.numActivities

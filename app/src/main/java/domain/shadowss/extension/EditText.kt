@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package domain.shadowss.extensions
+package domain.shadowss.extension
 
 import android.widget.EditText
 

@@ -1,6 +1,6 @@
 @file:Suppress("unused", "DEPRECATION")
 
-package domain.shadowss.extensions
+package domain.shadowss.extension
 
 import android.net.ConnectivityManager
 

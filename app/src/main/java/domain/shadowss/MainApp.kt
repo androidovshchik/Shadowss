@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
-import domain.shadowss.extensions.noopInit
+import domain.shadowss.extension.noopInit
 import domain.shadowss.local.Database
 import domain.shadowss.local.Preferences
 import domain.shadowss.remote.WssApi

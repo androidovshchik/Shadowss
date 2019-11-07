@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package domain.shadowss.extensions
+package domain.shadowss.extension
 
 import android.os.Build
 
@@ -24,8 +24,6 @@ fun isOreoMR1() = Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1
 
 fun isPie() = Build.VERSION.SDK_INT == Build.VERSION_CODES.P
 
-fun isQ() = Build.VERSION.SDK_INT == Build.VERSION_CODES.Q
-
 fun isKitkatPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
 
 fun isKitkatWatchPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH
@@ -45,5 +43,3 @@ fun isOreoPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 fun isOreoMR1Plus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
 
 fun isPiePlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-
-fun isQPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q

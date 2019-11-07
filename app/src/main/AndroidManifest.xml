@@ -22,7 +22,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".screens.StartActivity"
+            android:name=".screen.StartActivity"
             android:windowSoftInputMode="stateHidden"
             android:screenOrientation="sensorPortrait">
             <intent-filter>
@@ -31,19 +31,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".screens.TermsActivity"
+            android:name=".screen.TermsActivity"
             android:windowSoftInputMode="stateHidden"
             android:screenOrientation="sensorPortrait"></activity>
         <activity
-            android:name=".screens.RegistrationActivity"
+            android:name=".screen.RegistrationActivity"
             android:windowSoftInputMode="stateHidden"
             android:screenOrientation="sensorPortrait"></activity>
         <activity
-            android:name=".screens.DriverActivity"
+            android:name=".screen.DriverActivity"
             android:windowSoftInputMode="stateHidden"
             android:screenOrientation="sensorPortrait"></activity>
         <activity
-            android:name=".screens.ManagerActivity"
+            android:name=".screen.ManagerActivity"
             android:windowSoftInputMode="stateHidden"
             android:screenOrientation="sensorPortrait"></activity>
     </application>
