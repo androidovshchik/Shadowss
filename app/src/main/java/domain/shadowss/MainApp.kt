@@ -8,6 +8,7 @@ import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
+import domain.shadowss.local.Database
 import domain.shadowss.remote.WssApi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -46,7 +47,7 @@ class MainApp : Application(), KodeinAware {
         }
 
         bind<Database>() with singleton {
-            Room.databaseBuilder(applicationContext, Database::class.java, DB_NAME)
+            Room.databaseBuilder(applicationContext, Database::class.java, "app.db")
                 .fallbackToDestructiveMigration()
                 .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                 .build()
