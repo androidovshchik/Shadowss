@@ -5,6 +5,7 @@ import com.facebook.stetho.Stetho
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
+import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import domain.shadowss.remote.WssApi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -36,7 +37,7 @@ class MainApp : Application(), KodeinAware {
 
         bind<WssApi>() with singleton {
             Scarlet.Builder()
-                .webSocketFactory(instance().newWebSocketFactory("ws://8081.ru"))
+                .webSocketFactory((instance() as OkHttpClient).newWebSocketFactory("ws://8081.ru"))
                 .addStreamAdapterFactory(RxJava2StreamAdapterFactory())
                 .build()
                 .create<WssApi>()
