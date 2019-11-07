@@ -8,7 +8,7 @@ import domain.shadowss.R
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 
-class StartActivity : Activity(), StartView {
+class RegistrationActivity : Activity(), StartView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
