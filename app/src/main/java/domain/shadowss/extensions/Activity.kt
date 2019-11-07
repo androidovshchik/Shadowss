@@ -1,18 +1,11 @@
 @file:Suppress("unused")
 
-package ru.iqsolution.tkoonline.extensions
+package domain.shadowss.extensions
 
 import android.app.Activity
-import org.jetbrains.anko.intentFor
 
-inline fun <reified T : Activity> Activity.startActivityNoop(
-    requestCode: Int? = null,
-    vararg params: Pair<String, Any?>
-) {
-    if (requestCode != null) {
-        startActivityForResult(intentFor<T>(*params), requestCode)
-    } else {
-        startActivity(intentFor<T>(*params))
+fun Activity.requestPermissions(requestCode: Int, vararg permissions: String) {
+    if (isMarshmallowPlus()) {
+        requestPermissions(permissions, requestCode)
     }
-    overridePendingTransition(0, 0)
 }

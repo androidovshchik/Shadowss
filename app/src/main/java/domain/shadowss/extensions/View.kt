@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package ru.iqsolution.tkoonline.extensions
+package domain.shadowss.extensions
 
 import android.view.View
 

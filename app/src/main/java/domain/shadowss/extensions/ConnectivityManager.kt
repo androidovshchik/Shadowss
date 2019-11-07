@@ -1,6 +1,6 @@
 @file:Suppress("unused", "DEPRECATION")
 
-package ru.iqsolution.tkoonline.extensions
+package domain.shadowss.extensions
 
 import android.net.ConnectivityManager
 
