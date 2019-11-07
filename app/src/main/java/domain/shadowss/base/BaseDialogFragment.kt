@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package ru.iqsolution.tkoonline.screens.base
+package domain.shadowss.base
 
 import android.app.DialogFragment
 import android.os.Bundle
@@ -25,7 +25,9 @@ open class BaseDialogFragment : DialogFragment() {
 
     @OverridingMethodsMustInvokeSuper
     override fun dismiss() {
-        context?.inputMethodManager?.hideSoftInputFromWindow(view?.windowToken, 0)
+        view?.apply {
+            context.inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
+        }
         super.dismiss()
     }
 

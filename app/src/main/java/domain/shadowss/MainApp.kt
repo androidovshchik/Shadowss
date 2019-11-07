@@ -8,18 +8,24 @@ import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import domain.shadowss.extensions.noopInit
 import domain.shadowss.local.Database
+import domain.shadowss.local.Preferences
 import domain.shadowss.remote.WssApi
 import okhttp3.OkHttpClient
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
+import org.kodein.di.generic.provider
 import org.kodein.di.generic.singleton
 
 @Suppress("unused")
 class MainApp : Application(), KodeinAware {
 
     override val kodein by Kodein.lazy {
+
+        bind<Preferences>() with provider {
+            Preferences(applicationContext)
+        }
 
         bind<OkHttpClient>() with singleton {
             OkHttpClient.Builder().apply {
