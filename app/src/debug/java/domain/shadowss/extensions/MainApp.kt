@@ -7,7 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import timber.log.Timber
 
-fun Context.init() {
+fun Context.debugInit() {
     Timber.plant(Timber.DebugTree())
     Stetho.initialize(
         Stetho.newInitializerBuilder(applicationContext)
@@ -16,7 +16,7 @@ fun Context.init() {
     )
 }
 
-fun OkHttpClient.Builder.init() {
+fun OkHttpClient.Builder.debugInit() {
     addInterceptor(HttpLoggingInterceptor(HttpLoggingInterceptor.Logger { message ->
         Timber.tag("NETWORK")
             .d(message)

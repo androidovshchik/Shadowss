@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
-import domain.shadowss.extensions.init
+import domain.shadowss.extensions.debugInit
 import domain.shadowss.local.Database
 import domain.shadowss.remote.WssApi
 import okhttp3.OkHttpClient
@@ -23,7 +23,7 @@ class MainApp : Application(), KodeinAware {
 
         bind<OkHttpClient>() with singleton {
             OkHttpClient.Builder().apply {
-                init()
+                debugInit()
             }.build()
         }
 
@@ -45,6 +45,6 @@ class MainApp : Application(), KodeinAware {
 
     override fun onCreate() {
         super.onCreate()
-        init()
+        debugInit()
     }
 }
