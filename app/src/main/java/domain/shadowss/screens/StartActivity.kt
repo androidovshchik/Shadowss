@@ -1,13 +1,14 @@
-package domain.shadowss
+package domain.shadowss.screens
 
 import android.app.Activity
 import android.os.Bundle
 import defpackage.ASAU
 import defpackage.CBIN
+import domain.shadowss.R
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 
-class MainActivity : Activity() {
+class StartActivity : Activity(), StartView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

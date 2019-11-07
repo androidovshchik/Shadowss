@@ -52,6 +52,7 @@ dependencies {
     implementation "org.jetbrains.anko:anko-commons:0.10.8"
     implementation "org.jetbrains.anko:anko-sdk19:0.10.8"
     implementation "androidx.room:room-runtime:2.2.1"
+    implementation 'androidx.room:room-rxjava2:2.2.1'
     kapt "androidx.room:room-compiler:2.2.1"
     implementation "org.kodein.di:kodein-di-generic-jvm:6.3.3"
     implementation "org.kodein.di:kodein-di-framework-android-core:6.3.3"
@@ -67,13 +68,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-}
-
-configurations.all {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        def requested = details.requested
-        if (requested.group == 'com.squareup.okhttp3' && requested.name == 'okhttp') {
-            details.useVersion '3.12.6'
-        }
-    }
 }
