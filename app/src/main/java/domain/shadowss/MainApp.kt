@@ -1,6 +1,8 @@
 package domain.shadowss
 
 import android.app.Application
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.facebook.stetho.Stetho
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.tinder.scarlet.Scarlet
@@ -41,6 +43,13 @@ class MainApp : Application(), KodeinAware {
                 .addStreamAdapterFactory(RxJava2StreamAdapterFactory())
                 .build()
                 .create<WssApi>()
+        }
+
+        bind<Database>() with singleton {
+            Room.databaseBuilder(applicationContext, Database::class.java, DB_NAME)
+                .fallbackToDestructiveMigration()
+                .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+                .build()
         }
     }
 
