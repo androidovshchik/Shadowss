@@ -3,9 +3,9 @@ package domain.shadowss
 import android.app.Application
 import android.content.Context
 import defpackage.noopInit
-import domain.shadowss.data.local.localModule
-import domain.shadowss.data.remote.remoteModule
+import domain.shadowss.local.localModule
 import domain.shadowss.manager.managerModule
+import domain.shadowss.remote.remoteModule
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.bind

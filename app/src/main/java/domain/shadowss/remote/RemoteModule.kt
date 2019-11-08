@@ -1,4 +1,4 @@
-package domain.shadowss.data.remote
+package domain.shadowss.remote
 
 import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.streamadapter.rxjava2.RxJava2StreamAdapterFactory

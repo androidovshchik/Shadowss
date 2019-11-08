@@ -4,6 +4,6 @@
         <attr name="text" format="string|reference" />
     </declare-styleable>
     <declare-styleable name="LanguageButton">
-        <attr name="text" format="string|reference" />
+        <attr name="text" />
     </declare-styleable>
 </resources>

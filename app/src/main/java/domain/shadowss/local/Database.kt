@@ -1,4 +1,4 @@
-package domain.shadowss.data.local
+package domain.shadowss.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
