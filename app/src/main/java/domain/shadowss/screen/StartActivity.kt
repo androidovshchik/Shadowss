@@ -1,6 +1,7 @@
 package domain.shadowss.screen
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -47,6 +48,7 @@ class StartActivity : BaseActivity<StartController>(), StartView {
                 }, start, result.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
+        iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
             startActivity<RegistrationActivity>()
         }

@@ -8,6 +8,7 @@ import domain.shadowss.controller.StartController
 import domain.shadowss.screen.views.setData
 import kotlinx.android.synthetic.main.activity_terms.*
 import kotlinx.android.synthetic.main.toolbar.*
+import org.jetbrains.anko.margin
 
 interface TermsView : BaseView
 
@@ -29,6 +30,7 @@ class TermsActivity : BaseActivity<StartController>(), TermsView {
                 addRule(RelativeLayout.CENTER_VERTICAL)
                 addRule(RelativeLayout.END_OF, R.id.toolbar_back)
                 addRule(RelativeLayout.ALIGN_PARENT_END)
+                margin = 0
             }
             setData("TOP,0000")
             text = text.replace("_+".toRegex(), appName)
