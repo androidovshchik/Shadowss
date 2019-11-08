@@ -57,7 +57,19 @@ class LanguageManager(context: Context) : Manager {
         context.registerReceiver(receiver, IntentFilter(Intent.ACTION_LOCALE_CHANGED))
     }
 
-    fun getText(typeId: String, textId: String): String? {
+    fun getText(data: String?): String? {
+        return try {
+            return data?.let {
+                val (type, text) = it.split(",")
+                getText(type.trim(), text.trim())
+            }
+        } catch (e: Throwable) {
+            Timber.e(e)
+            null
+        }
+    }
+
+    fun getText(typeId: String?, textId: String?): String? {
         return pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
     }
 

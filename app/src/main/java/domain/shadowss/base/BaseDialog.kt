@@ -2,7 +2,7 @@ package domain.shadowss.base
 
 import android.app.Activity
 import android.app.Dialog
-import domain.shadowss.extensions.activity
+import domain.shadowss.extension.activity
 
 open class BaseDialog(activity: Activity) : Dialog(activity) {
 
