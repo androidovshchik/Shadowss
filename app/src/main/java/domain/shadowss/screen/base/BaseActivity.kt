@@ -5,29 +5,29 @@ import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
 import android.location.LocationManager
+import android.os.Bundle
 import android.view.MenuItem
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
-import domain.shadowss.data.local.Preferences
+import domain.shadowss.controller.BaseController
 import org.jetbrains.anko.locationManager
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.closestKodein
-import org.kodein.di.generic.instance
 import timber.log.Timber
 
+interface BaseView
+
 @SuppressLint("Registered")
-@Suppress("MemberVisibilityCanBePrivate")
-open class BaseActivity<T> : Activity(), KodeinAware {
-
-    override val kodein by closestKodein()
-
-    val preferences: Preferences by instance()
-
-    protected lateinit var presenter: T
+open class BaseActivity<T : BaseController<out BaseView>> : Activity(), BaseView {
 
     protected open val requiredLocation = false
+
+    protected lateinit var controller: T
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        controller.bind(this)
+    }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {
@@ -39,9 +39,6 @@ open class BaseActivity<T> : Activity(), KodeinAware {
 
     private fun checkLocation() {
         val isGpsAvailable = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        if () {
-
-        }
         if (!isGpsAvailable) {
             LocationServices.getSettingsClient(this)
                 .checkLocationSettings(locationSettingsRequest)
@@ -80,6 +77,11 @@ open class BaseActivity<T> : Activity(), KodeinAware {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        controller.unbind()
+        super.onDestroy()
     }
 
     companion object {

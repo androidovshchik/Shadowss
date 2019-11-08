@@ -4,10 +4,9 @@ import android.os.Bundle
 import domain.shadowss.R
 import domain.shadowss.controller.RegistrationController
 import domain.shadowss.screen.base.BaseActivity
+import domain.shadowss.screen.base.BaseView
 
-interface RegistrationView {
-
-}
+interface RegistrationView : BaseView
 
 class RegistrationActivity : BaseActivity<RegistrationController>(), RegistrationView {
 

@@ -4,10 +4,9 @@ import android.os.Bundle
 import domain.shadowss.R
 import domain.shadowss.controller.ManagerController
 import domain.shadowss.screen.base.BaseActivity
+import domain.shadowss.screen.base.BaseView
 
-interface ManagerView {
-
-}
+interface ManagerView : BaseView
 
 class ManagerActivity : BaseActivity<ManagerController>(), ManagerView {
 

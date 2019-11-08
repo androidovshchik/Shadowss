@@ -16,9 +16,10 @@ open class BaseController<V>(context: Context) : KodeinAware {
 
     protected lateinit var viewRef: WeakReference<V>
 
+    @Suppress("UNCHECKED_CAST")
     @OverridingMethodsMustInvokeSuper
-    open fun bind(view: V) {
-        viewRef = WeakReference(view)
+    open fun bind(view: Any) {
+        viewRef = WeakReference(view as V)
     }
 
     @OverridingMethodsMustInvokeSuper

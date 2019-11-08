@@ -4,10 +4,9 @@ import android.os.Bundle
 import domain.shadowss.R
 import domain.shadowss.controller.DriverController
 import domain.shadowss.screen.base.BaseActivity
+import domain.shadowss.screen.base.BaseView
 
-interface DriverView {
-
-}
+interface DriverView : BaseView
 
 class DriverActivity : BaseActivity<DriverController>(), DriverView {
 
