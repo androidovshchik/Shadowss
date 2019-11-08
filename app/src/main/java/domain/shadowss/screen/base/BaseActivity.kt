@@ -1,6 +1,5 @@
 package domain.shadowss.screen.base
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
@@ -17,8 +16,38 @@ import timber.log.Timber
 
 interface BaseView
 
-@SuppressLint("Registered")
-open class BaseActivity<T : BaseController<out BaseView>> : Activity(), BaseView {
+fun BaseActivity<*>.checkLocation() {
+    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        return
+    }
+    LocationServices.getSettingsClient(this)
+        .checkLocationSettings(
+            LocationSettingsRequest.Builder()
+                .addLocationRequest(LocationRequest.create().apply {
+                    priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                })
+                /**
+                 * Whether or not location is required by the calling app in order to continue.
+                 * Set this to true if location is required to continue and false if having location provides better results,
+                 * but is not required. This changes the wording/appearance of the dialog accordingly.
+                 */
+                .setAlwaysShow(true)
+                .build()
+        )
+        .addOnFailureListener {
+            if (it is ResolvableApiException) {
+                try {
+                    it.startResolutionForResult(this, BaseActivity.REQUEST_LOCATION)
+                } catch (e: IntentSender.SendIntentException) {
+                    Timber.e(e)
+                }
+            } else {
+                Timber.e(it)
+            }
+        }
+}
+
+abstract class BaseActivity<T : BaseController<out BaseView>> : Activity(), BaseView {
 
     protected open val requiredLocation = false
 
@@ -36,25 +65,6 @@ open class BaseActivity<T : BaseController<out BaseView>> : Activity(), BaseView
             if (requiredLocation) {
                 checkLocation()
             }
-        }
-    }
-
-    private fun checkLocation() {
-        val isGpsAvailable = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        if (!isGpsAvailable) {
-            LocationServices.getSettingsClient(this)
-                .checkLocationSettings(locationSettingsRequest)
-                .addOnFailureListener {
-                    if (it is ResolvableApiException) {
-                        try {
-                            it.startResolutionForResult(this, REQUEST_LOCATION)
-                        } catch (e: IntentSender.SendIntentException) {
-                            Timber.e(e)
-                        }
-                    } else {
-                        Timber.e(it)
-                    }
-                }
         }
     }
 
@@ -85,18 +95,6 @@ open class BaseActivity<T : BaseController<out BaseView>> : Activity(), BaseView
 
     companion object {
 
-        private const val REQUEST_LOCATION = 100
-
-        private val locationSettingsRequest = LocationSettingsRequest.Builder()
-            .addLocationRequest(LocationRequest.create().apply {
-                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            })
-            /**
-             * Whether or not location is required by the calling app in order to continue.
-             * Set this to true if location is required to continue and false if having location provides better results,
-             * but is not required. This changes the wording/appearance of the dialog accordingly.
-             */
-            .setAlwaysShow(true)
-            .build()
+        const val REQUEST_LOCATION = 100
     }
 }
