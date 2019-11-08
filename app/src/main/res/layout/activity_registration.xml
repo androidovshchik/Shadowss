@@ -12,27 +12,44 @@
         android:id="@+id/iv_logo"
         android:layout_width="match_parent"
         android:layout_height="72dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="24dp"
         android:scaleType="centerInside"
         tools:src="@mipmap/ic_launcher" />
 
     <com.rilixtech.widget.countrycodepicker.CountryCodePicker
         android:id="@+id/ccp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_gravity="center_horizontal"
+        app:ccp_showFullName="true"
+        app:ccp_hideNameCode="true" />
 
-    <EditText
-        android:id="@+id/et_phone"
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@android:color/black" />
+
+    <br.com.sapereaude.maskedEditText.MaskedEditText
+        android:id="@+id/phone_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="phone" />
+        android:inputType="phone"
+        app:allowed_chars="1234567890"
+        app:mask="+7(###)###-##-##"
+        app:keep_hint="true" />
 
     <domain.shadowss.screen.views.LanguageText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        app:text="TXT,0000" />
+        android:textColor="@color/colorPrimary"
+        app:text="TXT,0003" />
 
     <domain.shadowss.screen.views.LanguageButton
         style="@android:style/Widget.DeviceDefault.Button"
