@@ -4,14 +4,18 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import androidx.core.os.ConfigurationCompat
 import de.siegmar.fastcsv.reader.CsvReader
 import domain.shadowss.R
+import domain.shadowss.domain.Language
 import domain.shadowss.domain.TxtData
-import domain.shadowss.extension.isNougatPlus
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
 class LanguageManager(context: Context) : Manager {
+
+    @Volatile
+    var language = Language.EN.id
 
     val pack = CopyOnWriteArrayList<TxtData>()
 
@@ -44,7 +48,7 @@ class LanguageManager(context: Context) : Manager {
                             text = it.getField(3)
                         })
                     } ?: break
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     Timber.e(e)
                 }
             } while (true)
@@ -59,14 +63,16 @@ class LanguageManager(context: Context) : Manager {
 
     @Suppress("DEPRECATION")
     private fun updatePack(context: Context) {
-        if (isNougatPlus()) {
-            context.resources.configuration.locales.get(0)
-        } else {
-            context.resources.configuration.locale
+        val id = try {
+            ConfigurationCompat.getLocales(context.resources.configuration).get(0).language
+        } catch (e: Throwable) {
+            Timber.e(e)
+            null
         }
+        language = Language.fromId(id).id
         pack.apply {
             clear()
-            addAll(data.filter { it.langId == "" })
+            addAll(data.filter { it.langId == language })
         }
     }
 

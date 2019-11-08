@@ -16,6 +16,6 @@ enum class Language(
 
         val map = values().associateBy(Language::id)
 
-        fun fromId(id: String) = map[id]
+        fun fromId(id: String?) = map[id] ?: EN
     }
 }
