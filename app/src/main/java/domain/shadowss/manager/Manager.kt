@@ -4,5 +4,5 @@ interface Manager {
 
     fun init(vararg args: Any?)
 
-    fun release()
+    fun release(vararg args: Any?)
 }

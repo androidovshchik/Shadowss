@@ -13,11 +13,11 @@ class MainApp : Application(), KodeinAware {
 
     override val kodein by Kodein.lazy {
 
-        import(managerModule)
-
         import(localModule)
 
         import(remoteModule)
+
+        import(managerModule)
     }
 
     override fun onCreate() {
