@@ -9,10 +9,24 @@
     <include layout="@layout/toolbar" />
 
     <ImageView
+        android:id="@+id/iv_logo"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:scaleType="centerInside"
         tools:src="@mipmap/ic_launcher" />
+
+    <com.rilixtech.widget.countrycodepicker.CountryCodePicker
+        android:id="@+id/ccp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/et_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="phone" />
 
     <domain.shadowss.screen.views.LanguageText
         android:layout_width="match_parent"
@@ -25,6 +39,12 @@
         android:id="@+id/btn_next"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        android:background="@drawable/button_accent"
+        android:foreground="?android:attr/selectableItemBackground"
         app:text="BTN,0002" />
 
 </LinearLayout>

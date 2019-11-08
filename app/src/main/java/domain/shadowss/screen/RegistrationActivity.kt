@@ -1,5 +1,6 @@
 package domain.shadowss.screen
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
 import domain.shadowss.R
@@ -21,6 +22,7 @@ class RegistrationActivity : BaseActivity<RegistrationController>(), Registratio
                 finish()
             }
         }
+        iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_next.setOnClickListener {
             startActivity<DriverActivity>()
         }
