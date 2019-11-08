@@ -33,7 +33,7 @@
         android:layout_gravity="center_horizontal"
         android:paddingTop="6dp"
         android:paddingStart="0dp"
-        android:paddingBottom="6dp"
+        android:paddingBottom="4dp"
         android:textAlignment="center" />
 
     <View
@@ -55,6 +55,7 @@
             android:layout_height="match_parent" />
 
         <domain.shadowss.screen.views.LanguageText
+            android:id="@+id/tv_terms"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

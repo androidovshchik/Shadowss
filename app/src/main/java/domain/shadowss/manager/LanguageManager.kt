@@ -1,9 +1,6 @@
 package domain.shadowss.manager
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import androidx.core.os.ConfigurationCompat
 import de.siegmar.fastcsv.reader.CsvReader
 import domain.shadowss.R
@@ -21,12 +18,12 @@ class LanguageManager(context: Context) : Manager {
 
     private val data = arrayListOf<TxtData>()
 
-    private val receiver = object : BroadcastReceiver() {
+    /*private val receiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
             updatePack(context)
         }
-    }
+    }*/
 
     init {
         init(context)
@@ -54,7 +51,7 @@ class LanguageManager(context: Context) : Manager {
             } while (true)
         }
         updatePack(context)
-        context.registerReceiver(receiver, IntentFilter(Intent.ACTION_LOCALE_CHANGED))
+        //context.registerReceiver(receiver, IntentFilter(Intent.ACTION_LOCALE_CHANGED))
     }
 
     fun getText(data: String?): String? {

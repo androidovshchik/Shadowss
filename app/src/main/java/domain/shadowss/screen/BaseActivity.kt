@@ -11,6 +11,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import domain.shadowss.controller.BaseController
+import domain.shadowss.local.Preferences
 import org.jetbrains.anko.locationManager
 import timber.log.Timber
 
@@ -47,18 +48,21 @@ fun BaseActivity<out Controller>.checkLocation() {
         }
 }
 
-abstract class BaseActivity<C : Controller> : Activity(),
-    BaseView {
+@Suppress("MemberVisibilityCanBePrivate")
+abstract class BaseActivity<C : Controller> : Activity(), BaseView {
 
     protected open val requiredLocation = false
 
     protected lateinit var controller: C
+
+    protected lateinit var preferences: Preferences
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         controller = BaseController<BaseView>(applicationContext) as C
         controller.bind(this)
+        preferences = Preferences(applicationContext)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

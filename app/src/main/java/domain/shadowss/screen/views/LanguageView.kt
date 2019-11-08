@@ -24,8 +24,8 @@ interface LanguageView : KodeinAware {
 }
 
 @SuppressLint("Recycle")
-fun LanguageView.setData(data: String?) {
-    setText(languageManager.getText(data))
+fun LanguageView.setData(data: String?, prefix: CharSequence = "") {
+    setText("$prefix${languageManager.getText(data)}")
 }
 
 @SuppressLint("Recycle")
