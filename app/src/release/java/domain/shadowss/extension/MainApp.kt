@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package domain.shadowss.extensions
+package domain.shadowss.extension
 
 import android.content.Context
 import okhttp3.OkHttpClient
