@@ -1,4 +1,4 @@
-package domain.shadowss.remote
+package domain.shadowss.data.remote
 
 import com.tinder.scarlet.ws.Receive
 import com.tinder.scarlet.ws.Send

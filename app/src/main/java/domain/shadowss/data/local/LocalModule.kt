@@ -4,9 +4,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
-import org.kodein.di.generic.eagerSingleton
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.provider
+import org.kodein.di.generic.singleton
 
 val localModule = Kodein.Module("local") {
 
@@ -14,7 +14,7 @@ val localModule = Kodein.Module("local") {
         Preferences(instance())
     }
 
-    bind<Database>() with eagerSingleton {
+    bind<Database>() with singleton {
         Room.databaseBuilder(instance(), Database::class.java, "app.db")
             .fallbackToDestructiveMigration()
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
