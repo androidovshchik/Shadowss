@@ -33,9 +33,6 @@ class StartActivity : BaseActivity<StartController>(), StartView {
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spn_language.adapter = adapter
-        ll_terms.setOnClickListener {
-            cb_terms.isChecked = !cb_terms.isChecked
-        }
         tv_terms.apply {
             movementMethod = LinkMovementMethod.getInstance()
             val start = text.length + 1
