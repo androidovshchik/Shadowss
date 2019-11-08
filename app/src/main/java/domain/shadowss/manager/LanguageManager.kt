@@ -31,25 +31,26 @@ class LanguageManager(context: Context) : Manager {
 
     override fun init(vararg args: Any?) {
         val context = args[0] as Context
-        val reader = context.resources
+        context.resources
             .openRawResource(R.raw.txtdata)
-            .bufferedReader()
-        CsvReader().parse(reader).use { parser ->
-            do {
-                try {
-                    parser.nextRow()?.let {
-                        data.add(TxtData().apply {
-                            langId = it.getField(0)
-                            typeId = it.getField(1)
-                            textId = it.getField(2)
-                            text = it.getField(3)
-                        })
-                    } ?: break
-                } catch (e: Throwable) {
-                    Timber.e(e)
+            .bufferedReader().use { reader ->
+                CsvReader().parse(reader).use { parser ->
+                    do {
+                        try {
+                            parser.nextRow()?.let {
+                                data.add(TxtData().apply {
+                                    langId = it.getField(0)
+                                    typeId = it.getField(1)
+                                    textId = it.getField(2)
+                                    text = it.getField(3)
+                                })
+                            } ?: break
+                        } catch (e: Throwable) {
+                            Timber.e(e)
+                        }
+                    } while (true)
                 }
-            } while (true)
-        }
+            }
         updatePack(context)
         //context.registerReceiver(receiver, IntentFilter(Intent.ACTION_LOCALE_CHANGED))
     }

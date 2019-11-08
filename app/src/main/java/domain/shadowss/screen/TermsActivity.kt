@@ -35,6 +35,15 @@ class TermsActivity : BaseActivity<StartController>(), TermsView {
             setData("TOP,0000")
             text = text.replace("_+".toRegex(), appName)
         }
-        web.loadUrl("file:///android_asset/terms.html")
+        assets.open("terms.html")
+            .bufferedReader().use {
+                web.loadDataWithBaseURL(
+                    "file:///android_asset/",
+                    it.readText().replace("AppName", appName),
+                    "text/html",
+                    "UTF-8",
+                    null
+                )
+            }
     }
 }
