@@ -5,6 +5,7 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.kcontext
 import java.lang.ref.WeakReference
+import javax.annotation.OverridingMethodsMustInvokeSuper
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class BaseController<V>(context: Context) : KodeinAware {
@@ -15,11 +16,13 @@ open class BaseController<V>(context: Context) : KodeinAware {
 
     protected lateinit var viewRef: WeakReference<V>
 
-    fun bind(view: V) {
+    @OverridingMethodsMustInvokeSuper
+    open fun bind(view: V) {
         viewRef = WeakReference(view)
     }
 
-    fun unbind() {
+    @OverridingMethodsMustInvokeSuper
+    open fun unbind() {
         viewRef.clear()
     }
 }
