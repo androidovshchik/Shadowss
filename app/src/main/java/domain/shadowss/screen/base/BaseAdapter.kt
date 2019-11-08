@@ -11,20 +11,20 @@ interface AdapterListener<T> {
 }
 
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseViewHolder<T>>() {
+abstract class BaseAdapter<I> : RecyclerView.Adapter<BaseViewHolder<I>>() {
 
-    val items = arrayListOf<T>()
+    val items = arrayListOf<I>()
 
-    protected var reference: WeakReference<AdapterListener<T>>? = null
+    protected var reference: WeakReference<AdapterListener<I>>? = null
 
     /**
      * It is assumed that this will be called one time or never
      */
-    fun setListener(listener: AdapterListener<T>) {
+    fun setListener(listener: AdapterListener<I>) {
         reference = WeakReference(listener)
     }
 
-    override fun onBindViewHolder(holder: BaseViewHolder<T>, position: Int) {
+    override fun onBindViewHolder(holder: BaseViewHolder<I>, position: Int) {
         holder.onBindItem(position, items[position])
     }
 
@@ -32,9 +32,9 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseViewHolder<T>>() {
 }
 
 @Suppress("UNUSED_PARAMETER", "unused")
-abstract class BaseViewHolder<T>(itemView: View) : RecyclerView.ViewHolder(itemView) {
+abstract class BaseViewHolder<I>(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    abstract fun onBindItem(position: Int, item: T)
+    abstract fun onBindItem(position: Int, item: I)
 
     val appContext: Context
         get() = itemView.context.applicationContext

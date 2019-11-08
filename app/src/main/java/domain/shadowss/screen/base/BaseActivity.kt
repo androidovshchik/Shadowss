@@ -14,9 +14,11 @@ import domain.shadowss.controller.BaseController
 import org.jetbrains.anko.locationManager
 import timber.log.Timber
 
+private typealias Controller = BaseController<out BaseView>
+
 interface BaseView
 
-fun BaseActivity<*>.checkLocation() {
+fun BaseActivity<out Controller>.checkLocation() {
     if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
         return
     }
@@ -47,16 +49,16 @@ fun BaseActivity<*>.checkLocation() {
         }
 }
 
-abstract class BaseActivity<T : BaseController<out BaseView>> : Activity(), BaseView {
+abstract class BaseActivity<C : Controller> : Activity(), BaseView {
 
     protected open val requiredLocation = false
 
-    protected lateinit var controller: T
+    protected lateinit var controller: C
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        controller = BaseController<BaseView>(applicationContext) as T
+        controller = BaseController<BaseView>(applicationContext) as C
         controller.bind(this)
     }
 
