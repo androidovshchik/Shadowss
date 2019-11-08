@@ -11,6 +11,8 @@ interface ManagerView {
 
 class ManagerActivity : BaseActivity<ManagerController>(), ManagerView {
 
+    override val requiredLocation = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manager)
