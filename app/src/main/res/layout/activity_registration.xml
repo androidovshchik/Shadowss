@@ -35,14 +35,17 @@
         android:layout_marginEnd="16dp"
         android:background="@android:color/black" />
 
-    <br.com.sapereaude.maskedEditText.MaskedEditText
-        android:id="@+id/phone_input"
+    <EditText
+        android:id="@+id/et_phone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="4dp"
         android:inputType="phone"
-        app:allowed_chars="1234567890"
-        app:mask="+7(###)###-##-##"
-        app:keep_hint="true" />
+        android:singleLine="true"
+        android:maxLines="1" />
 
     <domain.shadowss.screen.views.LanguageText
         android:layout_width="match_parent"
@@ -56,6 +59,7 @@
         android:id="@+id/btn_next"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:textColor="@android:color/white"

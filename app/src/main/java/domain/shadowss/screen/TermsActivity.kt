@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.RelativeLayout
 import domain.shadowss.R
-import domain.shadowss.controller.StartController
+import domain.shadowss.controller.TermsController
 import domain.shadowss.screen.views.setData
 import kotlinx.android.synthetic.main.activity_terms.*
 import kotlinx.android.synthetic.main.toolbar.*
@@ -12,7 +12,7 @@ import org.jetbrains.anko.margin
 
 interface TermsView : BaseView
 
-class TermsActivity : BaseActivity<StartController>(), TermsView {
+class TermsActivity : BaseActivity<TermsController>(), TermsView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
