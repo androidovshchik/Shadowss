@@ -1,4 +1,4 @@
-package domain.shadowss.models
+package domain.shadowss.domain
 
 @Suppress("unused")
 enum class Language(

@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import de.siegmar.fastcsv.reader.CsvReader
+import domain.shadowss.R
 import domain.shadowss.domain.TxtData
+import domain.shadowss.extension.isNougatPlus
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -18,7 +20,7 @@ class LanguageManager(context: Context) : Manager {
     private val receiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
-
+            updatePack(context)
         }
     }
 
@@ -28,25 +30,44 @@ class LanguageManager(context: Context) : Manager {
 
     override fun init(vararg args: Any?) {
         val context = args[0] as Context
-        try {
-            CsvReader().parse(context.assets.open("data.csv").bufferedReader()).use {
-                do {
-                    it.nextRow()?.let { row ->
-                        row.getField(0)
-                        row.getField(1)
-                        row.getField(2)
-                        row.getField(3)
+        val reader = context.resources
+            .openRawResource(R.raw.txtdata)
+            .bufferedReader()
+        CsvReader().parse(reader).use { parser ->
+            do {
+                try {
+                    parser.nextRow()?.let {
+                        data.add(TxtData().apply {
+                            langId = it.getField(0)
+                            typeId = it.getField(1)
+                            textId = it.getField(2)
+                            text = it.getField(3)
+                        })
                     } ?: break
-                } while (true)
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
+            } while (true)
         }
+        updatePack(context)
         context.registerReceiver(receiver, IntentFilter(Intent.ACTION_LOCALE_CHANGED))
     }
 
     fun getString(typeId: String, textId: String): String? {
         return pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
+    }
+
+    @Suppress("DEPRECATION")
+    private fun updatePack(context: Context) {
+        if (isNougatPlus()) {
+            context.resources.configuration.locales.get(0)
+        } else {
+            context.resources.configuration.locale
+        }
+        pack.apply {
+            clear()
+            addAll(data.filter { it.langId == "" })
+        }
     }
 
     override fun release(vararg args: Any?) {}
