@@ -14,19 +14,17 @@
         android:scaleType="centerInside"
         tools:src="@mipmap/ic_launcher" />
 
-    <com.hbb20.CountryCodePicker
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <domain.shadowss.screen.LanguageText
+    <domain.shadowss.screen.views.LanguageText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         app:text="TXT,0000" />
 
-    <domain.shadowss.screen.LanguageButton
+    <domain.shadowss.screen.views.LanguageButton
+        style="@android:style/Widget.DeviceDefault.Button"
+        android:id="@+id/btn_next"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:text="BTN,0001" />
+        app:text="BTN,0002" />
 
 </LinearLayout>

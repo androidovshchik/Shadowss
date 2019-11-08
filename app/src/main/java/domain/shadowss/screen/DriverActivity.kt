@@ -1,10 +1,10 @@
 package domain.shadowss.screen
 
 import android.os.Bundle
+import android.view.View
 import domain.shadowss.R
 import domain.shadowss.controller.DriverController
-import domain.shadowss.screen.base.BaseActivity
-import domain.shadowss.screen.base.BaseView
+import kotlinx.android.synthetic.main.toolbar.*
 
 interface DriverView : BaseView
 
@@ -15,5 +15,11 @@ class DriverActivity : BaseActivity<DriverController>(), DriverView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver)
+        toolbar_back.apply {
+            visibility = View.VISIBLE
+            setOnClickListener {
+                finish()
+            }
+        }
     }
 }

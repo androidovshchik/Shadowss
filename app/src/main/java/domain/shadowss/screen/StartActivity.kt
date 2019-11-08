@@ -3,8 +3,6 @@ package domain.shadowss.screen
 import android.os.Bundle
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
-import domain.shadowss.screen.base.BaseActivity
-import domain.shadowss.screen.base.BaseView
 import kotlinx.android.synthetic.main.activity_start.*
 import org.jetbrains.anko.startActivity
 

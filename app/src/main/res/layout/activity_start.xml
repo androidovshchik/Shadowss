@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <domain.shadowss.screen.LanguageText
+    <domain.shadowss.screen.views.LanguageText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <domain.shadowss.screen.LanguageText
+        <domain.shadowss.screen.views.LanguageText
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -53,24 +53,24 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <domain.shadowss.screen.LanguageButton
+        <domain.shadowss.screen.views.LanguageButton
+            style="@android:style/Widget.DeviceDefault.Button"
             android:id="@+id/btn_driver"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
             android:gravity="center"
-            android:background="@android:drawable/btn_default"
             app:text="BTN,0000" />
 
-        <domain.shadowss.screen.LanguageButton
+        <domain.shadowss.screen.views.LanguageButton
+            style="@android:style/Widget.DeviceDefault.Button"
             android:id="@+id/btn_manager"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="4dp"
             android:gravity="center"
-            android:background="@android:drawable/btn_default"
             app:text="BTN,0001" />
 
     </LinearLayout>

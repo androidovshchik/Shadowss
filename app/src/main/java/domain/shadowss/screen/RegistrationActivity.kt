@@ -1,10 +1,12 @@
 package domain.shadowss.screen
 
 import android.os.Bundle
+import android.view.View
 import domain.shadowss.R
 import domain.shadowss.controller.RegistrationController
-import domain.shadowss.screen.base.BaseActivity
-import domain.shadowss.screen.base.BaseView
+import kotlinx.android.synthetic.main.activity_registration.*
+import kotlinx.android.synthetic.main.toolbar.*
+import org.jetbrains.anko.startActivity
 
 interface RegistrationView : BaseView
 
@@ -13,5 +15,14 @@ class RegistrationActivity : BaseActivity<RegistrationController>(), Registratio
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
+        toolbar_back.apply {
+            visibility = View.VISIBLE
+            setOnClickListener {
+                finish()
+            }
+        }
+        btn_next.setOnClickListener {
+            startActivity<DriverActivity>()
+        }
     }
 }

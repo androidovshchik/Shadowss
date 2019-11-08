@@ -1,4 +1,4 @@
-package domain.shadowss.screen.base
+package domain.shadowss.screen
 
 import android.app.Activity
 import android.content.Intent
@@ -28,18 +28,16 @@ fun BaseActivity<out Controller>.checkLocation() {
                 .addLocationRequest(LocationRequest.create().apply {
                     priority = LocationRequest.PRIORITY_HIGH_ACCURACY
                 })
-                /**
-                 * Whether or not location is required by the calling app in order to continue.
-                 * Set this to true if location is required to continue and false if having location provides better results,
-                 * but is not required. This changes the wording/appearance of the dialog accordingly.
-                 */
                 .setAlwaysShow(true)
                 .build()
         )
         .addOnFailureListener {
             if (it is ResolvableApiException) {
                 try {
-                    it.startResolutionForResult(this, BaseActivity.REQUEST_LOCATION)
+                    it.startResolutionForResult(
+                        this,
+                        BaseActivity.REQUEST_LOCATION
+                    )
                 } catch (e: IntentSender.SendIntentException) {
                     Timber.e(e)
                 }
@@ -49,7 +47,8 @@ fun BaseActivity<out Controller>.checkLocation() {
         }
 }
 
-abstract class BaseActivity<C : Controller> : Activity(), BaseView {
+abstract class BaseActivity<C : Controller> : Activity(),
+    BaseView {
 
     protected open val requiredLocation = false
 

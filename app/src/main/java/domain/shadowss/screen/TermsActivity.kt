@@ -3,8 +3,6 @@ package domain.shadowss.screen
 import android.os.Bundle
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
-import domain.shadowss.screen.base.BaseActivity
-import domain.shadowss.screen.base.BaseView
 
 interface TermsView : BaseView
 

@@ -1,4 +1,4 @@
-package domain.shadowss.screen.base
+package domain.shadowss.screen.adapters
 
 import android.content.Context
 import android.view.View

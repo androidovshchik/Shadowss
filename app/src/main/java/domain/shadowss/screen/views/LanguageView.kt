@@ -1,4 +1,4 @@
-package domain.shadowss.screen
+package domain.shadowss.screen.views
 
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
