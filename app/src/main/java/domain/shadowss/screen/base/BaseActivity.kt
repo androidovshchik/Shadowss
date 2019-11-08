@@ -24,8 +24,10 @@ open class BaseActivity<T : BaseController<out BaseView>> : Activity(), BaseView
 
     protected lateinit var controller: T
 
+    @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        controller = BaseController<BaseView>(applicationContext) as T
         controller.bind(this)
     }
 
@@ -45,10 +47,7 @@ open class BaseActivity<T : BaseController<out BaseView>> : Activity(), BaseView
                 .addOnFailureListener {
                     if (it is ResolvableApiException) {
                         try {
-                            it.startResolutionForResult(
-                                this,
-                                REQUEST_LOCATION
-                            )
+                            it.startResolutionForResult(this, REQUEST_LOCATION)
                         } catch (e: IntentSender.SendIntentException) {
                             Timber.e(e)
                         }
