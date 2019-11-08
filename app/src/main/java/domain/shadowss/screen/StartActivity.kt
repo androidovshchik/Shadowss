@@ -21,9 +21,13 @@ class StartActivity : BaseActivity<StartController>(), StartView {
         val adapter = ArrayAdapter(
             applicationContext,
             android.R.layout.simple_spinner_item,
-            Language.map.map { it.value.desc })
+            Language.map.map { it.value.desc }
+        )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spn_language.adapter = adapter
+        ll_terms.setOnClickListener {
+            cb_terms.isChecked = !cb_terms.isChecked
+        }
         btn_driver.setOnClickListener {
             startActivity<RegistrationActivity>()
         }

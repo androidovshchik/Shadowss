@@ -19,7 +19,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="6dp"
         android:gravity="center"
         android:textSize="14sp"
@@ -43,19 +43,23 @@
         android:background="@android:color/black" />
 
     <LinearLayout
+        android:id="@+id/ll_terms"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:orientation="horizontal">
 
         <CheckBox
+            android:id="@+id/cb_terms"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent" />
 
         <domain.shadowss.screen.views.LanguageText
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
+            android:textSize="14sp"
             app:text="TXT,0001" />
 
     </LinearLayout>
@@ -64,7 +68,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:scaleType="centerInside"
+        android:scaleType="fitCenter"
         android:src="@mipmap/ic_launcher" />
 
     <LinearLayout
@@ -79,7 +83,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
+            android:textColor="@android:color/white"
             android:gravity="center"
+            android:background="@drawable/button_accent"
+            android:foreground="?android:attr/selectableItemBackground"
             app:text="BTN,0000" />
 
         <domain.shadowss.screen.views.LanguageButton
@@ -89,7 +96,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="4dp"
+            android:textColor="@android:color/white"
             android:gravity="center"
+            android:background="@drawable/button_primary"
+            android:foreground="?android:attr/selectableItemBackground"
             app:text="BTN,0001" />
 
     </LinearLayout>
