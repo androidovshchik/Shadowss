@@ -11,3 +11,10 @@ val managerModule = Kodein.Module("manager") {
         LanguageManager(instance())
     }
 }
+
+interface Manager {
+
+    fun init(vararg args: Any?)
+
+    fun release(vararg args: Any?)
+}

@@ -1,9 +1,14 @@
-package ru.iqsolution.tkoonline.screens.base
+package domain.shadowss.screen.base
 
 import android.content.Context
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import java.lang.ref.WeakReference
+
+interface AdapterListener<T> {
+
+    fun onAdapterEvent(position: Int, item: T, event: Any? = null)
+}
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseViewHolder<T>>() {
@@ -12,6 +17,9 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseViewHolder<T>>() {
 
     protected var reference: WeakReference<AdapterListener<T>>? = null
 
+    /**
+     * It is assumed that this will be called one time or never
+     */
     fun setListener(listener: AdapterListener<T>) {
         reference = WeakReference(listener)
     }

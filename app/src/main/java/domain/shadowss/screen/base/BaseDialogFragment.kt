@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package domain.shadowss.base
+package domain.shadowss.screen.base
 
 import android.app.DialogFragment
 import android.os.Bundle

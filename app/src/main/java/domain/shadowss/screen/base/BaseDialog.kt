@@ -1,4 +1,4 @@
-package domain.shadowss.base
+package domain.shadowss.screen.base
 
 import android.app.Activity
 import android.app.Dialog
