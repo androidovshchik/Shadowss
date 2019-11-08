@@ -1,4 +1,4 @@
-package domain.shadowss.local
+package domain.shadowss.data.local
 
 import android.content.Context
 import com.chibatching.kotpref.KotprefModel
