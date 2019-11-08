@@ -14,7 +14,7 @@ enum class Language(
 
     companion object {
 
-        val map = values().associateBy(Language::id)
+        private val map = values().associateBy(Language::id)
 
         fun fromId(id: String?) = map[id] ?: EN
     }

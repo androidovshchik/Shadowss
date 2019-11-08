@@ -57,7 +57,7 @@ class LanguageManager(context: Context) : Manager {
         context.registerReceiver(receiver, IntentFilter(Intent.ACTION_LOCALE_CHANGED))
     }
 
-    fun getString(typeId: String, textId: String): String? {
+    fun getText(typeId: String, textId: String): String? {
         return pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
     }
 
