@@ -12,7 +12,9 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:src="@drawable/ic_arrow_back_white_24dp"
-        android:background="?android:attr/selectableItemBackground" />
+        android:background="?android:attr/selectableItemBackground"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <domain.shadowss.screen.LanguageText
         android:id="@+id/toolbar_title"
