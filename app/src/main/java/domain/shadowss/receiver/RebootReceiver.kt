@@ -1,4 +1,4 @@
-package domain.shadowss.receivers
+package domain.shadowss.receiver
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
