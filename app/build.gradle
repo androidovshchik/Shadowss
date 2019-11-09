@@ -58,10 +58,11 @@ dependencies {
     implementation "com.tinder.scarlet:websocket-okhttp:0.1.9"
     implementation "com.tinder.scarlet:stream-adapter-rxjava2:0.1.9"
     implementation 'com.chibatching.kotpref:kotpref:2.9.1'
-    implementation 'de.siegmar:fastcsv:1.0.3'
-    implementation 'org.ehcache:sizeof:0.3.0'
     implementation 'com.github.joielechong:countrycodepicker:2.4.1'
     implementation 'com.redmadrobot:input-mask-android:5.0.0'
+    implementation 'com.scottyab:rootbeer-lib:0.0.7'
+    implementation 'de.siegmar:fastcsv:1.0.3'
+    implementation 'org.ehcache:sizeof:0.3.0'
     implementation 'com.jakewharton.timber:timber:4.7.1'
     //noinspection GradleDependency
     implementation 'com.squareup.okhttp3:logging-interceptor:3.12.6'
