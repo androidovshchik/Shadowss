@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.core.os.ConfigurationCompat
 import de.siegmar.fastcsv.reader.CsvReader
 import domain.shadowss.R
-import domain.shadowss.domain.Language
-import domain.shadowss.domain.TxtData
+import domain.shadowss.model.Language
+import domain.shadowss.model.TxtData
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 

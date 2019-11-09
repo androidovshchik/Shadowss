@@ -2,7 +2,7 @@ package domain.shadowss.local
 
 import android.content.Context
 import com.chibatching.kotpref.KotprefModel
-import domain.shadowss.domain.Language
+import domain.shadowss.model.Language
 
 class Preferences(context: Context) : KotprefModel(context) {
 

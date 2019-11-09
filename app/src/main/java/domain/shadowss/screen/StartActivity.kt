@@ -11,7 +11,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
-import domain.shadowss.domain.Language
+import domain.shadowss.model.Language
 import domain.shadowss.screen.views.setData
 import kotlinx.android.synthetic.main.activity_start.*
 import org.jetbrains.anko.startActivity

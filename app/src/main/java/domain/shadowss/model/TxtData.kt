@@ -1,4 +1,4 @@
-package domain.shadowss.domain
+package domain.shadowss.model
 
 import java.io.Serializable
 
