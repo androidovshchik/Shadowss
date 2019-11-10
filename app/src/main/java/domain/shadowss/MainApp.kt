@@ -35,16 +35,14 @@ class MainApp : Application(), KodeinAware {
         import(managerModule)
     }
 
-    private val handler = Handler()
-
-    private val apiRunnable = object : Runnable {
+    private val serviceRunnable = object : Runnable {
 
         override fun run() {
             try {
                 ApiService.start(applicationContext)
             } catch (e: Throwable) {
                 Timber.e(e)
-                handler.postDelayed(this, 3000)
+                Handler().postDelayed(this, 3000)
             }
         }
     }
@@ -59,6 +57,6 @@ class MainApp : Application(), KodeinAware {
                 }
             )
         }
-        apiRunnable.run()
+        serviceRunnable.run()
     }
 }

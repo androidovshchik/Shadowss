@@ -62,7 +62,7 @@
             android:gravity="center"
             android:textSize="14sp"
             tools:text="Я подтверждаю, что я ознакомился и полностью принимаю Условия использования приложения :AppName"
-            app:text="[[TXT,0001]]" />
+            app:text="[[TXT,0001]] [[TXT,0002]]" />
 
     </LinearLayout>
 

@@ -1,27 +1,17 @@
 package domain.shadowss.service
 
 import android.annotation.SuppressLint
-import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.IBinder
-import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import domain.shadowss.R
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
 import org.jetbrains.anko.activityManager
-import org.jetbrains.anko.powerManager
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
 
-class ApiService : Service() {
-
-    private var wakeLock: PowerManager.WakeLock? = null
-
-    override fun onBind(intent: Intent): IBinder? {
-        return null
-    }
+class ApiService : BaseService() {
 
     @SuppressLint("MissingPermission")
     override fun onCreate() {
@@ -33,7 +23,7 @@ class ApiService : Service() {
                 .setOngoing(true)
                 .build()
         )
-        acquireWakeLock()
+        acquireWakeLock(javaClass.name)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -43,23 +33,6 @@ class ApiService : Service() {
         return START_STICKY
     }
 
-    @SuppressLint("WakelockTimeout")
-    private fun acquireWakeLock() {
-        if (wakeLock == null) {
-            wakeLock =
-                powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, javaClass.name).apply {
-                    acquire()
-                }
-        }
-    }
-
-    private fun releaseWakeLock() {
-        wakeLock?.let {
-            it.release()
-            wakeLock = null
-        }
-    }
-
     override fun onDestroy() {
         releaseWakeLock()
         super.onDestroy()
@@ -67,10 +40,7 @@ class ApiService : Service() {
 
     companion object {
 
-        /**
-         * @return true if service is running
-         */
-        @Throws(SecurityException::class)
+        @Throws(Throwable::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {
             return if (!activityManager.isRunning<ApiService>()) {
                 startForegroundService<ApiService>(*params) != null
@@ -79,10 +49,6 @@ class ApiService : Service() {
             }
         }
 
-        /**
-         * Currently this shouldn't be called outside
-         * @return true if service is stopped
-         */
         @Suppress("unused")
         private fun stop(context: Context): Boolean = context.run {
             if (activityManager.isRunning<ApiService>()) {
