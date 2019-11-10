@@ -24,7 +24,12 @@ class StartActivity : BaseActivity<StartController>(), StartView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
         val appName = getString(R.string.app_name)
-        tv_welcome.text = "${tv_welcome.text}\n${appName}"
+        tv_welcome.apply {
+            text = tv_welcome.text.replace("_+".toRegex(), "\n${appName}")
+            if (!text.contains(appName)) {
+                text = "${tv_welcome.text}\n${appName}"
+            }
+        }
         val adapter = ArrayAdapter(
             applicationContext,
             android.R.layout.simple_spinner_item,

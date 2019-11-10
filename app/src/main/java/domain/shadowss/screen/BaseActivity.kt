@@ -17,7 +17,7 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import timber.log.Timber
 
-private typealias Controller = BaseController<out BaseView>
+typealias Controller = BaseController<out BaseView>
 
 interface BaseView
 

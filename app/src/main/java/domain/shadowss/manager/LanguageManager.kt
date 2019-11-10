@@ -61,11 +61,11 @@ class LanguageManager(context: Context) : Manager {
             var start = -2
             var result = data
             do {
-                start = data.indexOf("[[", start + 2)
+                start = result.indexOf("[[", start + 2)
                 if (start >= 0) {
-                    val end = data.indexOf("]]", start + 2)
+                    val end = result.indexOf("]]", start + 2)
                     if (end >= 0) {
-                        val id = data.substring(start + 2, end).trim()
+                        val id = result.substring(start + 2, end).trim()
                         val (typeId, textId) = id.split(",")
                         val text =
                             pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
