@@ -57,31 +57,35 @@ class LanguageManager(context: Context) : Manager {
     }
 
     fun getText(data: String?): String? {
-        return data?.let {
-            try {
-                var start = 0
-                do {
-                    start = it.indexOf("[[", start)
-                    if (start >= 0) {
-                        val end = it.indexOf("]]")
-                        if (end >= 0) {
-
-                        } else {
-                            throw IllegalArgumentException()
-                        }
+        if (data == null) {
+            return null
+        }
+        return try {
+            var start = -2
+            var result = data
+            do {
+                start = data.indexOf("[[", start + 2)
+                if (start >= 0) {
+                    val end = data.indexOf("]]", start)
+                    if (end >= 2) {
+                        val text = data.substring(start + 2, end)
+                        val (typeId, textId) = text.split(",")
+                        pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
+                        result = result.replaceFirst(
+                            text,
+                            pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
+                        )
                     } else {
-                        break
+                        throw IllegalArgumentException()
                     }
-                } while (true)
-                return data?.let {
-                    val (type, text) = it.split(",")
-                    getText(type.trim(), text.trim())
+                } else {
+                    break
                 }
-            } catch (e: Throwable) {
-                Timber.e(e)
-                return pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
-                null
-            }
+            } while (true)
+            return result
+        } catch (e: Throwable) {
+            Timber.e(e)
+            null
         }
     }
 
@@ -89,7 +93,8 @@ class LanguageManager(context: Context) : Manager {
     private fun updatePack(context: Context) {
         val preferences = Preferences(context)
         val id = try {
-
+            // todo mcc
+            preferences.language
         } catch (e: Throwable) {
             Timber.e(e)
             null
