@@ -14,27 +14,27 @@
         android:layout_height="72dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="24dp"
-        android:scaleType="centerInside"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
         tools:src="@mipmap/ic_launcher" />
 
-    <com.rilixtech.widget.countrycodepicker.CountryCodePicker
-        android:id="@+id/ccp"
-        android:layout_width="wrap_content"
+    <Spinner
+        android:id="@+id/spn_country"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_gravity="center_horizontal"
-        app:ccp_showFullName="true"
-        app:ccp_hideNameCode="true"
-        app:ccp_setCountryByTimeZone="false" />
+        android:paddingTop="6dp"
+        android:paddingBottom="2dp" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:background="@android:color/black" />
+        android:background="#89000000" />
 
     <EditText
         android:id="@+id/et_phone"
@@ -46,27 +46,33 @@
         android:layout_marginBottom="4dp"
         android:inputType="phone"
         android:singleLine="true"
-        android:maxLines="1" />
+        android:maxLines="1"
+        tools:text="+7" />
 
     <domain.shadowss.screen.views.LanguageText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
         android:textColor="@color/colorPrimary"
-        app:text="TXT,0003" />
+        android:textSize="14sp"
+        tools:text="Убедитесь, что сим карта с указанным номером мобильного телефона активна и находится внутри устройства, в противном случае регистрация не возможна."
+        app:text="[[TXT,0003]]" />
 
     <domain.shadowss.screen.views.LanguageButton
         style="@android:style/Widget.DeviceDefault.Button"
         android:id="@+id/btn_next"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="12dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:textColor="@android:color/white"
         android:gravity="center"
         android:background="@drawable/button_accent"
         android:foreground="?android:attr/selectableItemBackground"
-        app:text="BTN,0002" />
+        tools:text="Далее"
+        app:text="[[BTN,0002]]" />
 
 </LinearLayout>

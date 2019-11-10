@@ -15,7 +15,8 @@
         android:gravity="center"
         android:textSize="24sp"
         android:textColor="@color/colorPrimary"
-        app:text="TXT,0000" />
+        tools:text="Добро пожаловать в\nAppName"
+        app:text="[[TXT,0000]]" />
 
     <TextView
         android:layout_width="match_parent"
@@ -33,7 +34,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:paddingTop="6dp"
-        android:paddingStart="0dp"
         android:paddingBottom="3dp"
         android:textAlignment="center" />
 
@@ -41,7 +41,7 @@
         android:layout_width="144dp"
         android:layout_height="1dp"
         android:layout_gravity="center_horizontal"
-        android:background="@android:color/black" />
+        android:background="#89000000" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -61,7 +61,8 @@
             android:layout_weight="1"
             android:gravity="center"
             android:textSize="14sp"
-            app:text="TXT,0001" />
+            tools:text="Я подтверждаю, что я ознакомился и полностью принимаю Условия использования приложения :AppName"
+            app:text="[[TXT,0001]]" />
 
     </LinearLayout>
 
@@ -71,6 +72,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
         tools:src="@mipmap/ic_launcher" />
 
     <LinearLayout
@@ -89,7 +91,8 @@
             android:gravity="center"
             android:background="@drawable/button_accent"
             android:foreground="?android:attr/selectableItemBackground"
-            app:text="BTN,0000" />
+            tools:text="Водитель"
+            app:text="[[BTN,0000]]" />
 
         <domain.shadowss.screen.views.LanguageButton
             style="@android:style/Widget.DeviceDefault.Button"
@@ -102,7 +105,8 @@
             android:gravity="center"
             android:background="@drawable/button_primary"
             android:foreground="?android:attr/selectableItemBackground"
-            app:text="BTN,0001" />
+            tools:text="Менеджер"
+            app:text="[[BTN,0001]]" />
 
     </LinearLayout>
 
