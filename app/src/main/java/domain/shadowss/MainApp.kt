@@ -5,16 +5,19 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.os.Handler
 import defpackage.noopInit
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.local.localModule
 import domain.shadowss.manager.managerModule
 import domain.shadowss.remote.remoteModule
+import domain.shadowss.service.ApiService
 import org.jetbrains.anko.notificationManager
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.provider
+import timber.log.Timber
 
 @Suppress("unused")
 class MainApp : Application(), KodeinAware {
@@ -32,6 +35,20 @@ class MainApp : Application(), KodeinAware {
         import(managerModule)
     }
 
+    private val handler = Handler()
+
+    private val apiRunnable = object : Runnable {
+
+        override fun run() {
+            try {
+                ApiService.start(applicationContext)
+            } catch (e: Throwable) {
+                Timber.e(e)
+                handler.postDelayed(this, 3000)
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         noopInit()
@@ -42,5 +59,6 @@ class MainApp : Application(), KodeinAware {
                 }
             )
         }
+        apiRunnable.run()
     }
 }
