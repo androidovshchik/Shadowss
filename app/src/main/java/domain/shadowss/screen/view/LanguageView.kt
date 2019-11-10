@@ -28,7 +28,7 @@ interface LanguageView : KodeinAware {
 @SuppressLint("Recycle")
 fun LanguageView.setData(data: String?) {
     textData = data
-    setText(languageManager.getText(data ?: return))
+    updateData()
 }
 
 @SuppressLint("Recycle")

@@ -7,11 +7,14 @@ import androidx.core.app.NotificationCompat
 import domain.shadowss.R
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
+import domain.shadowss.model.colfer.ASPI
 import domain.shadowss.remote.WebSocketApi
 import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
 import org.kodein.di.generic.instance
+import timber.log.Timber
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -33,9 +36,34 @@ class ApiService : BaseService() {
                 .build()
         )
         acquireWakeLock(javaClass.name)
+        disposable.add(wssApi.observe()
+            .subscribe({
+                Timber.e(it.toString())
+            }, {
+                Timber.e(it)
+            })
+        )
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
-
+            /*try {
+                val asau = ASAU().apply {
+                    token = "ABC"
+                    time = 99L
+                    timezone = 9.9f
+                }
+                Timber.e(asau.toString())
+                val buffer = asau.marshal(ByteArrayOutputStream(), null)
+                val asau2 = ASAU.Unmarshaller(ByteArrayInputStream(buffer), null).next()
+                Timber.e(asau2.toString())
+            } catch (e: Throwable) {
+                Timber.e(e)
+            }*/
+            val asau = ASPI().apply {
+                rnd = 9999
+            }
+            //Timber.e(asau.toString())
+            val buffer = asau.marshal(ByteArrayOutputStream(), null)
+            wssApi.send(buffer)
         }, 0L, TIMER_INTERVAL, TimeUnit.MILLISECONDS)
     }
 
