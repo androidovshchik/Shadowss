@@ -25,17 +25,9 @@ class StartActivity : BaseActivity<StartController>(), StartView {
 
     val languageManager: LanguageManager by instance()
 
-    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-        val appName = getString(R.string.app_name)
-        tv_welcome.apply {
-            text = tv_welcome.text.replace("_+".toRegex(), "\n${appName}")
-            if (!text.contains(appName)) {
-                text = "${tv_welcome.text}\n${appName}"
-            }
-        }
         val adapter = ArrayAdapter(
             applicationContext,
             android.R.layout.simple_spinner_item,
@@ -44,21 +36,42 @@ class StartActivity : BaseActivity<StartController>(), StartView {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spn_language.also {
             it.adapter = adapter
+            it.setSelection(0, false)
             it.onItemSelectedListener {
                 onItemSelected { _, _, position, _ ->
-                    languageManager
+                    preferences.language = Language.map.keys.toTypedArray()[position]
+                    languageManager.updatePack(applicationContext)
                     tv_welcome.updateData()
                     tv_terms.updateData()
                     btn_driver.updateData()
                     btn_manager.updateData()
+                    updateText()
                 }
             }
         }
+        tv_terms.movementMethod = LinkMovementMethod.getInstance()
+        updateText()
+        iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
+        btn_driver.setOnClickListener {
+            startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to true)
+        }
+        btn_manager.setOnClickListener {
+            startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to false)
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateText() {
+        val appName = getString(R.string.app_name)
+        tv_welcome.apply {
+            text = tv_welcome.text.replace("_+".toRegex(), "\n${appName}")
+            if (!text.contains(appName)) {
+                text = "${tv_welcome.text}\n${appName}"
+            }
+        }
         tv_terms.apply {
-            movementMethod = LinkMovementMethod.getInstance()
-            val start = text.indexOf("|") + 1
+            val start = text.indexOf("\u2009") + 1
             val result = text.replace("_+".toRegex(), appName)
-                .replace("|", " ")
             text = SpannableStringBuilder(result).apply {
                 setSpan(object : ClickableSpan() {
 
@@ -67,13 +80,6 @@ class StartActivity : BaseActivity<StartController>(), StartView {
                     }
                 }, start, result.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
-        }
-        iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
-        btn_driver.setOnClickListener {
-            startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to true)
-        }
-        btn_manager.setOnClickListener {
-            startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to false)
         }
     }
 }

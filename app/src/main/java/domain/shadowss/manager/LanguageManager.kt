@@ -87,7 +87,7 @@ class LanguageManager(context: Context) : Manager {
     }
 
     @Suppress("DEPRECATION")
-    private fun updatePack(context: Context) {
+    fun updatePack(context: Context) {
         val preferences = Preferences(context)
         val id = try {
             // todo mcc

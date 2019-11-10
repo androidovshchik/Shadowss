@@ -15,6 +15,7 @@ import domain.shadowss.local.Preferences
 import org.jetbrains.anko.locationManager
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
+import org.kodein.di.generic.instance
 import timber.log.Timber
 
 typealias Controller = BaseController<out BaseView>
@@ -26,17 +27,16 @@ abstract class BaseActivity<C : Controller> : Activity(), KodeinAware, BaseView 
 
     override val kodein by closestKodein()
 
+    val preferences: Preferences by instance()
+
     protected open val requireLocation = false
 
     protected lateinit var controller: C
-
-    protected lateinit var preferences: Preferences
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         controller = BaseController<BaseView>(applicationContext) as C
-        preferences = Preferences(applicationContext)
         controller.bind(this)
     }
 
