@@ -1,14 +1,15 @@
 package domain.shadowss.manager
 
 import android.content.Context
-import androidx.core.os.ConfigurationCompat
 import de.siegmar.fastcsv.reader.CsvReader
 import domain.shadowss.R
+import domain.shadowss.local.Preferences
 import domain.shadowss.model.Language
 import domain.shadowss.model.TxtData
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
+@Suppress("MemberVisibilityCanBePrivate")
 class LanguageManager(context: Context) : Manager {
 
     @Volatile
@@ -56,25 +57,39 @@ class LanguageManager(context: Context) : Manager {
     }
 
     fun getText(data: String?): String? {
-        return try {
-            return data?.let {
-                val (type, text) = it.split(",")
-                getText(type.trim(), text.trim())
-            }
-        } catch (e: Throwable) {
-            Timber.e(e)
-            null
-        }
-    }
+        return data?.let {
+            try {
+                var start = 0
+                do {
+                    start = it.indexOf("[[", start)
+                    if (start >= 0) {
+                        val end = it.indexOf("]]")
+                        if (end >= 0) {
 
-    fun getText(typeId: String?, textId: String?): String? {
-        return pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
+                        } else {
+                            throw IllegalArgumentException()
+                        }
+                    } else {
+                        break
+                    }
+                } while (true)
+                return data?.let {
+                    val (type, text) = it.split(",")
+                    getText(type.trim(), text.trim())
+                }
+            } catch (e: Throwable) {
+                Timber.e(e)
+                return pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
+                null
+            }
+        }
     }
 
     @Suppress("DEPRECATION")
     private fun updatePack(context: Context) {
+        val preferences = Preferences(context)
         val id = try {
-            ConfigurationCompat.getLocales(context.resources.configuration).get(0).language
+
         } catch (e: Throwable) {
             Timber.e(e)
             null

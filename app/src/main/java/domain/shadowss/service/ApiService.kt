@@ -12,10 +12,15 @@ import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
 import org.kodein.di.generic.instance
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 
 class ApiService : BaseService() {
 
     val wssApi: WebSocketApi by instance()
+
+    private var timer: ScheduledFuture<*>? = null
 
     @SuppressLint("MissingPermission")
     override fun onCreate() {
@@ -28,6 +33,10 @@ class ApiService : BaseService() {
                 .build()
         )
         acquireWakeLock(javaClass.name)
+        val executor = Executors.newScheduledThreadPool(1)
+        timer = executor.scheduleAtFixedRate({
+
+        }, 0L, TIMER_INTERVAL, TimeUnit.MILLISECONDS)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -38,11 +47,14 @@ class ApiService : BaseService() {
     }
 
     override fun onDestroy() {
+        timer?.cancel(true)
         releaseWakeLock()
         super.onDestroy()
     }
 
     companion object {
+
+        private const val TIMER_INTERVAL = 5000L
 
         @Throws(Throwable::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {
