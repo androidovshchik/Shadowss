@@ -10,7 +10,7 @@ interface ManagerView : BaseView
 
 class ManagerActivity : BaseActivity<ManagerController>(), ManagerView {
 
-    override val requiredLocation = true
+    override val requireLocation = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

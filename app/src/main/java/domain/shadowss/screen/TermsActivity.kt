@@ -5,7 +5,7 @@ import android.view.View
 import android.widget.RelativeLayout
 import domain.shadowss.R
 import domain.shadowss.controller.TermsController
-import domain.shadowss.screen.views.setData
+import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.activity_terms.*
 import kotlinx.android.synthetic.main.toolbar.*
 import org.jetbrains.anko.margin
@@ -32,7 +32,7 @@ class TermsActivity : BaseActivity<TermsController>(), TermsView {
                 addRule(RelativeLayout.ALIGN_PARENT_END)
                 margin = 0
             }
-            setData("TOP,0000")
+            setData("[[TOP,0000]]")
             text = text.replace("_+".toRegex(), appName)
         }
         assets.open("terms.html")
