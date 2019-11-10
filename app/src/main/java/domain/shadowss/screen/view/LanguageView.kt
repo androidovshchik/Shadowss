@@ -27,16 +27,14 @@ interface LanguageView : KodeinAware {
 
 @SuppressLint("Recycle")
 fun LanguageView.setData(data: String?) {
-    setText(languageManager.getText(data))
+    setText(languageManager.getText(data ?: return))
 }
 
 @SuppressLint("Recycle")
 private fun LanguageView.obtainText(attrs: AttributeSet?, styleable: IntArray, index: Int) {
     attrs?.let {
         getContext().obtainStyledAttributes(it, styleable).use {
-            if (hasValue(index)) {
-                setData(getString(index))
-            }
+            setData(getString(index))
         }
     }
 }

@@ -56,25 +56,22 @@ class LanguageManager(context: Context) : Manager {
         //context.registerReceiver(receiver, IntentFilter(Intent.ACTION_LOCALE_CHANGED))
     }
 
-    fun getText(data: String?): String? {
-        if (data == null) {
-            return null
-        }
+    fun getText(data: String): String? {
         return try {
             var start = -2
             var result = data
             do {
                 start = data.indexOf("[[", start + 2)
                 if (start >= 0) {
-                    val end = data.indexOf("]]", start)
-                    if (end >= 2) {
-                        val text = data.substring(start + 2, end)
-                        val (typeId, textId) = text.split(",")
-                        pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
-                        result = result.replaceFirst(
-                            text,
+                    val end = data.indexOf("]]", start + 2)
+                    if (end >= 0) {
+                        val id = data.substring(start + 2, end).trim()
+                        val (typeId, textId) = id.split(",")
+                        val text =
                             pack.firstOrNull { it.typeId == typeId && it.textId == textId }?.text
-                        )
+                        if (text != null) {
+                            result = result.replaceRange(start, end + 2, text)
+                        }
                     } else {
                         throw IllegalArgumentException()
                     }
