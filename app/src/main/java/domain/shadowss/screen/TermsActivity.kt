@@ -17,6 +17,9 @@ class TermsActivity : BaseActivity<TermsController>(), TermsView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_terms)
+        controller = TermsController(applicationContext).also {
+            it.bind(this)
+        }
         val appName = getString(R.string.app_name)
         toolbar_back.apply {
             visibility = View.VISIBLE

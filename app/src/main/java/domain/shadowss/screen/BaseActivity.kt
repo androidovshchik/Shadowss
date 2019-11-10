@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
 import android.location.LocationManager
-import android.os.Bundle
 import android.view.MenuItem
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -32,13 +31,6 @@ abstract class BaseActivity<C : Controller> : Activity(), KodeinAware, BaseView 
     protected open val requireLocation = false
 
     protected lateinit var controller: C
-
-    @Suppress("UNCHECKED_CAST")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        controller = BaseController<BaseView>(applicationContext) as C
-        controller.bind(this)
-    }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {

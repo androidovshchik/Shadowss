@@ -7,8 +7,8 @@ import io.reactivex.Flowable
 interface WebSocketApi {
 
     @Receive
-    fun observeText(): Flowable<String>
+    fun observe(): Flowable<ByteArray>
 
     @Send
-    fun sendText(message: String): Boolean
+    fun send(message: ByteArray): Boolean
 }

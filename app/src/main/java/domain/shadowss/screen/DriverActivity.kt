@@ -15,6 +15,9 @@ class DriverActivity : BaseActivity<DriverController>(), DriverView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver)
+        controller = DriverController(applicationContext).also {
+            it.bind(this)
+        }
         toolbar_back.apply {
             visibility = View.VISIBLE
             setOnClickListener {

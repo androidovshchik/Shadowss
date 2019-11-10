@@ -19,7 +19,7 @@ interface Colfer {
      * @throws IllegalStateException on an upper limit breach defined by {@link #colferSizeMax}.
      */
     @Throws(Throwable::class)
-    fun marshal(out: OutputStream, buf: ByteArray): ByteArray
+    fun marshal(out: OutputStream, buf: ByteArray?): ByteArray
 
     /**
      * Serializes the object.

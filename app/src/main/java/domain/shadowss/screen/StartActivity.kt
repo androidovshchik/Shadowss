@@ -29,6 +29,9 @@ class StartActivity : BaseActivity<StartController>(), StartView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
+        controller = StartController(applicationContext).also {
+            it.bind(this)
+        }
         val keys = Language.map.keys.toTypedArray()
         val values = Language.map.map { it.value.desc }
         val adapter = ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, values)

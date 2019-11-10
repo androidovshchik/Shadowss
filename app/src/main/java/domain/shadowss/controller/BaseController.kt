@@ -20,10 +20,9 @@ open class BaseController<V : BaseView>(context: Context) : KodeinAware {
 
     protected val disposable = CompositeDisposable()
 
-    @Suppress("UNCHECKED_CAST")
     @OverridingMethodsMustInvokeSuper
-    open fun bind(view: Any) {
-        reference = WeakReference(view as V)
+    open fun bind(view: V) {
+        reference = WeakReference(view)
     }
 
     @OverridingMethodsMustInvokeSuper

@@ -20,6 +20,9 @@ class RegistrationActivity : BaseActivity<RegistrationController>(), Registratio
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
+        controller = RegistrationController(applicationContext).also {
+            it.bind(this)
+        }
         val isDriver = intent.getBooleanExtra(EXTRA_DRIVER, false)
         toolbar_back.apply {
             visibility = View.VISIBLE
