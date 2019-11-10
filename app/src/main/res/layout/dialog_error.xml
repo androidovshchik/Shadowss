@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <domain.shadowss.screen.views.LanguageText
+            android:id="@+id/dialog_title"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:textSize="19sp"
+            android:textColor="@color/colorAccent"
+            tools:text="Ошибка"
+            app:text="[[TXT,0005]]" />
+
+        <TextView
+            android:id="@+id/dialog_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:textSize="17sp"
+            android:textColor="@color/colorPrimary"
+            tools:text="0015" />
+
+    </LinearLayout>
+
+    <domain.shadowss.screen.views.LanguageText
+        android:id="@+id/dialog_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:textSize="16sp"
+        android:textColor="#89000000"
+        tools:text="Пожалуйста проверьте что указан верный номер мобильного телефона, сим карта с введенным номером мобильного телефона вставлена в данное устройство, сим карта активна и находится в зоне действия сети оператора. После этого повторите попытку." />
+
+    <domain.shadowss.screen.views.LanguageButton
+        android:id="@+id/dialog_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textSize="15sp"
+        android:textAllCaps="false"
+        android:textColor="@color/colorPrimary"
+        android:background="?android:attr/selectableItemBackground"
+        tools:text="Закрыть"
+        app:text="[[BTN,0003]]" />
+
+</LinearLayout>
