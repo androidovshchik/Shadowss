@@ -12,7 +12,6 @@ import android.widget.ArrayAdapter
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
 import domain.shadowss.model.Language
-import domain.shadowss.screen.views.setData
 import kotlinx.android.synthetic.main.activity_start.*
 import org.jetbrains.anko.startActivity
 
@@ -24,7 +23,6 @@ class StartActivity : BaseActivity<StartController>(), StartView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-        preferences.language = Language.EN.id
         val appName = getString(R.string.app_name)
         tv_welcome.text = "${tv_welcome.text}\n${appName}"
         val adapter = ArrayAdapter(
@@ -36,9 +34,9 @@ class StartActivity : BaseActivity<StartController>(), StartView {
         spn_language.adapter = adapter
         tv_terms.apply {
             movementMethod = LinkMovementMethod.getInstance()
-            val start = text.length + 1
-            setData("TXT,0002", "${tv_terms.text} ")
+            val start = text.indexOf("|")
             val result = text.replace("_+".toRegex(), appName)
+                .replace("|", " ")
             text = SpannableStringBuilder(result).apply {
                 setSpan(object : ClickableSpan() {
 
