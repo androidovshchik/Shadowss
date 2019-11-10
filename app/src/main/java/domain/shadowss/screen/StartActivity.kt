@@ -39,7 +39,7 @@ class StartActivity : BaseActivity<StartController>(), StartView {
         spn_language.adapter = adapter
         tv_terms.apply {
             movementMethod = LinkMovementMethod.getInstance()
-            val start = text.indexOf("|")
+            val start = text.indexOf("|") + 1
             val result = text.replace("_+".toRegex(), appName)
                 .replace("|", " ")
             text = SpannableStringBuilder(result).apply {
@@ -53,10 +53,10 @@ class StartActivity : BaseActivity<StartController>(), StartView {
         }
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
-            startActivity<RegistrationActivity>()
+            startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to true)
         }
         btn_manager.setOnClickListener {
-            startActivity<RegistrationActivity>()
+            startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to false)
         }
     }
 }

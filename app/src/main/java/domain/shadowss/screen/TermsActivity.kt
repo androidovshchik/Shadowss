@@ -8,7 +8,7 @@ import domain.shadowss.controller.TermsController
 import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.activity_terms.*
 import kotlinx.android.synthetic.main.toolbar.*
-import org.jetbrains.anko.margin
+import org.jetbrains.anko.dip
 
 interface TermsView : BaseView
 
@@ -26,11 +26,7 @@ class TermsActivity : BaseActivity<TermsController>(), TermsView {
         }
         toolbar_title.apply {
             (layoutParams as RelativeLayout.LayoutParams).apply {
-                removeRule(RelativeLayout.CENTER_IN_PARENT)
-                addRule(RelativeLayout.CENTER_VERTICAL)
-                addRule(RelativeLayout.END_OF, R.id.toolbar_back)
-                addRule(RelativeLayout.ALIGN_PARENT_END)
-                margin = 0
+                marginStart = dip(40)
             }
             setData("[[TOP,0000]]")
             text = text.replace("_+".toRegex(), appName)
