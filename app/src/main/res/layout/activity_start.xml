@@ -34,7 +34,7 @@
         android:layout_gravity="center_horizontal"
         android:paddingTop="6dp"
         android:paddingStart="0dp"
-        android:paddingBottom="4dp"
+        android:paddingBottom="3dp"
         android:textAlignment="center" />
 
     <View
