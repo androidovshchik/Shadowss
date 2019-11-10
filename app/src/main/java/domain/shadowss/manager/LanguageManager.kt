@@ -19,13 +19,6 @@ class LanguageManager(context: Context) : Manager {
 
     private val data = arrayListOf<TxtData>()
 
-    /*private val receiver = object : BroadcastReceiver() {
-
-        override fun onReceive(context: Context, intent: Intent) {
-            updatePack(context)
-        }
-    }*/
-
     init {
         init(context)
     }
@@ -53,7 +46,6 @@ class LanguageManager(context: Context) : Manager {
                 }
             }
         updatePack(context)
-        //context.registerReceiver(receiver, IntentFilter(Intent.ACTION_LOCALE_CHANGED))
     }
 
     fun getText(data: String): String? {

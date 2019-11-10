@@ -18,28 +18,27 @@ import kotlinx.android.synthetic.main.activity_start.*
 import org.jetbrains.anko.sdk19.listeners.onItemSelectedListener
 import org.jetbrains.anko.startActivity
 import org.kodein.di.generic.instance
+import kotlin.math.max
 
 interface StartView : BaseView
 
 class StartActivity : BaseActivity<StartController>(), StartView {
 
-    val languageManager: LanguageManager by instance()
+    private val languageManager: LanguageManager by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-        val adapter = ArrayAdapter(
-            applicationContext,
-            android.R.layout.simple_spinner_item,
-            Language.map.map { it.value.desc }
-        )
+        val keys = Language.map.keys.toTypedArray()
+        val values = Language.map.map { it.value.desc }
+        val adapter = ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, values)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spn_language.also {
             it.adapter = adapter
-            it.setSelection(0, false)
+            it.setSelection(max(0, keys.indexOf(preferences.language)), false)
             it.onItemSelectedListener {
                 onItemSelected { _, _, position, _ ->
-                    preferences.language = Language.map.keys.toTypedArray()[position]
+                    preferences.language = keys[position]
                     languageManager.updatePack(applicationContext)
                     tv_welcome.updateData()
                     tv_terms.updateData()
@@ -47,6 +46,12 @@ class StartActivity : BaseActivity<StartController>(), StartView {
                     btn_manager.updateData()
                     updateText()
                 }
+            }
+        }
+        cb_terms.apply {
+            isChecked = preferences.agree
+            setOnCheckedChangeListener { _, isChecked ->
+                preferences.agree = isChecked
             }
         }
         tv_terms.movementMethod = LinkMovementMethod.getInstance()
