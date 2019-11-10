@@ -13,45 +13,20 @@ import com.google.android.gms.location.LocationSettingsRequest
 import domain.shadowss.controller.BaseController
 import domain.shadowss.local.Preferences
 import org.jetbrains.anko.locationManager
+import org.kodein.di.KodeinAware
+import org.kodein.di.android.closestKodein
 import timber.log.Timber
 
 private typealias Controller = BaseController<out BaseView>
 
 interface BaseView
 
-fun BaseActivity<out Controller>.checkLocation() {
-    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-        return
-    }
-    LocationServices.getSettingsClient(this)
-        .checkLocationSettings(
-            LocationSettingsRequest.Builder()
-                .addLocationRequest(LocationRequest.create().apply {
-                    priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                })
-                .setAlwaysShow(true)
-                .build()
-        )
-        .addOnFailureListener {
-            if (it is ResolvableApiException) {
-                try {
-                    it.startResolutionForResult(
-                        this,
-                        BaseActivity.REQUEST_LOCATION
-                    )
-                } catch (e: IntentSender.SendIntentException) {
-                    Timber.e(e)
-                }
-            } else {
-                Timber.e(it)
-            }
-        }
-}
-
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseActivity<C : Controller> : Activity(), BaseView {
+abstract class BaseActivity<C : Controller> : Activity(), KodeinAware, BaseView {
 
-    protected open val requiredLocation = false
+    override val kodein by closestKodein()
+
+    protected open val requireLocation = false
 
     protected lateinit var controller: C
 
@@ -61,13 +36,13 @@ abstract class BaseActivity<C : Controller> : Activity(), BaseView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         controller = BaseController<BaseView>(applicationContext) as C
-        controller.bind(this)
         preferences = Preferences(applicationContext)
+        controller.bind(this)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {
-            if (requiredLocation) {
+            if (requireLocation) {
                 checkLocation()
             }
         }
@@ -91,6 +66,32 @@ abstract class BaseActivity<C : Controller> : Activity(), BaseView {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun checkLocation() {
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            return
+        }
+        LocationServices.getSettingsClient(this)
+            .checkLocationSettings(
+                LocationSettingsRequest.Builder()
+                    .addLocationRequest(LocationRequest.create().apply {
+                        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                    })
+                    .setAlwaysShow(true)
+                    .build()
+            )
+            .addOnFailureListener {
+                if (it is ResolvableApiException) {
+                    try {
+                        it.startResolutionForResult(this, REQUEST_LOCATION)
+                    } catch (e: IntentSender.SendIntentException) {
+                        Timber.e(e)
+                    }
+                } else {
+                    Timber.e(it)
+                }
+            }
     }
 
     override fun onDestroy() {
