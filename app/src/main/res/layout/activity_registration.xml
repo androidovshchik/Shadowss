@@ -49,7 +49,7 @@
         android:maxLines="1"
         tools:text="+7" />
 
-    <domain.shadowss.screen.views.LanguageText
+    <domain.shadowss.screen.view.LanguageText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -60,7 +60,7 @@
         tools:text="Убедитесь, что сим карта с указанным номером мобильного телефона активна и находится внутри устройства, в противном случае регистрация не возможна."
         app:text="[[TXT,0003]]" />
 
-    <domain.shadowss.screen.views.LanguageButton
+    <domain.shadowss.screen.view.LanguageButton
         style="@android:style/Widget.DeviceDefault.Button"
         android:id="@+id/btn_next"
         android:layout_width="match_parent"

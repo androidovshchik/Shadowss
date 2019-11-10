@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package domain.shadowss.screen.dialogs
+package domain.shadowss.screen.dialog
 
 import android.app.Activity
 import android.app.Dialog

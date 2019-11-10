@@ -1,4 +1,4 @@
-package domain.shadowss.screen.views
+package domain.shadowss.screen.view
 
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
@@ -17,6 +17,8 @@ import org.kodein.di.generic.instance
 interface LanguageView : KodeinAware {
 
     val languageManager: LanguageManager
+
+    var textData: String?
 
     fun getContext(): Context
 
@@ -44,6 +46,8 @@ class LanguageText : TextView, LanguageView {
     override val kodein by closestKodein()
 
     override val languageManager: LanguageManager by instance()
+
+    override var textData: String? = null
 
     @JvmOverloads
     constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : super(
@@ -73,6 +77,8 @@ class LanguageButton : Button, LanguageView {
     override val kodein by closestKodein()
 
     override val languageManager: LanguageManager by instance()
+
+    override var textData: String? = null
 
     @JvmOverloads
     constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : super(

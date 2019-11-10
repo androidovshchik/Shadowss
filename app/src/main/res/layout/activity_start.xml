@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <domain.shadowss.screen.views.LanguageText
+    <domain.shadowss.screen.view.LanguageText
         android:id="@+id/tv_welcome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent" />
 
-        <domain.shadowss.screen.views.LanguageText
+        <domain.shadowss.screen.view.LanguageText
             android:id="@+id/tv_terms"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -80,7 +80,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <domain.shadowss.screen.views.LanguageButton
+        <domain.shadowss.screen.view.LanguageButton
             style="@android:style/Widget.DeviceDefault.Button"
             android:id="@+id/btn_driver"
             android:layout_width="0dp"
@@ -94,7 +94,7 @@
             tools:text="Водитель"
             app:text="[[BTN,0000]]" />
 
-        <domain.shadowss.screen.views.LanguageButton
+        <domain.shadowss.screen.view.LanguageButton
             style="@android:style/Widget.DeviceDefault.Button"
             android:id="@+id/btn_manager"
             android:layout_width="0dp"

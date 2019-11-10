@@ -14,7 +14,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <domain.shadowss.screen.views.LanguageText
+        <domain.shadowss.screen.view.LanguageText
             android:id="@+id/dialog_title"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -37,7 +37,7 @@
 
     </LinearLayout>
 
-    <domain.shadowss.screen.views.LanguageText
+    <domain.shadowss.screen.view.LanguageText
         android:id="@+id/dialog_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
         android:textColor="#89000000"
         tools:text="Пожалуйста проверьте что указан верный номер мобильного телефона, сим карта с введенным номером мобильного телефона вставлена в данное устройство, сим карта активна и находится в зоне действия сети оператора. После этого повторите попытку." />
 
-    <domain.shadowss.screen.views.LanguageButton
+    <domain.shadowss.screen.view.LanguageButton
         android:id="@+id/dialog_close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
