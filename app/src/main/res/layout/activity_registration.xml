@@ -48,7 +48,7 @@
         android:imeOptions="actionDone"
         android:singleLine="true"
         android:maxLines="1"
-        tools:text="+7 999 999 9999" />
+        tools:text="(+7) 999 999 9999" />
 
     <domain.shadowss.screen.view.LanguageText
         android:layout_width="match_parent"

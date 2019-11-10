@@ -9,6 +9,9 @@ import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.activity_registration.*
 import kotlinx.android.synthetic.main.toolbar.*
 import org.jetbrains.anko.startActivity
+import ru.tinkoff.decoro.MaskImpl
+import ru.tinkoff.decoro.parser.UnderscoreDigitSlotsParser
+import ru.tinkoff.decoro.watchers.MaskFormatWatcher
 
 interface RegistrationView : BaseView
 
@@ -26,6 +29,10 @@ class RegistrationActivity : BaseActivity<RegistrationController>(), Registratio
         }
         toolbar_title.setData(if (isDriver) "[[TOP,0001]]" else "[[TOP,0002]]")
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
+        et_phone.hint = "(+7) 999 999 9999"
+        val slots = UnderscoreDigitSlotsParser().parseSlots("(+7) ___ ___ ___")
+        val formatWatcher = MaskFormatWatcher(MaskImpl.createTerminated(slots))
+        formatWatcher.installOn(et_phone)
         btn_next.setOnClickListener {
             startActivity<DriverActivity>()
         }

@@ -11,13 +11,19 @@ import android.view.View
 import android.widget.ArrayAdapter
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
+import domain.shadowss.manager.LanguageManager
 import domain.shadowss.model.Language
+import domain.shadowss.screen.view.updateData
 import kotlinx.android.synthetic.main.activity_start.*
+import org.jetbrains.anko.sdk19.listeners.onItemSelectedListener
 import org.jetbrains.anko.startActivity
+import org.kodein.di.generic.instance
 
 interface StartView : BaseView
 
 class StartActivity : BaseActivity<StartController>(), StartView {
+
+    val languageManager: LanguageManager by instance()
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +42,18 @@ class StartActivity : BaseActivity<StartController>(), StartView {
             Language.map.map { it.value.desc }
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spn_language.adapter = adapter
+        spn_language.also {
+            it.adapter = adapter
+            it.onItemSelectedListener {
+                onItemSelected { _, _, position, _ ->
+                    languageManager
+                    tv_welcome.updateData()
+                    tv_terms.updateData()
+                    btn_driver.updateData()
+                    btn_manager.updateData()
+                }
+            }
+        }
         tv_terms.apply {
             movementMethod = LinkMovementMethod.getInstance()
             val start = text.indexOf("|") + 1
