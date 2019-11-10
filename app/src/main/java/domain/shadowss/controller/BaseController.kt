@@ -1,6 +1,7 @@
 package domain.shadowss.controller
 
 import android.content.Context
+import io.reactivex.disposables.CompositeDisposable
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.kcontext
@@ -14,16 +15,19 @@ open class BaseController<V>(context: Context) : KodeinAware {
 
     override val kodeinContext = kcontext(context)
 
-    protected lateinit var viewRef: WeakReference<V>
+    protected lateinit var reference: WeakReference<V>
+
+    protected val disposable = CompositeDisposable()
 
     @Suppress("UNCHECKED_CAST")
     @OverridingMethodsMustInvokeSuper
     open fun bind(view: Any) {
-        viewRef = WeakReference(view as V)
+        reference = WeakReference(view as V)
     }
 
     @OverridingMethodsMustInvokeSuper
     open fun unbind() {
-        viewRef.clear()
+        disposable.dispose()
+        reference.clear()
     }
 }
