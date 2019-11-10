@@ -7,11 +7,15 @@ import androidx.core.app.NotificationCompat
 import domain.shadowss.R
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
+import domain.shadowss.remote.WebSocketApi
 import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
+import org.kodein.di.generic.instance
 
 class ApiService : BaseService() {
+
+    val wssApi: WebSocketApi by instance()
 
     @SuppressLint("MissingPermission")
     override fun onCreate() {
