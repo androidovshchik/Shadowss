@@ -7,8 +7,15 @@ import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
+import domain.shadowss.R
+import domain.shadowss.extension.isRunning
+import domain.shadowss.extension.startForegroundService
+import org.jetbrains.anko.activityManager
+import org.jetbrains.anko.powerManager
+import org.jetbrains.anko.startService
+import org.jetbrains.anko.stopService
 
-class TelemetryService : Service() {
+class ApiService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
 
@@ -20,8 +27,8 @@ class TelemetryService : Service() {
     override fun onCreate() {
         super.onCreate()
         startForeground(
-            Int.MAX_VALUE, NotificationCompat.Builder(applicationContext, CHANNEL_DEFAULT)
-                .setSmallIcon(R.drawable.ic_gps_fixed_white_24dp)
+            Int.MAX_VALUE, NotificationCompat.Builder(applicationContext, "low")
+                .setSmallIcon(R.drawable.ic_api)
                 .setContentTitle("Фоновой сервис")
                 .setOngoing(true)
                 .build()
@@ -31,13 +38,7 @@ class TelemetryService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
-            if (it.hasExtra(EXTRA_TELEMETRY_TASK)) {
-                if (it.getBooleanExtra(EXTRA_TELEMETRY_TASK, false)) {
-                    startTelemetry()
-                } else {
-                    stopTelemetry()
-                }
-            }
+
         }
         return START_STICKY
     }
@@ -60,8 +61,6 @@ class TelemetryService : Service() {
     }
 
     override fun onDestroy() {
-        stopTelemetry()
-        timer?.cancel(true)
         releaseWakeLock()
         super.onDestroy()
     }
@@ -73,13 +72,10 @@ class TelemetryService : Service() {
          */
         @Throws(SecurityException::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {
-            if (!areGranted(*DANGER_PERMISSIONS)) {
-                return false
-            }
-            return if (!activityManager.isRunning<TelemetryService>()) {
-                startForegroundService<TelemetryService>() != null
+            return if (!activityManager.isRunning<ApiService>()) {
+                startForegroundService<ApiService>(*params) != null
             } else {
-                startService<TelemetryService>(*params) != null
+                startService<ApiService>(*params) != null
             }
         }
 
@@ -89,8 +85,8 @@ class TelemetryService : Service() {
          */
         @Suppress("unused")
         private fun stop(context: Context): Boolean = context.run {
-            if (activityManager.isRunning<TelemetryService>()) {
-                return stopService<TelemetryService>()
+            if (activityManager.isRunning<ApiService>()) {
+                return stopService<ApiService>()
             }
             return true
         }
