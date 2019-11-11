@@ -12,8 +12,10 @@ import com.google.android.gms.location.LocationSettingsRequest
 import domain.shadowss.controller.BaseController
 import domain.shadowss.local.Preferences
 import org.jetbrains.anko.locationManager
+import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
+import org.kodein.di.android.retainedKodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 
@@ -22,31 +24,27 @@ typealias Controller = BaseController<out BaseView>
 interface BaseView
 
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseActivity<C : Controller> : Activity(), KodeinAware, BaseView {
+abstract class BaseActivity : Activity(), KodeinAware, BaseView {
 
-    override val kodein by closestKodein()
+    private val parentKodein by closestKodein()
 
-    val preferences: Preferences by instance()
+    override val kodein: Kodein by retainedKodein {
+
+        extend(parentKodein)
+
+        import(screenModule)
+    }
 
     protected open val requireLocation = false
 
-    protected lateinit var controller: C
+    protected abstract val controller: Controller
+
+    protected val preferences: Preferences by instance()
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {
             if (requireLocation) {
                 checkLocation()
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            REQUEST_LOCATION -> {
-                if (resultCode != RESULT_OK) {
-                    checkLocation()
-                }
             }
         }
     }
@@ -58,6 +56,17 @@ abstract class BaseActivity<C : Controller> : Activity(), KodeinAware, BaseView 
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            REQUEST_LOCATION -> {
+                if (resultCode != RESULT_OK) {
+                    checkLocation()
+                }
+            }
+        }
     }
 
     private fun checkLocation() {
@@ -87,7 +96,7 @@ abstract class BaseActivity<C : Controller> : Activity(), KodeinAware, BaseView 
     }
 
     override fun onDestroy() {
-        controller.unbind()
+        controller.release()
         super.onDestroy()
     }
 

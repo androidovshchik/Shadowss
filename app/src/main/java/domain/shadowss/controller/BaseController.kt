@@ -10,23 +10,18 @@ import java.lang.ref.WeakReference
 import javax.annotation.OverridingMethodsMustInvokeSuper
 
 @Suppress("MemberVisibilityCanBePrivate")
-open class BaseController<V : BaseView>(context: Context) : KodeinAware {
+open class BaseController<V : BaseView>(view: V) : KodeinAware {
 
-    override val kodein by closestKodein(context)
+    override val kodein by closestKodein(view as Context)
 
-    override val kodeinContext = kcontext(context)
+    override val kodeinContext = kcontext(view as Context)
 
-    protected lateinit var reference: WeakReference<V>
+    protected val reference = WeakReference(view)
 
     protected val disposable = CompositeDisposable()
 
     @OverridingMethodsMustInvokeSuper
-    open fun bind(view: V) {
-        reference = WeakReference(view)
-    }
-
-    @OverridingMethodsMustInvokeSuper
-    open fun unbind() {
+    open fun release() {
         disposable.dispose()
         reference.clear()
     }

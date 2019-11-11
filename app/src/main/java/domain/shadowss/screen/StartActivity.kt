@@ -22,16 +22,15 @@ import kotlin.math.max
 
 interface StartView : BaseView
 
-class StartActivity : BaseActivity<StartController>(), StartView {
+class StartActivity : BaseActivity(), StartView {
+
+    override val controller: StartController by instance()
 
     private val languageManager: LanguageManager by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-        controller = StartController(applicationContext).also {
-            it.bind(this)
-        }
         val keys = Language.map.keys.toTypedArray()
         val values = Language.map.map { it.value.desc }
         val adapter = ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, values)

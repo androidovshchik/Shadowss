@@ -9,7 +9,6 @@ import defpackage.noopInit
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.local.localModule
 import domain.shadowss.manager.managerModule
-import domain.shadowss.remote.remoteModule
 import domain.shadowss.service.ForegroundRunnable
 import org.jetbrains.anko.notificationManager
 import org.kodein.di.Kodein
@@ -27,8 +26,6 @@ class MainApp : Application(), KodeinAware {
         }
 
         import(localModule)
-
-        import(remoteModule)
 
         import(managerModule)
     }

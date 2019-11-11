@@ -9,17 +9,17 @@ import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.activity_terms.*
 import kotlinx.android.synthetic.main.toolbar.*
 import org.jetbrains.anko.dip
+import org.kodein.di.generic.instance
 
 interface TermsView : BaseView
 
-class TermsActivity : BaseActivity<TermsController>(), TermsView {
+class TermsActivity : BaseActivity(), TermsView {
+
+    override val controller: TermsController by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_terms)
-        controller = TermsController(applicationContext).also {
-            it.bind(this)
-        }
         val appName = getString(R.string.app_name)
         toolbar_back.apply {
             visibility = View.VISIBLE

@@ -5,19 +5,19 @@ import android.view.View
 import domain.shadowss.R
 import domain.shadowss.controller.DriverController
 import kotlinx.android.synthetic.main.toolbar.*
+import org.kodein.di.generic.instance
 
 interface DriverView : BaseView
 
-class DriverActivity : BaseActivity<DriverController>(), DriverView {
+class DriverActivity : BaseActivity(), DriverView {
 
     override val requireLocation = true
+
+    override val controller: DriverController by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver)
-        controller = DriverController(applicationContext).also {
-            it.bind(this)
-        }
         toolbar_back.apply {
             visibility = View.VISIBLE
             setOnClickListener {
