@@ -9,6 +9,7 @@ import defpackage.noopInit
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.local.localModule
 import domain.shadowss.manager.managerModule
+import domain.shadowss.screen.screenModule
 import domain.shadowss.service.ForegroundRunnable
 import org.jetbrains.anko.notificationManager
 import org.kodein.di.Kodein
@@ -28,6 +29,8 @@ class MainApp : Application(), KodeinAware {
         import(localModule)
 
         import(managerModule)
+
+        import(screenModule)
     }
 
     private lateinit var foreground: ForegroundRunnable

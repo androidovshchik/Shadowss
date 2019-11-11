@@ -2,7 +2,6 @@ package domain.shadowss.screen
 
 import android.app.Activity
 import android.content.Intent
-import android.content.IntentSender
 import android.location.LocationManager
 import android.view.MenuItem
 import com.google.android.gms.common.api.ResolvableApiException
@@ -12,10 +11,8 @@ import com.google.android.gms.location.LocationSettingsRequest
 import domain.shadowss.controller.BaseController
 import domain.shadowss.local.Preferences
 import org.jetbrains.anko.locationManager
-import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
-import org.kodein.di.android.retainedKodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 
@@ -26,14 +23,7 @@ interface BaseView
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseActivity : Activity(), KodeinAware, BaseView {
 
-    private val parentKodein by closestKodein()
-
-    override val kodein: Kodein by retainedKodein {
-
-        extend(parentKodein)
-
-        import(screenModule)
-    }
+    override val kodein by closestKodein()
 
     protected open val requireLocation = false
 
@@ -86,7 +76,7 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
                 if (it is ResolvableApiException) {
                     try {
                         it.startResolutionForResult(this, REQUEST_LOCATION)
-                    } catch (e: IntentSender.SendIntentException) {
+                    } catch (e: Throwable) {
                         Timber.e(e)
                     }
                 } else {
