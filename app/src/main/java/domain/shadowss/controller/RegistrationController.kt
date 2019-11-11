@@ -2,4 +2,5 @@ package domain.shadowss.controller
 
 import domain.shadowss.screen.RegistrationView
 
-class RegistrationController(view: RegistrationView) : BaseController<RegistrationView>(view)
+class RegistrationController(referent: RegistrationView) :
+    BaseController<RegistrationView>(referent)

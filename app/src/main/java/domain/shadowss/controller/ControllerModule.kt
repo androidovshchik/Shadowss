@@ -1,12 +1,17 @@
-package domain.shadowss.screen
+package domain.shadowss.controller
 
-import domain.shadowss.controller.*
+import domain.shadowss.screen.*
+import domain.shadowss.service.ServerService
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.contexted
 import org.kodein.di.generic.provider
 
-val screenModule = Kodein.Module("screen") {
+val controllerModule = Kodein.Module("controller") {
+
+    bind<ServerController>() with contexted<ServerService>().provider {
+        ServerController(context)
+    }
 
     bind<DriverController>() with contexted<DriverActivity>().provider {
         DriverController(context)

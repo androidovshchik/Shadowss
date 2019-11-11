@@ -2,4 +2,4 @@ package domain.shadowss.controller
 
 import domain.shadowss.screen.ManagerView
 
-class ManagerController(view: ManagerView) : BaseController<ManagerView>(view)
+class ManagerController(referent: ManagerView) : BaseController<ManagerView>(referent)
