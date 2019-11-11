@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import defpackage.marsh.ASPI
 import domain.shadowss.R
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
@@ -13,14 +14,15 @@ import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
 import org.kodein.di.generic.instance
+import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class ApiService : BaseService() {
 
-    val socketManager: WebSocketManager by instance()
+    private val socketManager: WebSocketManager by instance()
 
-    val marshManager: MarshManager by instance()
+    private val marshManager: MarshManager by instance()
 
     private var timer: ScheduledFuture<*>? = null
 
@@ -35,38 +37,14 @@ class ApiService : BaseService() {
                 .build()
         )
         acquireWakeLock(javaClass.name)
-        val o = marshManager.marshal(SAPO().apply {
-            this.rnd = 99
-        })
-        Timber.e(o.toHex())
-        Timber.e((marshManager.unmarshal(o) as SAPO).rnd.toString())
-        var i = 0
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
-            /*try {
-                val asau = ASAU().apply {
-                    token = "ABC"
-                    time = 99L
-                    timezone = 9.9f
-                }
-                Timber.e(asau.toString())
-                val buffer = asau.marshal(ByteArrayOutputStream(), null)
-                val asau2 = ASAU.Unmarshaller(ByteArrayInputStream(buffer), null).next()
-                Timber.e(asau2.toString())
-            } catch (e: Throwable) {
-                Timber.e(e)
-            }*/
-            i++
-            if (i > 10) {
-                disposable.clear()
-            } else {
-                val aspi = ASPI().apply {
-                    rnd = 99
-                }
-                val buffer = marshManager.marshal(aspi)
-                Timber.e(">>> ${buffer.toHex()}")
-                wssApi.send(buffer)
+            socketManager.reconnect()
+            val aspi = ASPI().apply {
+                rnd = 99
             }
+            val buffer = marshManager.marshal(aspi)
+            socketManager.sendBytes(buffer)
         }, 0L, TIMER_INTERVAL, TimeUnit.MILLISECONDS)
     }
 

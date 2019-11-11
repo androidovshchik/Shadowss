@@ -5,10 +5,13 @@ import com.neovisionaries.ws.client.WebSocketAdapter
 import com.neovisionaries.ws.client.WebSocketException
 import com.neovisionaries.ws.client.WebSocketFactory
 import domain.shadowss.extension.toHex
+import io.reactivex.subjects.PublishSubject
 import timber.log.Timber
 
 @Suppress("MemberVisibilityCanBePrivate")
 class WebSocketManager : Manager {
+
+    val observer = PublishSubject.create<ByteArray>().toSerialized()
 
     private var webSocket: WebSocket? = null
 
@@ -16,6 +19,7 @@ class WebSocketManager : Manager {
 
         override fun onBinaryMessage(websocket: WebSocket?, binary: ByteArray) {
             Timber.e(binary.toHex())
+            observer.onNext(binary)
         }
 
         override fun handleCallbackError(websocket: WebSocket?, cause: Throwable?) {
@@ -34,9 +38,7 @@ class WebSocketManager : Manager {
     override fun init(vararg args: Any?) {
     }
 
-    /**
-     * Should be called from single background thread
-     */
+    @Synchronized
     private fun connect(): Boolean {
         if (webSocket?.isOpen == true) {
             return true
@@ -54,9 +56,7 @@ class WebSocketManager : Manager {
         }
     }
 
-    /**
-     * Should be called from single background thread
-     */
+    @Synchronized
     fun reconnect(): Boolean {
         if (webSocket?.isOpen != false) {
             return connect()
@@ -71,9 +71,16 @@ class WebSocketManager : Manager {
         }
     }
 
-    /**
-     * Should be called from single background thread
-     */
+    @Synchronized
+    fun sendBytes(bytes: ByteArray) {
+        webSocket?.apply {
+            if (isOpen) {
+                sendBinary(bytes)
+            }
+        }
+    }
+
+    @Synchronized
     fun disconnect() {
         webSocket?.disconnect()
     }
