@@ -4,11 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import defpackage.marsh.ASPI
 import domain.shadowss.R
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
-import domain.shadowss.manager.MarshManager
 import domain.shadowss.manager.WebSocketManager
 import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.startService
@@ -21,8 +19,6 @@ import java.util.concurrent.TimeUnit
 class ApiService : BaseService() {
 
     private val socketManager: WebSocketManager by instance()
-
-    private val marshManager: MarshManager by instance()
 
     private var timer: ScheduledFuture<*>? = null
 
@@ -40,19 +36,15 @@ class ApiService : BaseService() {
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
             socketManager.reconnect()
-            val aspi = ASPI().apply {
-                rnd = 99
-            }
-            val buffer = marshManager.marshal(aspi)
-            socketManager.sendBytes(buffer)
-        }, 0L, TIMER_INTERVAL, TimeUnit.MILLISECONDS)
+        }, 0L, 2000L, TimeUnit.MILLISECONDS)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
+            if (it.hasExtra()) {
 
+            }
         }
-        //startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
         return START_STICKY
     }
 
@@ -64,7 +56,7 @@ class ApiService : BaseService() {
 
     companion object {
 
-        private const val TIMER_INTERVAL = 5000L
+        private const val EXTRA_CONNECT = 5000L
 
         @Throws(Throwable::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {
