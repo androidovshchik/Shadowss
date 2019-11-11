@@ -6,7 +6,6 @@ import com.neovisionaries.ws.client.WebSocketException
 import com.neovisionaries.ws.client.WebSocketFactory
 import domain.shadowss.extension.toHex
 import timber.log.Timber
-import java.io.IOException
 
 @Suppress("MemberVisibilityCanBePrivate")
 class WebSocketManager : Manager {
@@ -35,27 +34,46 @@ class WebSocketManager : Manager {
     override fun init(vararg args: Any?) {
     }
 
-    @Throws(IOException::class, WebSocketException::class)
-    private fun connect() {
+    /**
+     * Should be called from single background thread
+     */
+    private fun connect(): Boolean {
         if (webSocket?.isOpen == true) {
-            return
+            return true
         }
-        try {
+        return try {
             webSocket = WebSocketFactory()
-                .setConnectionTimeout(5000)
+                .setConnectionTimeout(2000)
                 .createSocket("ws://8081.ru")
                 .addListener(listener)
                 .connect()
+            true
         } catch (e: Throwable) {
             Timber.e(e)
+            false
         }
     }
 
-    fun reconnect() {
-        webSocket?.recreate()
-            ?.connect()
+    /**
+     * Should be called from single background thread
+     */
+    fun reconnect(): Boolean {
+        if (webSocket?.isOpen != false) {
+            return connect()
+        }
+        return try {
+            webSocket?.recreate()
+                ?.connect()
+            true
+        } catch (e: Throwable) {
+            Timber.e(e)
+            false
+        }
     }
 
+    /**
+     * Should be called from single background thread
+     */
     fun disconnect() {
         webSocket?.disconnect()
     }

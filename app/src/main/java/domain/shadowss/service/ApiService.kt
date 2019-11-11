@@ -3,28 +3,22 @@ package domain.shadowss.service
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import domain.shadowss.R
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
-import domain.shadowss.extension.toHex
 import domain.shadowss.manager.MarshManager
-import domain.shadowss.model.marsh.ASPI
-import domain.shadowss.remote.WebSocketApi
-import io.reactivex.schedulers.Schedulers
+import domain.shadowss.manager.WebSocketManager
 import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
 import org.kodein.di.generic.instance
-import timber.log.Timber
-import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class ApiService : BaseService() {
 
-    val wssApi: WebSocketApi by instance()
+    val socketManager: WebSocketManager by instance()
 
     val marshManager: MarshManager by instance()
 
@@ -41,15 +35,11 @@ class ApiService : BaseService() {
                 .build()
         )
         acquireWakeLock(javaClass.name)
-        disposable.add(wssApi.observe()
-            .observeOn(Schedulers.io())
-            .subscribe({
-                val buffer = marshManager.unmarshal(it.toByteArray())
-                Timber.e("<<< ${buffer?.javaClass?.name}")
-            }, {
-                Timber.e(it)
-            })
-        )
+        val o = marshManager.marshal(SAPO().apply {
+            this.rnd = 99
+        })
+        Timber.e(o.toHex())
+        Timber.e((marshManager.unmarshal(o) as SAPO).rnd.toString())
         var i = 0
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
@@ -84,7 +74,7 @@ class ApiService : BaseService() {
         intent?.let {
 
         }
-        startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        //startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
         return START_STICKY
     }
 
