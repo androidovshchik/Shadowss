@@ -7,7 +7,7 @@ android {
     //noinspection GradleCompatible
     compileSdkVersion 28
     defaultConfig {
-        applicationId "domain.shadowss"
+        applicationId "com.shadowss"
         minSdkVersion 19
         targetSdkVersion 29
         versionCode 1
