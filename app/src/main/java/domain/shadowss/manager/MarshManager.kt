@@ -27,10 +27,11 @@ class MarshManager : Manager {
 
     fun unmarshal(bytes: ByteArray): Any? {
         try {
-            val name = String(bytes, 0, 4, Charsets.UTF_8)
-            val cls = Class.forName("domain.shadowss.model.marsh.$name.Unmarshaller")
+            val name = String(bytes, 0, 4)
+            val cls = Class.forName("domain.shadowss.model.defpackage.marsh.$name\$Unmarshaller")
             val constructor = cls.getConstructor(InputStream::class.java, ByteArray::class.java)
-            val instance = constructor.newInstance(ByteArrayInputStream(bytes), null)
+            val instance =
+                constructor.newInstance(ByteArrayInputStream(bytes, 4, bytes.size - 4), null)
             val unmarshal = cls.getMethod("next")
             return unmarshal.invoke(instance)
         } catch (e: Throwable) {

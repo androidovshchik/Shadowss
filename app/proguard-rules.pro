@@ -2,4 +2,4 @@
 -renamesourcefileattribute SourceFile
 -repackageclasses
 
--keepnames class domain.shadowss.model.marshal.*
+-keepnames class defpackage.marsh.*
