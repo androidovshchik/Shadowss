@@ -10,6 +10,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import defpackage.marsh.*
 import domain.shadowss.controller.BaseController
+import domain.shadowss.manager.WebSocketCallback
 import org.jetbrains.anko.locationManager
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
@@ -17,23 +18,7 @@ import timber.log.Timber
 
 typealias Controller = BaseController<out BaseView>
 
-@Suppress("SpellCheckingInspection")
-interface BaseView {
-
-    fun onSAPI(instance: SAPI)
-
-    fun onSAPO(instance: SAPO)
-
-    fun onSARM(instance: SARM)
-
-    fun onSARR(instance: SARR)
-
-    fun onSARV(instance: SARV)
-
-    fun onSCNG(instance: SCNG)
-
-    fun onSMNG(instance: SMNG)
-}
+interface BaseView : WebSocketCallback
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseActivity : Activity(), KodeinAware, BaseView {
