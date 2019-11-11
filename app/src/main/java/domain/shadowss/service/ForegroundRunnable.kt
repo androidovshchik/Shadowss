@@ -15,7 +15,7 @@ class ForegroundRunnable(context: Context) : Runnable {
 
     override fun run() {
         try {
-            ApiService.start(reference.get() ?: return)
+            ServerService.start(reference.get() ?: return)
         } catch (e: Throwable) {
             Timber.e(e)
             Handler().postDelayed(this, 3000)

@@ -6,10 +6,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import defpackage.noopInit
+import domain.shadowss.controller.controllerModule
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.local.localModule
 import domain.shadowss.manager.managerModule
-import domain.shadowss.screen.screenModule
 import domain.shadowss.service.ForegroundRunnable
 import org.jetbrains.anko.notificationManager
 import org.kodein.di.Kodein
@@ -30,7 +30,7 @@ class MainApp : Application(), KodeinAware {
 
         import(managerModule)
 
-        import(screenModule)
+        import(controllerModule)
     }
 
     private lateinit var foreground: ForegroundRunnable
