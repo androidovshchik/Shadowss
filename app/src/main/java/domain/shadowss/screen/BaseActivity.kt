@@ -8,6 +8,7 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
+import defpackage.marsh.*
 import domain.shadowss.controller.BaseController
 import org.jetbrains.anko.locationManager
 import org.kodein.di.KodeinAware
@@ -16,7 +17,23 @@ import timber.log.Timber
 
 typealias Controller = BaseController<out BaseView>
 
-interface BaseView
+@Suppress("SpellCheckingInspection")
+interface BaseView {
+
+    fun onSAPI(instance: SAPI)
+
+    fun onSAPO(instance: SAPO)
+
+    fun onSARM(instance: SARM)
+
+    fun onSARR(instance: SARR)
+
+    fun onSARV(instance: SARV)
+
+    fun onSCNG(instance: SCNG)
+
+    fun onSMNG(instance: SMNG)
+}
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseActivity : Activity(), KodeinAware, BaseView {
@@ -26,6 +43,25 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
     protected open val requireLocation = false
 
     protected abstract val controller: Controller
+
+    override fun onStart() {
+        super.onStart()
+        controller.start()
+    }
+
+    override fun onSAPI(instance: SAPI) {}
+
+    override fun onSAPO(instance: SAPO) {}
+
+    override fun onSARM(instance: SARM) {}
+
+    override fun onSARR(instance: SARR) {}
+
+    override fun onSARV(instance: SARV) {}
+
+    override fun onSCNG(instance: SCNG) {}
+
+    override fun onSMNG(instance: SMNG) {}
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {
@@ -79,6 +115,11 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
                     Timber.e(it)
                 }
             }
+    }
+
+    override fun onStop() {
+        controller.stop()
+        super.onStop()
     }
 
     override fun onDestroy() {
