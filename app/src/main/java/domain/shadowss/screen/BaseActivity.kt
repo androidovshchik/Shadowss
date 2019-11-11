@@ -9,11 +9,9 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import domain.shadowss.controller.BaseController
-import domain.shadowss.local.Preferences
 import org.jetbrains.anko.locationManager
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
-import org.kodein.di.generic.instance
 import timber.log.Timber
 
 typealias Controller = BaseController<out BaseView>
@@ -28,8 +26,6 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
     protected open val requireLocation = false
 
     protected abstract val controller: Controller
-
-    protected val preferences: Preferences by instance()
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {

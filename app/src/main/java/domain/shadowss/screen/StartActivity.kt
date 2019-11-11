@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
+import domain.shadowss.local.Preferences
 import domain.shadowss.manager.LanguageManager
 import domain.shadowss.model.Language
 import domain.shadowss.screen.view.updateData
@@ -27,6 +28,8 @@ class StartActivity : BaseActivity(), StartView {
     override val controller: StartController by instance()
 
     private val languageManager: LanguageManager by instance()
+
+    private val preferences: Preferences by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
