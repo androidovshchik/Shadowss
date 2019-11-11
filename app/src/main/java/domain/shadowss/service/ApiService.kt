@@ -3,18 +3,21 @@ package domain.shadowss.service
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import domain.shadowss.R
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
-import domain.shadowss.model.colfer.ASPI
+import domain.shadowss.extension.toHex
+import domain.shadowss.manager.MarshManager
+import domain.shadowss.model.marsh.ASPI
 import domain.shadowss.remote.WebSocketApi
+import io.reactivex.schedulers.Schedulers
 import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -22,6 +25,8 @@ import java.util.concurrent.TimeUnit
 class ApiService : BaseService() {
 
     val wssApi: WebSocketApi by instance()
+
+    val marshManager: MarshManager by instance()
 
     private var timer: ScheduledFuture<*>? = null
 
@@ -37,12 +42,15 @@ class ApiService : BaseService() {
         )
         acquireWakeLock(javaClass.name)
         disposable.add(wssApi.observe()
+            .observeOn(Schedulers.io())
             .subscribe({
-                Timber.e(it.toString())
+                val buffer = marshManager.unmarshal(it.toByteArray())
+                Timber.e("<<< ${buffer?.javaClass?.name}")
             }, {
                 Timber.e(it)
             })
         )
+        var i = 0
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
             /*try {
@@ -58,12 +66,17 @@ class ApiService : BaseService() {
             } catch (e: Throwable) {
                 Timber.e(e)
             }*/
-            val asau = ASPI().apply {
-                rnd = 9999
+            i++
+            if (i > 10) {
+                disposable.clear()
+            } else {
+                val aspi = ASPI().apply {
+                    rnd = 99
+                }
+                val buffer = marshManager.marshal(aspi)
+                Timber.e(">>> ${buffer.toHex()}")
+                wssApi.send(buffer)
             }
-            //Timber.e(asau.toString())
-            val buffer = asau.marshal(ByteArrayOutputStream(), null)
-            wssApi.send(buffer)
         }, 0L, TIMER_INTERVAL, TimeUnit.MILLISECONDS)
     }
 
@@ -71,6 +84,7 @@ class ApiService : BaseService() {
         intent?.let {
 
         }
+        startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
         return START_STICKY
     }
 
