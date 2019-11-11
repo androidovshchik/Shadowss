@@ -10,6 +10,7 @@ import org.jetbrains.anko.powerManager
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 
+@Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseService : Service(), KodeinAware {
 
     override val kodein by closestKodein()

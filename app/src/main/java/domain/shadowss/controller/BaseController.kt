@@ -13,7 +13,7 @@ import java.lang.ref.WeakReference
 import javax.annotation.OverridingMethodsMustInvokeSuper
 
 @Suppress("MemberVisibilityCanBePrivate")
-open class BaseController<V : WebSocketCallback>(referent: V) : KodeinAware {
+abstract class BaseController<V : WebSocketCallback>(referent: V) : KodeinAware {
 
     override val kodein by closestKodein(referent as Context)
 

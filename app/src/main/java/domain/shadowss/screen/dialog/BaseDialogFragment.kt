@@ -15,7 +15,7 @@ import domain.shadowss.extension.activity
 import org.jetbrains.anko.inputMethodManager
 import javax.annotation.OverridingMethodsMustInvokeSuper
 
-open class BaseDialog(activity: Activity) : Dialog(activity) {
+abstract class BaseDialog(activity: Activity) : Dialog(activity) {
 
     inline fun <reified T> makeCallback(action: T.() -> Unit) {
         context.activity()?.let {
@@ -27,7 +27,7 @@ open class BaseDialog(activity: Activity) : Dialog(activity) {
 }
 
 @Suppress("MemberVisibilityCanBePrivate")
-open class BaseFragment : Fragment() {
+abstract class BaseFragment : Fragment() {
 
     protected val args: Bundle
         get() = arguments ?: Bundle()
@@ -41,7 +41,7 @@ open class BaseFragment : Fragment() {
     }
 }
 
-open class BaseDialogFragment : DialogFragment() {
+abstract class BaseDialogFragment : DialogFragment() {
 
     @OverridingMethodsMustInvokeSuper
     override fun onCreateView(
