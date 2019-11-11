@@ -4,18 +4,32 @@ import com.neovisionaries.ws.client.WebSocket
 import com.neovisionaries.ws.client.WebSocketAdapter
 import com.neovisionaries.ws.client.WebSocketFactory
 import com.neovisionaries.ws.client.WebSocketFrame
+import defpackage.marsh.*
 import io.reactivex.subjects.PublishSubject
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import kotlin.Any
-import kotlin.Boolean
 import kotlin.ByteArray
-import kotlin.Suppress
-import kotlin.Throwable
-import kotlin.apply
+
+@Suppress("SpellCheckingInspection")
+interface WebSocketCallback {
+
+    fun onSAPI(instance: SAPI)
+
+    fun onSAPO(instance: SAPO)
+
+    fun onSARM(instance: SARM)
+
+    fun onSARR(instance: SARR)
+
+    fun onSARV(instance: SARV)
+
+    fun onSCNG(instance: SCNG)
+
+    fun onSMNG(instance: SMNG)
+}
 
 @Suppress("MemberVisibilityCanBePrivate")
 class WebSocketManager : Manager {
