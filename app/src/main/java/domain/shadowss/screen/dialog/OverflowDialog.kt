@@ -7,9 +7,7 @@ import domain.shadowss.R
 
 class OverflowDialog(activity: Activity) : BaseDialog(activity) {
 
-    init {
-        setCancelable(false)
-    }
+    override val canGoBack = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

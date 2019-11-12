@@ -1,12 +1,12 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "unused")
 
 package domain.shadowss.screen.dialog
 
 import android.app.Activity
 import android.app.Dialog
 import android.app.DialogFragment
-import android.app.Fragment
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +15,25 @@ import domain.shadowss.extension.activity
 import org.jetbrains.anko.inputMethodManager
 import javax.annotation.OverridingMethodsMustInvokeSuper
 
+@Suppress("LeakingThis", "MemberVisibilityCanBePrivate")
 abstract class BaseDialog(activity: Activity) : Dialog(activity) {
+
+    protected open val canGoBack = true
+
+    protected var allowClose = false
+
+    init {
+        setCancelable(false)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        if (canGoBack) {
+            Handler().postDelayed({
+                setCancelable(true)
+                allowClose = true
+            }, 5000)
+        }
+    }
 
     inline fun <reified T> makeCallback(action: T.() -> Unit) {
         context.activity()?.let {
@@ -26,22 +44,26 @@ abstract class BaseDialog(activity: Activity) : Dialog(activity) {
     }
 }
 
-@Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseFragment : Fragment() {
+@Suppress("LeakingThis", "MemberVisibilityCanBePrivate")
+abstract class BaseDialogFragment : DialogFragment() {
 
-    protected val args: Bundle
-        get() = arguments ?: Bundle()
+    protected open val canGoBack = true
 
-    inline fun <reified T> makeCallback(action: T.() -> Unit) {
-        activity?.let {
-            if (it is T && !it.isFinishing) {
-                action(it)
-            }
+    protected var allowClose = false
+
+    init {
+        isCancelable = false
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (canGoBack) {
+            Handler().postDelayed({
+                isCancelable = true
+                allowClose = true
+            }, 5000)
         }
     }
-}
-
-abstract class BaseDialogFragment : DialogFragment() {
 
     @OverridingMethodsMustInvokeSuper
     override fun onCreateView(
