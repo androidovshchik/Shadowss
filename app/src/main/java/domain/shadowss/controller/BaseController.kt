@@ -4,6 +4,7 @@ import android.content.Context
 import defpackage.marsh.*
 import domain.shadowss.manager.WebSocketCallback
 import domain.shadowss.manager.WebSocketManager
+import domain.shadowss.screen.BaseView
 import io.reactivex.disposables.CompositeDisposable
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
@@ -15,11 +16,11 @@ import javax.annotation.OverridingMethodsMustInvokeSuper
 typealias Controller<T> = BaseController<T>
 
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseController<V : WebSocketCallback>(referent: V) : KodeinAware {
+abstract class BaseController<V : BaseView>(view: V) : KodeinAware, WebSocketCallback {
 
-    override val kodein by closestKodein(referent as Context)
+    override val kodein by closestKodein(view as Context)
 
-    protected val reference = WeakReference(referent)
+    protected val reference = WeakReference(view)
 
     protected val disposable = CompositeDisposable()
 
@@ -28,22 +29,34 @@ abstract class BaseController<V : WebSocketCallback>(referent: V) : KodeinAware 
     open fun start() {
         disposable.add(socketManager.observer
             .subscribe({ instance ->
-                reference.get()?.let {
-                    when (instance) {
-                        is SAPI -> it.onSAPI(instance)
-                        is SAPO -> it.onSAPO(instance)
-                        is SARM -> it.onSARM(instance)
-                        is SARR -> it.onSARR(instance)
-                        is SARV -> it.onSARV(instance)
-                        is SCNG -> it.onSCNG(instance)
-                        is SMNG -> it.onSMNG(instance)
-                    }
+                when (instance) {
+                    is SAPI -> onSAPI(instance)
+                    is SAPO -> onSAPO(instance)
+                    is SARM -> onSARM(instance)
+                    is SARR -> onSARR(instance)
+                    is SARV -> onSARV(instance)
+                    is SCNG -> onSCNG(instance)
+                    is SMNG -> onSMNG(instance)
                 }
             }, {
                 Timber.e(it)
             })
         )
     }
+
+    override fun onSAPI(instance: SAPI) {}
+
+    override fun onSAPO(instance: SAPO) {}
+
+    override fun onSARM(instance: SARM) {}
+
+    override fun onSARR(instance: SARR) {}
+
+    override fun onSARV(instance: SARV) {}
+
+    override fun onSCNG(instance: SCNG) {}
+
+    override fun onSMNG(instance: SMNG) {}
 
     open fun stop() {
         disposable.clear()

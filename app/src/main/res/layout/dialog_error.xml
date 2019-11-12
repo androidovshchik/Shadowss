@@ -15,7 +15,6 @@
         android:gravity="center_vertical">
 
         <domain.shadowss.screen.view.LanguageText
-            android:id="@+id/dialog_title"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
