@@ -65,7 +65,7 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
         super.onActivityResult(requestCode, resultCode, data)
         controller.callback(requestCode, resultCode)
         when (requestCode) {
-            REQUEST_LOCATION -> {
+            LocationManager.REQUEST_LOCATION -> {
                 if (resultCode != RESULT_OK) {
                     locationManager.checkLocation(this)
                 }
@@ -81,10 +81,5 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
     override fun onDestroy() {
         controller.release()
         super.onDestroy()
-    }
-
-    companion object {
-
-        const val REQUEST_LOCATION = 100
     }
 }

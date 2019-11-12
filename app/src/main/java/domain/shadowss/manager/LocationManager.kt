@@ -2,13 +2,16 @@ package domain.shadowss.manager
 
 import android.app.Activity
 import android.content.Context
+import android.location.Location
 import android.location.LocationManager
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import domain.shadowss.screen.BaseActivity
+import io.reactivex.subjects.PublishSubject
 import timber.log.Timber
 
 class LocationManager(context: Context) : Manager {
+
+    val observer = PublishSubject.create<Location>().toSerialized()
 
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)
 
@@ -16,15 +19,13 @@ class LocationManager(context: Context) : Manager {
 
         override fun onLocationAvailability(availability: LocationAvailability) {
             Timber.d("onLocationAvailability $availability")
-            reference.get()?.onLocationAvailability(availability.isLocationAvailable)
         }
 
         override fun onLocationResult(result: LocationResult?) {
             result?.lastLocation?.let {
-                Timber.i("Last location is $it")
-                reference.get()?.onLocationResult(it)
+                observer.onNext(it)
             } ?: run {
-                Timber.w("Last location is null")
+                Timber.w("Last received location is null")
             }
         }
     }
@@ -54,7 +55,7 @@ class LocationManager(context: Context) : Manager {
             .addOnFailureListener {
                 if (it is ResolvableApiException) {
                     try {
-                        it.startResolutionForResult(this, BaseActivity.REQUEST_LOCATION)
+                        it.startResolutionForResult(activity, REQUEST_LOCATION)
                     } catch (e: Throwable) {
                         Timber.e(e)
                     }
@@ -67,6 +68,8 @@ class LocationManager(context: Context) : Manager {
     override fun release(vararg args: Any?) {}
 
     companion object {
+
+        const val REQUEST_LOCATION = 100
 
         val locationRequest: LocationRequest
             get() = LocationRequest.create().apply {
