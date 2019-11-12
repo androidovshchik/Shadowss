@@ -1,8 +1,14 @@
 package domain.shadowss.manager
 
+import android.content.Context
+import android.os.Build
 import com.neovisionaries.ws.client.*
 import defpackage.marsh.*
+import domain.shadowss.BuildConfig
+import domain.shadowss.extension.getTopActivity
+import domain.shadowss.screen.*
 import io.reactivex.subjects.PublishSubject
+import org.jetbrains.anko.activityManager
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -28,10 +34,14 @@ interface WebSocketCallback {
     fun onSMNG(instance: SMNG)
 }
 
-@Suppress("MemberVisibilityCanBePrivate")
-class WebSocketManager : Manager {
+@Suppress("MemberVisibilityCanBePrivate", "SpellCheckingInspection")
+class WebSocketManager(context: Context) : Manager {
 
     val observer = PublishSubject.create<Any>().toSerialized()
+
+    private val activityManager = context.activityManager
+
+    private val packageName = context.packageName
 
     private var webSocket: WebSocket? = null
 
@@ -113,6 +123,26 @@ class WebSocketManager : Manager {
     }
 
     @Synchronized
+    fun sendError(instance: ASER) {
+        send(ASER().apply {
+            form = when (activityManager.getTopActivity(packageName)) {
+                StartActivity::class.java.name, TermsActivity::class.java.name -> "REG1"
+                RegistrationActivity::class.java.name -> "REG2"
+                ManagerActivity::class.java.name -> "MNMA"
+                DriverActivity::class.java.name -> "MNDR"
+                else -> "NULL"
+            }
+            model = "${Build.MANUFACTURER} ${Build.MODEL}"
+            os = "A"
+            api = Build.VERSION.RELEASE
+            uid = ""
+            IP = ""
+            ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
+            usid = ""
+        })
+    }
+
+    @Synchronized
     fun disconnect() {
         webSocket?.apply {
             if (isOpen) {
@@ -135,8 +165,9 @@ class WebSocketManager : Manager {
     }
 
     private fun unmarshal(bytes: ByteArray): Any? {
+        var name = "NULL"
         try {
-            val name = String(bytes, 0, 4)
+            name = String(bytes, 0, 4)
             val cls = Class.forName("defpackage.marsh.$name\$Unmarshaller")
             val constructor = cls.getConstructor(InputStream::class.java, ByteArray::class.java)
             val instance =
@@ -145,6 +176,10 @@ class WebSocketManager : Manager {
             return unmarshal.invoke(instance)
         } catch (e: Throwable) {
             Timber.e(e)
+            sendError(ASER().apply {
+                errortype = "colfer"
+                dataerr = name
+            })
         }
         return null
     }

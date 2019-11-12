@@ -10,7 +10,7 @@ val managerModule = Kodein.Module("manager") {
     }
 
     bind<WebSocketManager>() with singleton {
-        WebSocketManager()
+        WebSocketManager(instance())
     }
 
     bind<LanguageManager>() with eagerSingleton {

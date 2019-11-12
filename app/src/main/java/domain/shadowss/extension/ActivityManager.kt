@@ -14,11 +14,13 @@ inline fun <reified T : Service> ActivityManager.isRunning(): Boolean {
     return false
 }
 
-fun ActivityManager.getActivityCount(packageName: String): Int {
+fun ActivityManager.getTopActivity(packageName: String): String? {
     for (task in getRunningTasks(Integer.MAX_VALUE)) {
-        if (task.baseActivity?.packageName?.startsWith(packageName) == true) {
-            return task.numActivities
+        task.topActivity?.let {
+            if (it.packageName == packageName) {
+                return it.className
+            }
         }
     }
-    return -1
+    return null
 }

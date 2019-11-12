@@ -12,6 +12,7 @@ import defpackage.marsh.*
 import domain.shadowss.controller.Controller
 import domain.shadowss.manager.WebSocketCallback
 import org.jetbrains.anko.locationManager
+import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import timber.log.Timber
@@ -21,7 +22,14 @@ interface BaseView : WebSocketCallback
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseActivity : Activity(), KodeinAware, BaseView {
 
-    override val kodein by closestKodein()
+    private val parentKodein by closestKodein()
+
+    override val kodein: Kodein by Kodein.lazy {
+
+        extend(parentKodein)
+
+        import(screenModule)
+    }
 
     protected open val requireLocation = false
 
