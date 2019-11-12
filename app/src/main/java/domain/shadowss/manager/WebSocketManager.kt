@@ -1,9 +1,6 @@
 package domain.shadowss.manager
 
-import com.neovisionaries.ws.client.WebSocket
-import com.neovisionaries.ws.client.WebSocketAdapter
-import com.neovisionaries.ws.client.WebSocketFactory
-import com.neovisionaries.ws.client.WebSocketFrame
+import com.neovisionaries.ws.client.*
 import defpackage.marsh.*
 import io.reactivex.subjects.PublishSubject
 import timber.log.Timber
@@ -40,8 +37,33 @@ class WebSocketManager : Manager {
 
     private val listener = object : WebSocketAdapter() {
 
+        override fun onConnected(
+            websocket: WebSocket?,
+            headers: MutableMap<String, MutableList<String>>?
+        ) {
+            Timber.d("onConnected")
+        }
+
         override fun onFrame(websocket: WebSocket?, frame: WebSocketFrame?) {
-            observer.onNext(frame?.payload ?: return)
+            frame?.payload?.let {
+                val instance = unmarshal(it)
+                if (instance != null) {
+                    observer.onNext(instance)
+                }
+            }
+        }
+
+        override fun onConnectError(websocket: WebSocket?, exception: WebSocketException?) {
+            Timber.e("onConnectError")
+        }
+
+        override fun onDisconnected(
+            websocket: WebSocket?,
+            serverCloseFrame: WebSocketFrame?,
+            clientCloseFrame: WebSocketFrame?,
+            closedByServer: Boolean
+        ) {
+            Timber.d("onDisconnected")
         }
     }
 
@@ -55,7 +77,7 @@ class WebSocketManager : Manager {
         }
         return try {
             webSocket = WebSocketFactory()
-                .setConnectionTimeout(1000)
+                .setConnectionTimeout(2000)
                 .createSocket("ws://8081.ru")
                 .addListener(listener)
                 .connect()
@@ -92,7 +114,11 @@ class WebSocketManager : Manager {
 
     @Synchronized
     fun disconnect() {
-        webSocket?.disconnect()
+        webSocket?.apply {
+            if (isOpen) {
+                webSocket?.disconnect()
+            }
+        }
     }
 
     private fun marshal(instance: Any): ByteArray {

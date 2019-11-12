@@ -41,21 +41,21 @@ class ServerService : BaseService(), WebSocketCallback {
                 .build()
         )
         acquireWakeLock(javaClass.name)
+        controller.start()
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
             if (keepConnection) {
                 socketManager.reconnect()
             } else {
-
+                socketManager.disconnect()
             }
         }, 0L, 2000L, TimeUnit.MILLISECONDS)
-        controller.start()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
-            if (it.hasExtra(EXTRA_KEEP)) {
-                keepConnection = it.getBooleanExtra(EXTRA_KEEP, false)
+            if (it.hasExtra(EXTRA_CONNECT)) {
+                keepConnection = it.getBooleanExtra(EXTRA_CONNECT, false)
             }
         }
         return START_STICKY
@@ -84,7 +84,7 @@ class ServerService : BaseService(), WebSocketCallback {
 
     companion object {
 
-        private const val EXTRA_KEEP = "keep"
+        const val EXTRA_CONNECT = "connect"
 
         @Throws(Throwable::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {
