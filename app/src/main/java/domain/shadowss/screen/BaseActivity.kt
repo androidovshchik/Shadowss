@@ -8,16 +8,14 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
-import defpackage.marsh.*
 import domain.shadowss.controller.Controller
-import domain.shadowss.manager.WebSocketCallback
 import org.jetbrains.anko.locationManager
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import timber.log.Timber
 
-interface BaseView : WebSocketCallback
+interface BaseView
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseActivity : Activity(), KodeinAware, BaseView {
@@ -39,20 +37,6 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
         super.onStart()
         controller.start()
     }
-
-    override fun onSAPI(instance: SAPI) {}
-
-    override fun onSAPO(instance: SAPO) {}
-
-    override fun onSARM(instance: SARM) {}
-
-    override fun onSARR(instance: SARR) {}
-
-    override fun onSARV(instance: SARV) {}
-
-    override fun onSCNG(instance: SCNG) {}
-
-    override fun onSMNG(instance: SMNG) {}
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {

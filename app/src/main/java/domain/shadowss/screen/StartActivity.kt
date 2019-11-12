@@ -14,6 +14,7 @@ import domain.shadowss.controller.StartController
 import domain.shadowss.local.Preferences
 import domain.shadowss.manager.LanguageManager
 import domain.shadowss.model.Language
+import domain.shadowss.screen.dialog.ErrorDialog
 import domain.shadowss.screen.view.replaceUnderline
 import domain.shadowss.screen.view.updateData
 import kotlinx.android.synthetic.main.activity_start.*
@@ -22,7 +23,12 @@ import org.jetbrains.anko.startActivity
 import org.kodein.di.generic.instance
 import kotlin.math.max
 
-interface StartView : BaseView
+interface StartView : BaseView {
+
+    fun onSuccess()
+
+    fun onError()
+}
 
 class StartActivity : BaseActivity(), StartView {
 
@@ -31,6 +37,8 @@ class StartActivity : BaseActivity(), StartView {
     private val languageManager: LanguageManager by instance()
 
     private val preferences: Preferences by instance()
+
+    private val errorDialog: ErrorDialog by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,22 +74,30 @@ class StartActivity : BaseActivity(), StartView {
         updateText()
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
-            onChoice(true)
+            controller.onChoice(true)
         }
         btn_manager.setOnClickListener {
-            onChoice(false)
+            controller.onChoice(false)
+        }
+        errorDialog.setOnDismissListener {
+
         }
     }
 
-    private fun onChoice(isDriver: Boolean) {
+    override fun onSuccess() {
 
-        startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to isDriver)
+    }
+
+    override fun onError() {
+
     }
 
     @SuppressLint("SetTextI18n")
     private fun updateText() {
         val appName = getString(R.string.app_name)
-        tv_welcome.replaceUnderline("\n$appName", "${tv_welcome.text}\n$appName")
+        tv_welcome.apply {
+            replaceUnderline("\n$appName", "$text\n$appName")
+        }
         tv_terms.apply {
             val start = text.indexOf("\u2009") + 1
             val result = replaceUnderline(appName, "$text$appName")

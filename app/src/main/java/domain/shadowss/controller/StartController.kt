@@ -16,7 +16,17 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     }
 
     override fun onSARR(instance: SARR) {
+        when (instance.error) {
+            "0" -> {
 
+            }
+            "0008" -> {
+
+            }
+            else -> {
+
+            }
+        }
     }
 
     override fun onSARV(instance: SARV) {
@@ -31,5 +41,10 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
             }
         }
+    }
+
+    companion object {
+
+        private val MAX_ATTEMPTS = 4
     }
 }
