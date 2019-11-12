@@ -2,18 +2,13 @@ package domain.shadowss.screen
 
 import android.app.Activity
 import android.content.Intent
-import android.location.LocationManager
 import android.view.MenuItem
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
 import domain.shadowss.controller.Controller
-import org.jetbrains.anko.locationManager
+import domain.shadowss.manager.LocationManager
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
-import timber.log.Timber
+import org.kodein.di.generic.instance
 
 interface BaseView
 
@@ -33,6 +28,8 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
 
     protected abstract val controller: Controller<out BaseView>
 
+    protected val locationManager: LocationManager by instance()
+
     override fun onStart() {
         super.onStart()
         controller.start()
@@ -41,7 +38,7 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {
             if (requireLocation) {
-                checkLocation()
+                locationManager.checkLocation(this)
             }
         }
     }
@@ -55,41 +52,25 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        controller.callback(requestCode)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        controller.callback(requestCode, resultCode)
         when (requestCode) {
             REQUEST_LOCATION -> {
                 if (resultCode != RESULT_OK) {
-                    checkLocation()
+                    locationManager.checkLocation(this)
                 }
             }
         }
-    }
-
-    private fun checkLocation() {
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            return
-        }
-        LocationServices.getSettingsClient(this)
-            .checkLocationSettings(
-                LocationSettingsRequest.Builder()
-                    .addLocationRequest(LocationRequest.create().apply {
-                        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                    })
-                    .setAlwaysShow(true)
-                    .build()
-            )
-            .addOnFailureListener {
-                if (it is ResolvableApiException) {
-                    try {
-                        it.startResolutionForResult(this, REQUEST_LOCATION)
-                    } catch (e: Throwable) {
-                        Timber.e(e)
-                    }
-                } else {
-                    Timber.e(it)
-                }
-            }
     }
 
     override fun onStop() {

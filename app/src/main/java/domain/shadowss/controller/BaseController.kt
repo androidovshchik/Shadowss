@@ -61,6 +61,8 @@ abstract class BaseController<V>(referent: V) : KodeinAware, WebSocketCallback {
         disposable.clear()
     }
 
+    open fun callback(requestCode: Int, resultCode: Int = 0) {}
+
     @OverridingMethodsMustInvokeSuper
     open fun release() {
         disposable.dispose()
