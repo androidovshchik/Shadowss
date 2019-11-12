@@ -9,10 +9,6 @@ class ForegroundRunnable(context: Context) : Runnable {
 
     private val reference = WeakReference(context)
 
-    init {
-        run()
-    }
-
     override fun run() {
         try {
             reference.get()?.let {

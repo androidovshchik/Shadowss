@@ -4,12 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import defpackage.marsh.*
 import domain.shadowss.R
 import domain.shadowss.controller.ServerController
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
-import domain.shadowss.manager.WebSocketCallback
 import domain.shadowss.manager.WebSocketManager
 import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.startService
@@ -19,7 +17,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class ServerService : BaseService(), WebSocketCallback {
+class ServerService : BaseService() {
 
     private val controller: ServerController by instance()
 
@@ -60,20 +58,6 @@ class ServerService : BaseService(), WebSocketCallback {
         }
         return START_STICKY
     }
-
-    override fun onSAPI(instance: SAPI) {}
-
-    override fun onSAPO(instance: SAPO) {}
-
-    override fun onSARM(instance: SARM) {}
-
-    override fun onSARR(instance: SARR) {}
-
-    override fun onSARV(instance: SARV) {}
-
-    override fun onSCNG(instance: SCNG) {}
-
-    override fun onSMNG(instance: SMNG) {}
 
     override fun onDestroy() {
         controller.release()

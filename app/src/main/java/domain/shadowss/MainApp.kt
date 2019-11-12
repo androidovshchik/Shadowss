@@ -33,8 +33,6 @@ class MainApp : Application(), KodeinAware {
         import(controllerModule)
     }
 
-    private lateinit var foreground: ForegroundRunnable
-
     override fun onCreate() {
         super.onCreate()
         noopInit()
@@ -45,6 +43,6 @@ class MainApp : Application(), KodeinAware {
                 }
             )
         }
-        foreground = ForegroundRunnable(applicationContext)
+        ForegroundRunnable(applicationContext).run()
     }
 }

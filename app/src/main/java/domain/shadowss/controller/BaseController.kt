@@ -4,7 +4,6 @@ import android.content.Context
 import defpackage.marsh.*
 import domain.shadowss.manager.WebSocketCallback
 import domain.shadowss.manager.WebSocketManager
-import domain.shadowss.screen.BaseView
 import io.reactivex.disposables.CompositeDisposable
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
@@ -16,11 +15,11 @@ import javax.annotation.OverridingMethodsMustInvokeSuper
 typealias Controller<T> = BaseController<T>
 
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseController<V : BaseView>(view: V) : KodeinAware, WebSocketCallback {
+abstract class BaseController<V>(referent: V) : KodeinAware, WebSocketCallback {
 
-    override val kodein by closestKodein(view as Context)
+    override val kodein by closestKodein(referent as Context)
 
-    protected val reference = WeakReference(view)
+    protected val reference = WeakReference(referent)
 
     protected val disposable = CompositeDisposable()
 
