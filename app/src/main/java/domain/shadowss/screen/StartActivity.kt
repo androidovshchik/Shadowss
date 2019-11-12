@@ -35,11 +35,13 @@ class StartActivity : BaseActivity(), StartView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-        val keys = Language.map.keys.toTypedArray()
-        val values = Language.map.map { it.value.desc }
-        val adapter = ArrayAdapter(applicationContext, android.R.layout.simple_spinner_item, values)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spn_language.also {
+        spn_language.let {
+            val keys = Language.map.keys.toTypedArray()
+            val adapter = ArrayAdapter(
+                applicationContext,
+                android.R.layout.simple_spinner_item,
+                Language.map.map { item -> item.value.desc })
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             it.adapter = adapter
             it.setSelection(max(0, keys.indexOf(preferences.language)), false)
             it.onItemSelectedListener {
@@ -64,11 +66,16 @@ class StartActivity : BaseActivity(), StartView {
         updateText()
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
-            startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to true)
+            onChoice(true)
         }
         btn_manager.setOnClickListener {
-            startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to false)
+            onChoice(false)
         }
+    }
+
+    private fun onChoice(isDriver: Boolean) {
+
+        startActivity<RegistrationActivity>(RegistrationActivity.EXTRA_DRIVER to isDriver)
     }
 
     @SuppressLint("SetTextI18n")

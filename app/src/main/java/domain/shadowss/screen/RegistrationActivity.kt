@@ -32,10 +32,12 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
         }
         toolbar_title.setData(if (isDriver) "[[TOP,0001]]" else "[[TOP,0002]]")
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
-        et_phone.hint = "(+7) 999 999 9999"
-        val slots = UnderscoreDigitSlotsParser().parseSlots("(+7) ___ ___ ____")
-        val formatWatcher = MaskFormatWatcher(MaskImpl.createTerminated(slots))
-        formatWatcher.installOn(et_phone)
+        et_phone.let {
+            it.hint = "(+7) 999 999 9999"
+            val slots = UnderscoreDigitSlotsParser().parseSlots("(+7) ___ ___ ____")
+            val formatWatcher = MaskFormatWatcher(MaskImpl.createTerminated(slots))
+            formatWatcher.installOn(it)
+        }
         btn_next.setOnClickListener {
             startActivity<DriverActivity>()
         }
