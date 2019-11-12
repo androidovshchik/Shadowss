@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.RelativeLayout
 import domain.shadowss.R
 import domain.shadowss.controller.TermsController
+import domain.shadowss.screen.view.replaceUnderline
 import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.activity_terms.*
 import kotlinx.android.synthetic.main.toolbar.*
@@ -32,7 +33,7 @@ class TermsActivity : BaseActivity(), TermsView {
                 marginStart = dip(40)
             }
             setData("[[TOP,0000]]")
-            text = text.replace("_+".toRegex(), appName)
+            replaceUnderline(appName)
         }
         assets.open("terms.html")
             .bufferedReader().use {
