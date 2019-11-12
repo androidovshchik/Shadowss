@@ -9,14 +9,12 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import defpackage.marsh.*
-import domain.shadowss.controller.BaseController
+import domain.shadowss.controller.Controller
 import domain.shadowss.manager.WebSocketCallback
 import org.jetbrains.anko.locationManager
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import timber.log.Timber
-
-typealias Controller = BaseController<out BaseView>
 
 interface BaseView : WebSocketCallback
 
@@ -27,7 +25,7 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
 
     protected open val requireLocation = false
 
-    protected abstract val controller: Controller
+    protected abstract val controller: Controller<out BaseView>
 
     override fun onStart() {
         super.onStart()

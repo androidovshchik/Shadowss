@@ -12,6 +12,8 @@ import timber.log.Timber
 import java.lang.ref.WeakReference
 import javax.annotation.OverridingMethodsMustInvokeSuper
 
+typealias Controller<T> = BaseController<T>
+
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseController<V : WebSocketCallback>(referent: V) : KodeinAware {
 
