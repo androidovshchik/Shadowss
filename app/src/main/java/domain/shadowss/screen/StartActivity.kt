@@ -14,6 +14,7 @@ import domain.shadowss.controller.StartController
 import domain.shadowss.local.Preferences
 import domain.shadowss.manager.LanguageManager
 import domain.shadowss.model.Language
+import domain.shadowss.screen.view.replaceUnderline
 import domain.shadowss.screen.view.updateData
 import kotlinx.android.synthetic.main.activity_start.*
 import org.jetbrains.anko.sdk19.listeners.onItemSelectedListener
@@ -73,15 +74,10 @@ class StartActivity : BaseActivity(), StartView {
     @SuppressLint("SetTextI18n")
     private fun updateText() {
         val appName = getString(R.string.app_name)
-        tv_welcome.apply {
-            text = tv_welcome.text.replace("_+".toRegex(), "\n${appName}")
-            if (!text.contains(appName)) {
-                text = "${tv_welcome.text}\n${appName}"
-            }
-        }
+        tv_welcome.replaceUnderline("\n$appName", "${tv_welcome.text}\n$appName")
         tv_terms.apply {
             val start = text.indexOf("\u2009") + 1
-            val result = text.replace("_+".toRegex(), appName)
+            val result = replaceUnderline(appName, "$text$appName")
             text = SpannableStringBuilder(result).apply {
                 setSpan(object : ClickableSpan() {
 

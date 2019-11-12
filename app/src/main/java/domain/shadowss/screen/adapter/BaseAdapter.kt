@@ -5,7 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import java.lang.ref.WeakReference
 
-typealias ViewHolder<T> = BaseViewHolder<T>
+private typealias ViewHolder<T> = BaseViewHolder<T>
 
 private typealias Listener<T> = AdapterListener<T>
 

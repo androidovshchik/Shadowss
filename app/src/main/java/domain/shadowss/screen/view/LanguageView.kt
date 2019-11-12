@@ -14,6 +14,8 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.instance
 
+private val underlineRegex = "_+".toRegex()
+
 interface LanguageView : KodeinAware {
 
     val languageManager: LanguageManager
@@ -21,6 +23,8 @@ interface LanguageView : KodeinAware {
     var textData: String?
 
     fun getContext(): Context
+
+    fun getText(): CharSequence
 
     fun setText(text: CharSequence?)
 }
@@ -34,6 +38,13 @@ fun LanguageView.setData(data: String?) {
 @SuppressLint("Recycle")
 fun LanguageView.updateData() {
     setText(languageManager.getText(textData ?: return))
+}
+
+@SuppressLint("Recycle")
+fun LanguageView.replaceUnderline(value: String, default: CharSequence = getText()): CharSequence {
+    val text = getText().replace(underlineRegex, value)
+    setText(if (text.contains(value)) text else default)
+    return getText()
 }
 
 @SuppressLint("Recycle")
