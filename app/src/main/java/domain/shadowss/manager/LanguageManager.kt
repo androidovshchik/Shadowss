@@ -23,6 +23,7 @@ class LanguageManager(context: Context) : Manager {
         init(context)
     }
 
+    @Synchronized
     override fun init(vararg args: Any?) {
         val context = args[0] as Context
         context.resources
@@ -78,7 +79,7 @@ class LanguageManager(context: Context) : Manager {
         }
     }
 
-    @Suppress("DEPRECATION")
+    @Synchronized
     fun updatePack(context: Context) {
         val preferences = Preferences(context)
         val id = try {

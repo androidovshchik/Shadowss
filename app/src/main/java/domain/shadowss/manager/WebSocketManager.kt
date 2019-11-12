@@ -123,7 +123,7 @@ class WebSocketManager(context: Context) : Manager {
     }
 
     @Synchronized
-    fun sendError(instance: ASER) {
+    fun sendError(errorType: String, dataErr: String) {
         send(ASER().apply {
             form = when (activityManager.getTopActivity(packageName)) {
                 StartActivity::class.java.name, TermsActivity::class.java.name -> "REG1"
@@ -139,6 +139,8 @@ class WebSocketManager(context: Context) : Manager {
             IP = ""
             ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
             usid = ""
+            errortype = errorType
+            dataerr = dataErr
         })
     }
 
@@ -151,6 +153,7 @@ class WebSocketManager(context: Context) : Manager {
         }
     }
 
+    // todo optimization
     private fun marshal(instance: Any): ByteArray {
         val output = ByteArrayOutputStream()
         try {
@@ -176,10 +179,7 @@ class WebSocketManager(context: Context) : Manager {
             return unmarshal.invoke(instance)
         } catch (e: Throwable) {
             Timber.e(e)
-            sendError(ASER().apply {
-                errortype = "colfer"
-                dataerr = name
-            })
+            sendError("colfer", name)
         }
         return null
     }

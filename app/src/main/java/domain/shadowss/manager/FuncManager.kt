@@ -3,6 +3,7 @@ package domain.shadowss.manager
 import android.content.Context
 import com.scottyab.rootbeer.RootBeer
 
+@Suppress("SpellCheckingInspection")
 class FuncManager : Manager {
 
     override fun init(vararg args: Any?) {}
