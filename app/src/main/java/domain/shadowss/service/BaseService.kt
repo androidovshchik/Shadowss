@@ -5,7 +5,6 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
-import io.reactivex.disposables.CompositeDisposable
 import org.jetbrains.anko.powerManager
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
@@ -16,8 +15,6 @@ abstract class BaseService : Service(), KodeinAware {
     override val kodein by closestKodein()
 
     private var wakeLock: PowerManager.WakeLock? = null
-
-    protected val disposable = CompositeDisposable()
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -37,10 +34,5 @@ abstract class BaseService : Service(), KodeinAware {
             it.release()
             wakeLock = null
         }
-    }
-
-    override fun onDestroy() {
-        disposable.dispose()
-        super.onDestroy()
     }
 }

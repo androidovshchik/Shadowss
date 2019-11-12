@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import defpackage.marsh.*
 import domain.shadowss.R
+import domain.shadowss.controller.ServerController
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
 import domain.shadowss.manager.WebSocketCallback
@@ -19,6 +20,8 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class ServerService : BaseService(), WebSocketCallback {
+
+    private val controller: ServerController by instance()
 
     private val socketManager: WebSocketManager by instance()
 
@@ -42,8 +45,11 @@ class ServerService : BaseService(), WebSocketCallback {
         timer = executor.scheduleAtFixedRate({
             if (keepConnection) {
                 socketManager.reconnect()
+            } else {
+
             }
         }, 0L, 2000L, TimeUnit.MILLISECONDS)
+        controller.start()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -70,6 +76,7 @@ class ServerService : BaseService(), WebSocketCallback {
     override fun onSMNG(instance: SMNG) {}
 
     override fun onDestroy() {
+        controller.release()
         timer?.cancel(true)
         releaseWakeLock()
         super.onDestroy()
