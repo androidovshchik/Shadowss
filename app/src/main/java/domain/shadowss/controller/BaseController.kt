@@ -81,12 +81,12 @@ abstract class BaseController<V>(referent: V) : KodeinAware, WebSocketCallback {
         return@run true
     }
 
-    fun checkagree(preferences: Preferences): Boolean {
-        return preferences.agree
+    fun checkInternet(context: Context): Boolean {
+        return context.connectivityManager.isConnected
     }
 
-    fun checkinternet(context: Context): Boolean {
-        return context.connectivityManager.isConnected
+    fun checkAgree(preferences: Preferences): Boolean {
+        return preferences.agree
     }
 
     fun wssregconnect() {
@@ -97,11 +97,8 @@ abstract class BaseController<V>(referent: V) : KodeinAware, WebSocketCallback {
 
     }
 
-    fun checkroot(context: Context) {
-        val rootBeer = RootBeer(context)
-        if (rootBeer.isRootedWithoutBusyBoxCheck) {
-
-        }
+    fun checkRoot(context: Context): Boolean {
+        return !RootBeer(context).isRootedWithoutBusyBoxCheck
     }
 
     fun checksim() {
@@ -153,6 +150,8 @@ abstract class BaseController<V>(referent: V) : KodeinAware, WebSocketCallback {
     companion object {
 
         const val REQUEST_PERMISSIONS = 200
+
+        const val REQUEST_ZONE_MODE = 300
 
         private val DANGER_PERMISSIONS = arrayOf(
             Manifest.permission.READ_CALL_LOG,
