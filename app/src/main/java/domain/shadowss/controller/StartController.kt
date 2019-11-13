@@ -8,7 +8,11 @@ import domain.shadowss.screen.StartView
 class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     fun onChoice(isDriver: Boolean) {
+        if (checkRights()) {
 
+        } else {
+
+        }
     }
 
     override fun onSAPO(instance: SAPO) {
@@ -32,15 +36,19 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     override fun onSARV(instance: SARV) {
         when (instance.error) {
             "0" -> {
-
+                reference.get()?.onSuccess()
             }
             "0010" -> {
-
+                reference.get()?.onError()
             }
             else -> {
-
+                reference.get()?.onError()
             }
         }
+    }
+
+    override fun callback(requestCode: Int, resultCode: Int) {
+
     }
 
     companion object {
