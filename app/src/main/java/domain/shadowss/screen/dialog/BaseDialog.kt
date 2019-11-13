@@ -19,7 +19,7 @@ abstract class BaseDialog(activity: Activity) : Dialog(activity), KodeinAware,
 
     override val kodein by closestKodein(activity)
 
-    protected open val canBeClosed = true
+    protected open val shouldBeClosable = true
 
     protected var isClosable = false
 
@@ -28,7 +28,7 @@ abstract class BaseDialog(activity: Activity) : Dialog(activity), KodeinAware,
     private val closableRunnable = Runnable {
         setCancelable(true)
         isClosable = true
-        onClosable()
+        onClosableState()
     }
 
     init {
@@ -37,22 +37,26 @@ abstract class BaseDialog(activity: Activity) : Dialog(activity), KodeinAware,
         setOnDismissListener(this)
     }
 
+    @OverridingMethodsMustInvokeSuper
     override fun onCreate(savedInstanceState: Bundle?) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
     }
 
     @OverridingMethodsMustInvokeSuper
     override fun onShow(dialog: DialogInterface?) {
-        if (canBeClosed) {
+        if (shouldBeClosable) {
             handler.postDelayed(closableRunnable, 5000)
         }
     }
 
-    open fun onClosable() {}
+    open fun onClosableState() {}
+
+    abstract fun resetWidgets()
 
     @OverridingMethodsMustInvokeSuper
     override fun onDismiss(dialog: DialogInterface?) {
         handler.removeCallbacks(closableRunnable)
+        resetWidgets()
     }
 
     inline fun <reified T> makeCallback(action: T.() -> Unit) {

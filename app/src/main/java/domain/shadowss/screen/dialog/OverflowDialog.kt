@@ -6,10 +6,12 @@ import domain.shadowss.R
 
 class OverflowDialog(activity: Activity) : BaseDialog(activity) {
 
-    override val canBeClosed = false
+    override val shouldBeClosable = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.dialog_overflow)
     }
+
+    override fun resetWidgets() {}
 }
