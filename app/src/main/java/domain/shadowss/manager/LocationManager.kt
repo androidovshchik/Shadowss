@@ -25,6 +25,11 @@ class LocationManager(context: Context) {
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
+    private val locationSettings = LocationSettingsRequest.Builder()
+        .addLocationRequest(locationRequest)
+        .setAlwaysShow(true)
+        .build()
+
     private val locationCallback = object : LocationCallback() {
 
         override fun onLocationAvailability(availability: LocationAvailability) {
@@ -49,16 +54,8 @@ class LocationManager(context: Context) {
     }
 
     fun checkLocation(activity: Activity) {
-        if (isEnabled) {
-            return
-        }
         LocationServices.getSettingsClient(activity)
-            .checkLocationSettings(
-                LocationSettingsRequest.Builder()
-                    .addLocationRequest(locationRequest)
-                    .setAlwaysShow(true)
-                    .build()
-            )
+            .checkLocationSettings(locationSettings)
             .addOnFailureListener {
                 if (!activity.isFinishing && it is ResolvableApiException) {
                     try {
