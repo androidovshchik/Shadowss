@@ -25,9 +25,6 @@ class ServerService : BaseService() {
 
     private var timer: ScheduledFuture<*>? = null
 
-    @Volatile
-    private var keepConnection = false
-
     @SuppressLint("MissingPermission")
     override fun onCreate() {
         super.onCreate()
@@ -55,6 +52,9 @@ class ServerService : BaseService() {
             if (it.hasExtra(EXTRA_CONNECT)) {
                 keepConnection = it.getBooleanExtra(EXTRA_CONNECT, false)
             }
+            if (it.hasExtra(EXTRA_LOCATION)) {
+                requestLocation = it.getBooleanExtra(EXTRA_LOCATION, false)
+            }
         }
         return START_STICKY
     }
@@ -68,7 +68,15 @@ class ServerService : BaseService() {
 
     companion object {
 
+        @Volatile
+        private var keepConnection = false
+
+        @Volatile
+        private var requestLocation = false
+
         const val EXTRA_CONNECT = "connect"
+
+        const val EXTRA_LOCATION = "location"
 
         @Throws(Throwable::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {

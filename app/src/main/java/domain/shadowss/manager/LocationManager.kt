@@ -7,13 +7,17 @@ import android.location.LocationManager
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import io.reactivex.subjects.PublishSubject
+import org.jetbrains.anko.locationManager
 import timber.log.Timber
 
+@Suppress("MemberVisibilityCanBePrivate")
 class LocationManager(context: Context) {
 
     val observer = PublishSubject.create<Location>().toSerialized()
 
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    private val locationManager = context.locationManager
 
     private val locationRequest = LocationRequest.create().apply {
         interval = 5_000L
@@ -36,16 +40,16 @@ class LocationManager(context: Context) {
         }
     }
 
+    val isEnabled: Boolean
+        get() = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
     fun requestUpdates() {
         locationClient.requestLocationUpdates(locationRequest, locationCallback, null)
     }
 
-    fun removeUpdates() {
-        locationClient.removeLocationUpdates(locationCallback)
-    }
-
     fun checkLocation(activity: Activity) {
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (isEnabled) {
             return
         }
         LocationServices.getSettingsClient(activity)
@@ -56,7 +60,7 @@ class LocationManager(context: Context) {
                     .build()
             )
             .addOnFailureListener {
-                if (it is ResolvableApiException) {
+                if (!activity.isFinishing && it is ResolvableApiException) {
                     try {
                         it.startResolutionForResult(activity, REQUEST_LOCATION)
                     } catch (e: Throwable) {
@@ -66,6 +70,10 @@ class LocationManager(context: Context) {
                     Timber.e(it)
                 }
             }
+    }
+
+    fun removeUpdates() {
+        locationClient.removeLocationUpdates(locationCallback)
     }
 
     companion object {
