@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import domain.shadowss.R
-import domain.shadowss.controller.ServerController
+import domain.shadowss.controller.MainController
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
 import domain.shadowss.manager.WebSocketManager
@@ -17,9 +17,11 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class ServerService : BaseService() {
+interface MainWorker
 
-    private val controller: ServerController by instance()
+class ServerService : BaseService(), MainWorker {
+
+    private val controller: MainController by instance()
 
     private val socketManager: WebSocketManager by instance()
 
@@ -40,7 +42,7 @@ class ServerService : BaseService() {
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
             if (keepConnection) {
-                if (controller.checkInternet()) {
+                if (controller.checkInternet(applicationContext)) {
                     socketManager.reconnect()
                 }
             } else {

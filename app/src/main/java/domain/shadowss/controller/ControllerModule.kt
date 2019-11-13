@@ -9,8 +9,8 @@ import org.kodein.di.generic.provider
 
 val controllerModule = Kodein.Module("controller") {
 
-    bind<ServerController>() with contexted<ServerService>().provider {
-        ServerController(context)
+    bind<MainController>() with contexted<ServerService>().provider {
+        MainController(context)
     }
 
     bind<DriverController>() with contexted<DriverActivity>().provider {
