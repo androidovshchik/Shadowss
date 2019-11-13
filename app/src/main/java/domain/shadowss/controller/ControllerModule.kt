@@ -1,7 +1,7 @@
 package domain.shadowss.controller
 
 import domain.shadowss.screen.*
-import domain.shadowss.service.ServerService
+import domain.shadowss.service.MainService
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.contexted
@@ -9,7 +9,7 @@ import org.kodein.di.generic.provider
 
 val controllerModule = Kodein.Module("controller") {
 
-    bind<MainController>() with contexted<ServerService>().provider {
+    bind<MainController>() with contexted<MainService>().provider {
         MainController(context)
     }
 

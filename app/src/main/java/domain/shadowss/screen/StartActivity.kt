@@ -9,6 +9,7 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.ArrayAdapter
+import defpackage.marsh.SARV
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
 import domain.shadowss.local.Preferences
@@ -27,7 +28,7 @@ interface StartView : BaseView {
 
     fun onSuccess()
 
-    fun onError()
+    fun onError(instance: Any, data: String)
 }
 
 class StartActivity : BaseActivity(), StartView {
@@ -50,7 +51,8 @@ class StartActivity : BaseActivity(), StartView {
             val adapter = ArrayAdapter(
                 applicationContext,
                 android.R.layout.simple_spinner_item,
-                Language.map.map { item -> item.value.desc })
+                Language.map.map { item -> item.value.desc }
+            )
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             it.adapter = adapter
             it.setSelection(max(0, keys.indexOf(preferences.language)), false)
@@ -94,7 +96,14 @@ class StartActivity : BaseActivity(), StartView {
         )
     }
 
-    override fun onError() {
+    override fun onError(instance: Any, data: String) {
+        errorDialog.apply {
+            if (instance is SARV) {
+                marketLink = instance.dataerr
+            }
+            setData(data)
+            show()
+        }
         btn_driver.isEnabled = true
         btn_manager.isEnabled = true
     }

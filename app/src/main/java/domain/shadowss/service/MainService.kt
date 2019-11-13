@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 
 interface MainWorker
 
-class ServerService : BaseService(), MainWorker {
+class MainService : BaseService(), MainWorker {
 
     private val controller: MainController by instance()
 
@@ -84,17 +84,17 @@ class ServerService : BaseService(), MainWorker {
 
         @Throws(Throwable::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {
-            return if (!activityManager.isRunning<ServerService>()) {
-                startForegroundService<ServerService>(*params) != null
+            return if (!activityManager.isRunning<MainService>()) {
+                startForegroundService<MainService>(*params) != null
             } else {
-                startService<ServerService>(*params) != null
+                startService<MainService>(*params) != null
             }
         }
 
         @Suppress("unused")
         private fun stop(context: Context): Boolean = context.run {
-            if (activityManager.isRunning<ServerService>()) {
-                return stopService<ServerService>()
+            if (activityManager.isRunning<MainService>()) {
+                return stopService<MainService>()
             }
             return true
         }

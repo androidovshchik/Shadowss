@@ -52,7 +52,7 @@
             android:windowSoftInputMode="stateHidden"
             android:screenOrientation="sensorPortrait"></activity>
         <service
-            android:name=".service.ServerService"
+            android:name=".service.MainService"
             android:enabled="true"
             android:exported="false" />
         <receiver

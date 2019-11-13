@@ -12,7 +12,7 @@ class ForegroundRunnable(context: Context) : Runnable {
     override fun run() {
         try {
             reference.get()?.let {
-                ServerService.start(it)
+                MainService.start(it)
             }
         } catch (e: Throwable) {
             Timber.e(e)
