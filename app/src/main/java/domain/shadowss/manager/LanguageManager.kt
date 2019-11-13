@@ -10,7 +10,7 @@ import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
 @Suppress("MemberVisibilityCanBePrivate")
-class LanguageManager(context: Context) : Manager {
+class LanguageManager(context: Context) {
 
     @Volatile
     var language = Language.EN.id
@@ -20,12 +20,6 @@ class LanguageManager(context: Context) : Manager {
     private val data = arrayListOf<TxtData>()
 
     init {
-        init(context)
-    }
-
-    @Synchronized
-    override fun init(vararg args: Any?) {
-        val context = args[0] as Context
         context.resources
             .openRawResource(R.raw.txtdata)
             .bufferedReader().use { reader ->
@@ -95,6 +89,4 @@ class LanguageManager(context: Context) : Manager {
             addAll(data.filter { it.langId == language })
         }
     }
-
-    override fun release(vararg args: Any?) {}
 }

@@ -9,11 +9,17 @@ import com.google.android.gms.location.*
 import io.reactivex.subjects.PublishSubject
 import timber.log.Timber
 
-class LocationManager(context: Context) : Manager {
+class LocationManager(context: Context) {
 
     val observer = PublishSubject.create<Location>().toSerialized()
 
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    private val locationRequest = LocationRequest.create().apply {
+        interval = 5_000L
+        fastestInterval = 5_000L
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+    }
 
     private val locationCallback = object : LocationCallback() {
 
@@ -28,9 +34,6 @@ class LocationManager(context: Context) : Manager {
                 Timber.w("Last received location is null")
             }
         }
-    }
-
-    override fun init(vararg args: Any?) {
     }
 
     fun requestUpdates() {
@@ -65,17 +68,8 @@ class LocationManager(context: Context) : Manager {
             }
     }
 
-    override fun release(vararg args: Any?) {}
-
     companion object {
 
         const val REQUEST_LOCATION = 100
-
-        val locationRequest: LocationRequest
-            get() = LocationRequest.create().apply {
-                interval = 5_000L
-                fastestInterval = 5_000L
-                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            }
     }
 }

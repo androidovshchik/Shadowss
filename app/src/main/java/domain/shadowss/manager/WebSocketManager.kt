@@ -35,7 +35,7 @@ interface WebSocketCallback {
 }
 
 @Suppress("MemberVisibilityCanBePrivate", "SpellCheckingInspection")
-class WebSocketManager(context: Context) : Manager {
+class WebSocketManager(context: Context) {
 
     val observer = PublishSubject.create<Any>().toSerialized()
 
@@ -75,9 +75,6 @@ class WebSocketManager(context: Context) : Manager {
         ) {
             Timber.d("onDisconnected")
         }
-    }
-
-    override fun init(vararg args: Any?) {
     }
 
     @Synchronized
@@ -183,6 +180,4 @@ class WebSocketManager(context: Context) : Manager {
         }
         return null
     }
-
-    override fun release(vararg args: Any?) {}
 }
