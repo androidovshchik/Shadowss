@@ -22,8 +22,6 @@ interface LanguageView : KodeinAware {
 
     var textData: String?
 
-    fun getContext(): Context
-
     fun getText(): CharSequence
 
     fun setText(text: CharSequence?)
@@ -48,9 +46,14 @@ fun LanguageView.replaceUnderline(value: String, default: CharSequence = getText
 }
 
 @SuppressLint("Recycle")
-private fun LanguageView.obtainText(attrs: AttributeSet?, styleable: IntArray, index: Int) {
+private fun LanguageView.obtainText(
+    context: Context,
+    attrs: AttributeSet?,
+    styleable: IntArray,
+    index: Int
+) {
     attrs?.let {
-        getContext().obtainStyledAttributes(it, styleable).use {
+        context.obtainStyledAttributes(it, styleable).use {
             setData(getString(index))
         }
     }
@@ -70,7 +73,7 @@ class LanguageText : TextView, LanguageView {
         attrs,
         defStyleAttr
     ) {
-        obtainText(attrs, R.styleable.LanguageText, R.styleable.LanguageText_text)
+        obtainText(context, attrs, R.styleable.LanguageText, R.styleable.LanguageText_text)
     }
 
     @Suppress("unused")
@@ -81,7 +84,7 @@ class LanguageText : TextView, LanguageView {
         defStyleAttr,
         defStyleRes
     ) {
-        obtainText(attrs, R.styleable.LanguageText, R.styleable.LanguageText_text)
+        obtainText(context, attrs, R.styleable.LanguageText, R.styleable.LanguageText_text)
     }
 
     override fun hasOverlappingRendering() = false
@@ -101,7 +104,7 @@ class LanguageButton : Button, LanguageView {
         attrs,
         defStyleAttr
     ) {
-        obtainText(attrs, R.styleable.LanguageButton, R.styleable.LanguageButton_text)
+        obtainText(context, attrs, R.styleable.LanguageButton, R.styleable.LanguageButton_text)
     }
 
     @Suppress("unused")
@@ -112,7 +115,7 @@ class LanguageButton : Button, LanguageView {
         defStyleAttr,
         defStyleRes
     ) {
-        obtainText(attrs, R.styleable.LanguageButton, R.styleable.LanguageButton_text)
+        obtainText(context, attrs, R.styleable.LanguageButton, R.styleable.LanguageButton_text)
     }
 
     override fun hasOverlappingRendering() = false

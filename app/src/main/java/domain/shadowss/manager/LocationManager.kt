@@ -10,7 +10,7 @@ import io.reactivex.subjects.PublishSubject
 import org.jetbrains.anko.locationManager
 import timber.log.Timber
 
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 class LocationManager(context: Context) {
 
     val observer = PublishSubject.create<Location>().toSerialized()

@@ -40,6 +40,8 @@ class StartActivity : BaseActivity(), StartView {
 
     private val errorDialog: ErrorDialog by instance()
 
+    private var isDriver = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
@@ -74,22 +76,27 @@ class StartActivity : BaseActivity(), StartView {
         updateText()
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
-            controller.onChoice(true)
+            it.isEnabled = false
+            isDriver = true
+            controller.onChoice()
         }
         btn_manager.setOnClickListener {
-            controller.onChoice(false)
+            it.isEnabled = false
+            isDriver = false
+            controller.onChoice()
         }
-        errorDialog.setOnDismissListener {
-
-        }
+        controller.checkRights(this)
     }
 
     override fun onSuccess() {
-
+        startActivity<RegistrationActivity>(
+            RegistrationActivity.EXTRA_DRIVER to isDriver
+        )
     }
 
     override fun onError() {
-
+        btn_driver.isEnabled = true
+        btn_manager.isEnabled = true
     }
 
     @SuppressLint("SetTextI18n")

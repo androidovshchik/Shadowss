@@ -40,7 +40,9 @@ class ServerService : BaseService() {
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
             if (keepConnection) {
-                socketManager.reconnect()
+                if (controller.checkInternet()) {
+                    socketManager.reconnect()
+                }
             } else {
                 socketManager.disconnect()
             }
@@ -69,7 +71,7 @@ class ServerService : BaseService() {
     companion object {
 
         @Volatile
-        private var keepConnection = false
+        private var keepConnection = true
 
         @Volatile
         private var requestLocation = false
