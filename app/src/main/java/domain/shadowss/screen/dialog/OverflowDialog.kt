@@ -6,7 +6,7 @@ import domain.shadowss.R
 
 class OverflowDialog(activity: Activity) : BaseDialog(activity) {
 
-    override val canGoBack = false
+    override val canBeClosed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

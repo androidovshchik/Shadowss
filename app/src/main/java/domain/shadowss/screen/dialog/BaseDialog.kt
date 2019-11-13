@@ -11,6 +11,7 @@ import android.view.Window
 import domain.shadowss.extension.activity
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
+import javax.annotation.OverridingMethodsMustInvokeSuper
 
 @Suppress("LeakingThis", "MemberVisibilityCanBePrivate")
 abstract class BaseDialog(activity: Activity) : Dialog(activity), KodeinAware,
@@ -18,15 +19,15 @@ abstract class BaseDialog(activity: Activity) : Dialog(activity), KodeinAware,
 
     override val kodein by closestKodein(activity)
 
-    protected open val canGoBack = true
+    protected open val canBeClosed = true
 
-    protected var allowClose = false
+    protected var isClosable = false
 
     private val handler = Handler()
 
-    private val runnable = Runnable {
-        setCancelable(canGoBack)
-        allowClose = canGoBack
+    private val closableRunnable = Runnable {
+        setCancelable(true)
+        isClosable = true
         onClosable()
     }
 
@@ -40,16 +41,18 @@ abstract class BaseDialog(activity: Activity) : Dialog(activity), KodeinAware,
         requestWindowFeature(Window.FEATURE_NO_TITLE)
     }
 
+    @OverridingMethodsMustInvokeSuper
     override fun onShow(dialog: DialogInterface?) {
-        if (canGoBack) {
-            handler.postDelayed(runnable, 5000)
+        if (canBeClosed) {
+            handler.postDelayed(closableRunnable, 5000)
         }
     }
 
     open fun onClosable() {}
 
+    @OverridingMethodsMustInvokeSuper
     override fun onDismiss(dialog: DialogInterface?) {
-
+        handler.removeCallbacks(closableRunnable)
     }
 
     inline fun <reified T> makeCallback(action: T.() -> Unit) {
