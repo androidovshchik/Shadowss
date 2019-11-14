@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:layout_height="190dp"
-    android:orientation="vertical">
+    android:animateLayoutChanges="true"
+    tools:layout_height="190dp">
 
     <LinearLayout
         android:id="@+id/dialog_bar"

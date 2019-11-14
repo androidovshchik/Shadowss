@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import defpackage.marsh.SARV
 import domain.shadowss.R
 import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.dialog_error.*
@@ -30,7 +31,10 @@ class ErrorDialog(activity: Activity) : BaseDialog(activity) {
         dialog_close.visibility = View.VISIBLE
     }
 
-    fun setData(data: String) {
+    fun setData(data: String, instance: Any?) {
+        marketLink = if (instance is SARV) {
+            instance.dataerr
+        } else null
         data.split(",")[1].also {
             dialog_code.text = it.substring(0, it.indexOf("]]"))
         }

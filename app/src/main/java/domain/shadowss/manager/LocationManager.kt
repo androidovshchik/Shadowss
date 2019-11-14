@@ -40,7 +40,7 @@ class LocationManager(context: Context) {
         }
     }
 
-    val isEnabled: Boolean
+    val isAvailable: Boolean
         get() = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
