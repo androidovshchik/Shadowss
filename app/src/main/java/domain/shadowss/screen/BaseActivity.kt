@@ -1,6 +1,7 @@
 package domain.shadowss.screen
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.view.MenuItem
 import domain.shadowss.controller.Controller
@@ -30,6 +31,9 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
     protected abstract val controller: Controller<out BaseView>
 
     protected val locationManager: LocationManager by instance()
+
+    override val context: Context
+        get() = this
 
     override fun onStart() {
         super.onStart()

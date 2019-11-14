@@ -2,6 +2,7 @@ package domain.shadowss.service
 
 import android.annotation.SuppressLint
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
@@ -18,6 +19,9 @@ abstract class BaseService : Service(), KodeinAware, BaseWorker {
     override val kodein by closestKodein()
 
     private var wakeLock: PowerManager.WakeLock? = null
+
+    override val context: Context
+        get() = applicationContext
 
     override fun onBind(intent: Intent): IBinder? {
         return null

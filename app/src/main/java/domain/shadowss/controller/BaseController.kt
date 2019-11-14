@@ -24,19 +24,20 @@ import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import java.lang.ref.WeakReference
+import javax.annotation.OverridingMethodsMustInvokeSuper
 
 typealias Controller<T> = BaseController<T>
 
 interface ControllerReference {
 
-    fun getApplicationContext(): Context
+    val context: Context
 }
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAware,
     WebSocketCallback {
 
-    override val kodein by closestKodein(referent.getApplicationContext())
+    override val kodein by closestKodein(referent.context)
 
     protected val reference = WeakReference(referent)
 
@@ -194,7 +195,14 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         disposable.clear()
     }
 
-    open fun callback(requestCode: Int, resultCode: Int = 0) {}
+    @OverridingMethodsMustInvokeSuper
+    open fun callback(requestCode: Int, resultCode: Int = 0) {
+        when (requestCode) {
+            REQUEST_PERMISSIONS -> {
+                checkRights(reference.get()?.context ?: return)
+            }
+        }
+    }
 
     open fun release() {
         disposable.dispose()
@@ -213,8 +221,10 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     private fun Context.invokeBySlot(name: String, slotId: Int): String? {
         return try {
-            val method = telephonyManager.javaClass.getMethod(name, Int::class.java)
-            method.invoke(telephonyManager, slotId) as? String
+            telephonyManager.run {
+                val method = javaClass.getMethod(name, Int::class.java)
+                method.invoke(this, slotId) as? String
+            }
         } catch (e: Throwable) {
             Timber.e(e)
             null
