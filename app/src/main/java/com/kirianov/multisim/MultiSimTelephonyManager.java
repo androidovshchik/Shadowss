@@ -1,14 +1,10 @@
 package com.kirianov.multisim;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.telephony.PhoneStateListener;
-import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
 
 import androidx.core.content.ContextCompat;
@@ -26,32 +22,19 @@ public class MultiSimTelephonyManager {
     private static String[] PERMISSIONS = {
         Manifest.permission.READ_PHONE_STATE
     };
-    private final List<Slot> slots;
+    private final List<Slot> slots = new ArrayList<>();
     private Context context;
-    private BroadcastReceiverSimState broadcastReceiverSimState;
-    private PhoneStateListenerSim phoneStateListenerSim;
 
-    public MultiSimTelephonyManager(Context context) {
+    static {
         try {
             System.loadLibrary("multisimlib");
         } catch (Exception e) {
-            Timber.d("MSIM-LIB exception [" + e.getMessage() + "]");
+            Timber.e("MSIM-LIB exception [" + e.getMessage() + "]");
         }
+    }
 
-        MultiSimTelephonyManager.this.context = context.getApplicationContext();
-
-        slots = new ArrayList<>();
-
-        broadcastReceiverSimState = new BroadcastReceiverSimState();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
-        intentFilter.addAction("android.intent.action.PHONE_STATE");
-        context.registerReceiver(broadcastReceiverSimState, intentFilter);
-
-        phoneStateListenerSim = new PhoneStateListenerSim();
-        ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE))
-            .listen(phoneStateListenerSim, PhoneStateListener.LISTEN_SERVICE_STATE | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-
+    public MultiSimTelephonyManager(Context context) {
+        this.context = context.getApplicationContext();
         // printAllMethodsAndFields("android.telephony.TelephonyManager", -1); // all methods
         // printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager", -1); // all methods
         // printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager", 0); // methods with 0 params
@@ -62,7 +45,6 @@ public class MultiSimTelephonyManager {
         // printAllMethodsAndFields("com.mediatek.telephony.TelephonyManagerEx", -1); // all methods
         // printAllMethodsAndFields("com.android.internal.telephony.ITelephony", -1); // all methods
         // printAllMethodsAndFields("com.android.internal.telephony.ITelephony$Stub$Proxy", -1); // all methods
-
     }
 
     private native static String[] generateClassNames();
@@ -123,9 +105,7 @@ public class MultiSimTelephonyManager {
                     } catch (Exception ignored) {
                     }
                 }
-
             }
-
         } catch (Exception ignored) {
             // Log.i(LOG, "EXC " + ignored.getMessage());
         }
@@ -157,12 +137,12 @@ public class MultiSimTelephonyManager {
         return updated;
     }
 
-    public Slot getSlot(int location) {
+    public synchronized Slot getSlot(int location) {
         if (slots.size() > location) return slots.get(location);
         return null;
     }
 
-    public List<Slot> getSlots() {
+    public synchronized List<Slot> getSlots() {
         if ((slots == null) || (slots.size() <= 0)) return null;
         return slots;
     }
@@ -314,13 +294,13 @@ public class MultiSimTelephonyManager {
         return slot;
     }
 
-    public void updateSlots() {
+    public synchronized void updateSlots() {
         int slotNumber = 0;
         Slot slot;
         boolean changed = false;
         while (true) {
             slot = touchSlot(slotNumber);
-            if ((slot == null) && (slots != null)) {
+            if (slot == null) {
                 for (int i = slotNumber; i < slots.size(); i++) {
                     changed = true;
                     slots.remove(i);
@@ -561,61 +541,6 @@ public class MultiSimTelephonyManager {
     public void destroy() {
         ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE))
             .listen(null, PhoneStateListener.LISTEN_NONE);
-        phoneStateListenerSim = null;
-        try {
-            if (broadcastReceiverSimState != null)
-                context.unregisterReceiver(broadcastReceiverSimState);
-        } catch (Exception ignored) {
-        }
         context = null;
-    }
-
-    private class BroadcastReceiverSimState extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            Timber.d("BRSS context [" + context + "] intent [" + intent + "]");
-            if ((intent != null) && (intent.getAction() != null)) {
-                if (MultiSimTelephonyManager.this.context == null)
-                    MultiSimTelephonyManager.this.context = context.getApplicationContext();
-                if (hasPermissions(context, PERMISSIONS)) {
-                    updateSlots();
-                }
-//// try patch below when onSignalStrengthsChanged is not work
-//                // patch for "late" update of network operator info, because after "android.intent.action.SIM_STATE_CHANGED" I read FIRST time before OS write new network operator info :
-//                // this will work on switch off/on airplane mode (long time operation with both sims one-by-one) also
-//                if( intent.getAction().compareTo(context.getPackageName() + "BRSS") != 0) {
-//                    new CountDownTimer(30000, 1000) {
-//                        public void onTick(long m) {
-//                            updateSlots(context, intent);
-//                        }
-//                        public void onFinish() {
-//                        }
-//                    }.start();
-//                }
-            }
-        }
-    }
-
-    @SuppressWarnings("SpellCheckingInspection")
-    private class PhoneStateListenerSim extends PhoneStateListener {
-
-        public void onServiceStateChanged(ServiceState serviceState) {
-            Timber.d("PhoneStateListenerSim.onServiceStateChanged " + serviceState.getState());
-            updateSlots();
-        }
-//        public void onSignalStrengthsChanged(SignalStrength signalStrength) { // removed temporary because more times start (every sec)
-//            Log("PhoneStateListenerSim.onSignalStrengthsChanged " + signalStrength);
-//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
-//        }
-// onCellInfoChanged and onCellLocationChanged REQUIRED  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> in AndroidManifest
-//        public void onCellInfoChanged(List<CellInfo> cellInfo) {
-//            Log("PhoneStateListenerSim.onCellInfoChanged " + cellInfo);
-//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
-//        }
-//        public void onCellLocationChanged(CellLocation location) {
-//            Log("PhoneStateListenerSim.onCellLocationChanged " + location);
-//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
-//        }
     }
 }
