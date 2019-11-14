@@ -114,31 +114,56 @@ class WebSocketManager(context: Context) {
     fun send(instance: Any) {
         webSocket?.apply {
             if (isOpen) {
+                when (instance) {
+                    is ASER -> {
+                        instance.apply {
+                            os = "A"
+                            api = Build.VERSION.RELEASE
+                            model = "${Build.MANUFACTURER} ${Build.MODEL}"
+                            form = currentForm
+                            ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
+                            uid = ""
+                            IP = ""
+                            usid = ""
+                        }
+                    }
+                    is ASRC -> {
+                        instance.apply {
+                            os = "A"
+                            api = Build.VERSION.RELEASE
+                            model = "${Build.MANUFACTURER} ${Build.MODEL}"
+                            form = currentForm
+                        }
+                    }
+                    is ASRM -> {
+                        instance.apply {
+                            os = "A"
+                            api = Build.VERSION.RELEASE
+                            model = "${Build.MANUFACTURER} ${Build.MODEL}"
+                            form = currentForm
+                        }
+                    }
+                    is ASRV -> {
+                        instance.apply {
+                            os = "A"
+                            api = Build.VERSION.RELEASE
+                            model = "${Build.MANUFACTURER} ${Build.MODEL}"
+                            form = currentForm
+                            ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
+                        }
+                    }
+                    is ASRR -> {
+                        instance.apply {
+                            os = "A"
+                            api = Build.VERSION.RELEASE
+                            model = "${Build.MANUFACTURER} ${Build.MODEL}"
+                            form = currentForm
+                        }
+                    }
+                }
                 sendBinary(marshal(instance))
             }
         }
-    }
-
-    @Synchronized
-    fun sendError(errorType: String, dataErr: String) {
-        send(ASER().apply {
-            form = when (activityManager.getTopActivity(packageName)) {
-                StartActivity::class.java.name, TermsActivity::class.java.name -> "REG1"
-                RegistrationActivity::class.java.name -> "REG2"
-                ManagerActivity::class.java.name -> "MNMA"
-                DriverActivity::class.java.name -> "MNDR"
-                else -> "NULL"
-            }
-            model = "${Build.MANUFACTURER} ${Build.MODEL}"
-            os = "A"
-            api = Build.VERSION.RELEASE
-            uid = ""
-            IP = ""
-            ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
-            usid = ""
-            errortype = errorType
-            dataerr = dataErr
-        })
     }
 
     @Synchronized
@@ -149,6 +174,15 @@ class WebSocketManager(context: Context) {
             }
         }
     }
+
+    private val currentForm: String
+        get() = when (activityManager.getTopActivity(packageName)) {
+            StartActivity::class.java.name, TermsActivity::class.java.name -> "REG1"
+            RegistrationActivity::class.java.name -> "REG2"
+            ManagerActivity::class.java.name -> "MNMA"
+            DriverActivity::class.java.name -> "MNDR"
+            else -> "NULL"
+        }
 
     // todo optimization
     private fun marshal(instance: Any): ByteArray {
@@ -176,7 +210,10 @@ class WebSocketManager(context: Context) {
             return unmarshal.invoke(instance)
         } catch (e: Throwable) {
             Timber.e(e)
-            sendError("colfer", name)
+            send(ASER().apply {
+                errortype = "colfer"
+                dataerr = name
+            })
         }
         return null
     }
