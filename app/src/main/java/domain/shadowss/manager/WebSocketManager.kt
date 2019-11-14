@@ -122,55 +122,50 @@ class WebSocketManager(context: Context) {
         webSocket?.apply {
             if (isOpen) {
                 when (instance) {
-                    is ASER -> {
+                    is ASER -> {// ER – error
                         instance.apply {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
+                            uid = deviceKey.toString()
                             ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
-                            IP = ""
-                            uid = deviceKey.toString()
                         }
                     }
-                    is ASRC -> {
+                    is ASRC -> {// RC – Registration procedure Code for check
                         instance.apply {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
-                            IP = ""
                             uid = deviceKey.toString()
                         }
                     }
-                    is ASRM -> {
+                    is ASRM -> {// RM – Registration procedure Main data for check
                         instance.apply {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
-                            IP = ""
                             uid = deviceKey.toString()
                         }
                     }
-                    is ASRV -> {
+                    is ASRV -> {// RV – Registration procedure Version for check
                         instance.apply {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
+                            uid = deviceKey.toString()
                             ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
-                            IP = ""
-                            uid = deviceKey.toString()
                         }
                     }
-                    is ASRR -> {
+                    is ASRR -> {// RR – Registration procedure Region for check
                         instance.apply {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
-                            IP = ""
                             uid = deviceKey.toString()
                         }
                     }
@@ -204,19 +199,18 @@ class WebSocketManager(context: Context) {
     private val deviceKey: String?
         @SuppressLint("HardwareIds", "MissingPermission")
         get() = reference.get()?.run {
-            if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-                val androidId =
-                    Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-                val imei = if (isOreoPlus()) {
+            val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+            val imei = if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+                if (isOreoPlus()) {
                     telephonyManager.imei
                 } else {
                     telephonyManager.deviceId
                 }
-                Base64.encode("$androidId:$imei".toByteArray(), Base64.NO_WRAP)
-                    .toString(Charsets.UTF_8)
             } else {
                 null
             }
+            Base64.encode("$androidId:$imei".toByteArray(), Base64.NO_WRAP)
+                .toString(Charsets.UTF_8)
         }
 
     // todo optimization
@@ -235,7 +229,7 @@ class WebSocketManager(context: Context) {
 
     // todo optimization
     private fun unmarshal(bytes: ByteArray): Any? {
-        var name = "NULL"
+        var name = "null"
         try {
             name = String(bytes, 0, 4)
             val cls = Class.forName("defpackage.marsh.$name\$Unmarshaller")

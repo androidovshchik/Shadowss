@@ -10,4 +10,6 @@ class Preferences(context: Context) : KotprefModel(context) {
     var language by nullableStringPref(null, "0x00")
 
     var agree by booleanPref(false, "0x01")
+
+    var userId by nullableStringPref(null, "0x02")
 }
