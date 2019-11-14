@@ -258,7 +258,7 @@ class WebSocketManager(context: Context) {
 
     // todo optimization
     private fun unmarshal(bytes: ByteArray): Any? {
-        var name = "null"
+        var name: String? = null
         try {
             name = String(bytes, 0, 4)
             val cls = Class.forName("defpackage.marsh.$name\$Unmarshaller")
@@ -271,7 +271,7 @@ class WebSocketManager(context: Context) {
             Timber.e(e)
             send(ASER().apply {
                 errortype = "colfer"
-                dataerr = name
+                dataerr = name.toString()
             })
         }
         return null

