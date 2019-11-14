@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
 import android.text.TextUtils
 import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
@@ -118,29 +119,25 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     @SuppressLint("MissingPermission")
     fun checkMcc(context: Context): Pair<String?, String?> = context.run {
-        var mcc1: String? = null
-        var mcc2: String? = null
         if (isLollipopMR1Plus()) {
             val subscriptionManager =
                 getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
             if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
                 val infoList = subscriptionManager.activeSubscriptionInfoList
-                mcc1 = infoList.getOrNull(0)?.mcc.toString()
-                mcc2 = infoList.getOrNull(1)?.mcc.toString()
+                val mcc1 = infoList.getOrNull(0)?.mcc.toString()
+                val mcc2 = infoList.getOrNull(1)?.mcc.toString()
+                return@run mcc1 to mcc2
             }
         } else {
             val code = telephonyManager.networkOperator
             if (!TextUtils.isEmpty(code)) {
-                val MNC_CODE_LENGTH = 3
-                if (code.length >= MNC_CODE_LENGTH) {
-                    mccCode = code.substring(0, MNC_CODE_LENGTH)
-                }
-                if (code.length > MNC_CODE_LENGTH) {
-                    mncCode = code.substring(MNC_CODE_LENGTH)
+                val length = 3
+                if (code.length >= length) {
+                    mcc1 = code.substring(0, length)
                 }
             }
         }
-        return@run mcc1 to mcc2
+        return@run null to null
     }
 
     fun checkRegion() {
@@ -155,7 +152,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         })
     }
 
-    fun checkmobile() {
+    fun checkMobile() {
         /*val smsQuery = RxCursorLoader.Query.Builder()
             .setContentUri(Uri.parse("content://sms"))
             .setSortOrder("${Telephony.Sms.DATE} DESC LIMIT 5")
@@ -204,6 +201,61 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     open fun release() {
         disposable.dispose()
         reference.clear()
+    }
+
+    private fun getDeviceIdBySlot(
+        context: Context,
+        predictedMethodName: String,
+        slotID: Int
+    ): String? {
+        var imsi: String? = null
+        val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        try {
+            val telephonyClass = Class.forName(telephony.javaClass.name)
+            val parameter = arrayOfNulls<Class<*>>(1)
+            parameter[0] = Int::class.javaPrimitiveType
+            val getSimID = telephonyClass.getMethod(predictedMethodName, *parameter)
+            val obParameter = arrayOfNulls<Any>(1)
+            obParameter[0] = slotID
+            val ob_phone = getSimID.invoke(telephony, *obParameter)
+            if (ob_phone != null) {
+                imsi = ob_phone.toString()
+            }
+        } catch (e: Exception) {
+
+        }
+        return imsi
+    }
+
+    private fun getSIMStateBySlot(
+        context: Context,
+        predictedMethodName: String,
+        slotID: Int
+    ): Boolean {
+        var isReady = false
+        val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        try {
+            val telephonyClass = Class.forName(telephony.javaClass.name)
+            val parameter = arrayOfNulls<Class<*>>(1)
+            parameter[0] = Int::class.javaPrimitiveType
+            val getSimState = telephonyClass.getMethod(predictedMethodName, *parameter)
+            val obParameter = arrayOfNulls<Any>(1)
+            obParameter[0] = slotID
+            val ob_phone = getSimState.invoke(telephony, *obParameter)
+
+            if (ob_phone != null) {
+                val simState = Integer.parseInt(ob_phone.toString())
+                telInf.sim2_STATE = simState(simState)
+                if (simState != TelephonyManager.SIM_STATE_ABSENT && simState != TelephonyManager.SIM_STATE_UNKNOWN) {
+                    isReady = true
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw ITgerMethodNotFoundException(predictedMethodName)
+        }
+
+        return isReady
     }
 
     companion object {
