@@ -23,13 +23,13 @@ import timber.log.Timber;
 @SuppressWarnings("all")
 public class MultiSimTelephonyManager {
 
+    private static String[] PERMISSIONS = {
+        Manifest.permission.READ_PHONE_STATE
+    };
+    private final List<Slot> slots;
     private Context context;
     private BroadcastReceiverSimState broadcastReceiverSimState;
     private PhoneStateListenerSim phoneStateListenerSim;
-    private String[] PERMISSIONS = {
-            Manifest.permission.READ_PHONE_STATE
-    };
-    private List<Slot> slots;
 
     public MultiSimTelephonyManager(Context context) {
         try {
@@ -46,11 +46,11 @@ public class MultiSimTelephonyManager {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
         intentFilter.addAction("android.intent.action.PHONE_STATE");
-        this.context.registerReceiver(broadcastReceiverSimState, intentFilter);
+        context.registerReceiver(broadcastReceiverSimState, intentFilter);
 
         phoneStateListenerSim = new PhoneStateListenerSim();
-        ((TelephonyManager) this.context.getSystemService(Context.TELEPHONY_SERVICE))
-                .listen(phoneStateListenerSim, PhoneStateListener.LISTEN_SERVICE_STATE | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE))
+            .listen(phoneStateListenerSim, PhoneStateListener.LISTEN_SERVICE_STATE | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
         // printAllMethodsAndFields("android.telephony.TelephonyManager", -1); // all methods
         // printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager", -1); // all methods
@@ -136,7 +136,6 @@ public class MultiSimTelephonyManager {
     private boolean setSlot(int location, Slot slot) {
         boolean updated = false;
         try {
-            if (slots == null) slots = new ArrayList<Slot>();
             if (slot == null) {
                 if (slots.size() > location) {
                     slots.remove(location);
@@ -170,11 +169,9 @@ public class MultiSimTelephonyManager {
 
     @SuppressWarnings("ResourceType")
     private Slot touchSlot(int slotNumber) {
-
         Slot slot = new Slot();
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         Timber.d("telephonyManager [" + telephonyManager + "] " + telephonyManager.getDeviceId());
-
 
         ArrayList<String> subscriberIdIntValue = new ArrayList<String>();
         ArrayList<Integer> subscriberIdIntIndex = new ArrayList<Integer>();
@@ -317,11 +314,10 @@ public class MultiSimTelephonyManager {
         return slot;
     }
 
-    private void updateSlots(Context context, Intent intent) {
+    public void updateSlots() {
         int slotNumber = 0;
         Slot slot;
         boolean changed = false;
-        if (slots == null) slots = new ArrayList<Slot>();
         while (true) {
             slot = touchSlot(slotNumber);
             if ((slot == null) && (slots != null)) {
@@ -341,13 +337,9 @@ public class MultiSimTelephonyManager {
 
     @SuppressWarnings("ResourceType")
     private Object spamMethods(String methodName, Object[] methodParams) {
-
         if ((methodName == null) || (methodName.length() <= 0)) return null;
-
-
         List<Object> instanceMethods = new ArrayList<Object>();
         boolean multiSimTelephonyManagerExists = false;
-
         try {
             multiSimTelephonyManagerExists = context.getSystemService(Context.TELEPHONY_SERVICE).toString().startsWith("android.telephony.MultiSimTelephonyManager");
             for (int i = 0; i < methodParams.length; i++) {
@@ -362,7 +354,6 @@ public class MultiSimTelephonyManager {
             }
         } catch (Exception ignored) {
         }
-
         if (!instanceMethods.contains(context.getSystemService(Context.TELEPHONY_SERVICE)))
             instanceMethods.add(context.getSystemService(Context.TELEPHONY_SERVICE));
         if (!instanceMethods.contains(runMethodReflect(null, "com.mediatek.telephony.TelephonyManagerEx", "getDefault", null, null)))
@@ -371,7 +362,6 @@ public class MultiSimTelephonyManager {
             instanceMethods.add(context.getSystemService("phone_msim"));
         if (!instanceMethods.contains(null))
             instanceMethods.add(null);
-
 //        String[] classNames = {
 //                null,
 //                "android.telephony.TelephonyManager",
@@ -393,8 +383,6 @@ public class MultiSimTelephonyManager {
 //                "ForPhone"
 //        };
         String[] methodSuffixes = generateMethodSuffix();
-
-
         Object result;
         for (String methodSuffix : methodSuffixes)
             for (String className : classNames)
@@ -405,9 +393,7 @@ public class MultiSimTelephonyManager {
                         if (result != null)
                             return result;
                     }
-
         return null;
-
     }
 
     private boolean hasPermissions(Context context, String... permissions) {
@@ -573,29 +559,28 @@ public class MultiSimTelephonyManager {
 */
 
     public void destroy() {
-        ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).listen(null, PhoneStateListener.LISTEN_NONE);
+        ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE))
+            .listen(null, PhoneStateListener.LISTEN_NONE);
         phoneStateListenerSim = null;
         try {
             if (broadcastReceiverSimState != null)
                 context.unregisterReceiver(broadcastReceiverSimState);
         } catch (Exception ignored) {
         }
-        slots = null;
         context = null;
     }
 
     private class BroadcastReceiverSimState extends BroadcastReceiver {
+
         @Override
         public void onReceive(final Context context, final Intent intent) {
             Timber.d("BRSS context [" + context + "] intent [" + intent + "]");
             if ((intent != null) && (intent.getAction() != null)) {
                 if (MultiSimTelephonyManager.this.context == null)
                     MultiSimTelephonyManager.this.context = context.getApplicationContext();
-
-                if (Build.VERSION.SDK_INT < 23 || hasPermissions(context, PERMISSIONS)) {
-                    updateSlots(context, intent); // first
+                if (hasPermissions(context, PERMISSIONS)) {
+                    updateSlots();
                 }
-
 //// try patch below when onSignalStrengthsChanged is not work
 //                // patch for "late" update of network operator info, because after "android.intent.action.SIM_STATE_CHANGED" I read FIRST time before OS write new network operator info :
 //                // this will work on switch off/on airplane mode (long time operation with both sims one-by-one) also
@@ -617,8 +602,7 @@ public class MultiSimTelephonyManager {
 
         public void onServiceStateChanged(ServiceState serviceState) {
             Timber.d("PhoneStateListenerSim.onServiceStateChanged " + serviceState.getState());
-            if (context != null)
-                context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
+            updateSlots();
         }
 //        public void onSignalStrengthsChanged(SignalStrength signalStrength) { // removed temporary because more times start (every sec)
 //            Log("PhoneStateListenerSim.onSignalStrengthsChanged " + signalStrength);
