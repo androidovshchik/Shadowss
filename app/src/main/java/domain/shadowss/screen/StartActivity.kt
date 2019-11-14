@@ -78,12 +78,12 @@ class StartActivity : BaseActivity(), StartView {
         updateText()
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
-            if (controller.onChoice()) {
+            if (controller.onChoice(applicationContext)) {
                 isDriver = true
             }
         }
         btn_manager.setOnClickListener {
-            if (controller.onChoice()) {
+            if (controller.onChoice(applicationContext)) {
                 isDriver = false
             }
         }

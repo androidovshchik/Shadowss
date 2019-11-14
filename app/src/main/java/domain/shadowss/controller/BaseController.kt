@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.telephony.SubscriptionManager
-import android.text.TextUtils
 import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
 import domain.shadowss.extension.*
@@ -45,6 +44,15 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     protected val socketManager: WebSocketManager by instance()
 
+    @Volatile
+    protected var hash: String? = null
+
+    protected fun checkHash(value: String?) = hash == value
+
+    protected fun nextHash(value: String? = null) {
+        hash = value
+    }
+
     open fun start() {
         disposable.add(socketManager.observer
             .subscribe({ instance ->
@@ -73,14 +81,14 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
             }
             granted = areGranted(*permissions)
             if (!granted) {
-                if (this is Activity && !isFinishing) {
+                if (this is Activity) {
                     requestPermissions(REQUEST_PERMISSIONS, *permissions)
                 }
                 return@run false
             }
             granted = powerManager.isIgnoringBatteryOptimizations(packageName)
             if (!granted) {
-                if (this is Activity && !isFinishing) {
+                if (this is Activity) {
                     startActivityForResult(
                         Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
                         REQUEST_ZONE_MODE
@@ -111,25 +119,16 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     @SuppressLint("MissingPermission")
     fun checkMcc(context: Context): Pair<String?, String?> = context.run {
-        if (isLollipopMR1Plus()) {
-            val subscriptionManager =
-                getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-            if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-                val infoList = subscriptionManager.activeSubscriptionInfoList
-                val mcc1 = infoList.getOrNull(0)?.mcc.toString()
-                val mcc2 = infoList.getOrNull(1)?.mcc.toString()
-                return@run mcc1 to mcc2
+        return@run if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+            if (isLollipopMR1Plus()) {
+                val subscriptionManager =
+                    getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+                val list = subscriptionManager.activeSubscriptionInfoList
+                return@run list.getOrNull(0)?.mcc.toString() to list.getOrNull(1)?.mcc.toString()
+            } else {
+                telephonyManager.networkCountryIso to invokeBySlot("getNetworkCountryIso", 1)
             }
-        } else {
-            val code = telephonyManager.networkOperator
-            if (!TextUtils.isEmpty(code)) {
-                val length = 3
-                if (code.length >= length) {
-                    mcc1 = code.substring(0, length)
-                }
-            }
-        }
-        return@run null to null
+        } else null to null
     }
 
     override fun onSAPI(instance: SAPI) {}
