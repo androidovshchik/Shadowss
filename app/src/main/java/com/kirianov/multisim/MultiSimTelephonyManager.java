@@ -20,22 +20,15 @@ import java.util.List;
 
 import timber.log.Timber;
 
+@SuppressWarnings("all")
 public class MultiSimTelephonyManager {
 
-    private native static String[] generateClassNames();
-
-    private native static String[] generateMethodSuffix();
-
     private Context context;
-
     private BroadcastReceiverSimState broadcastReceiverSimState;
-
     private PhoneStateListenerSim phoneStateListenerSim;
-
-    String[] PERMISSIONS = {
+    private String[] PERMISSIONS = {
             Manifest.permission.READ_PHONE_STATE
     };
-
     private List<Slot> slots;
 
     public MultiSimTelephonyManager(Context context) {
@@ -49,7 +42,11 @@ public class MultiSimTelephonyManager {
 
         slots = new ArrayList<>();
 
-        broadcastReceiverRegister();
+        broadcastReceiverSimState = new BroadcastReceiverSimState();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
+        intentFilter.addAction("android.intent.action.PHONE_STATE");
+        this.context.registerReceiver(broadcastReceiverSimState, intentFilter);
 
         phoneStateListenerSim = new PhoneStateListenerSim();
         ((TelephonyManager) this.context.getSystemService(Context.TELEPHONY_SERVICE))
@@ -68,55 +65,72 @@ public class MultiSimTelephonyManager {
 
     }
 
-    private void broadcastReceiverRegister() {
-        broadcastReceiverSimState = new BroadcastReceiverSimState();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("android.intent.action.SIM_STATE_CHANGED");
-        intentFilter.addAction("android.intent.action.PHONE_STATE");
-        intentFilter.addAction(this.context.getPackageName() + "BRSS");
-        this.context.registerReceiver(broadcastReceiverSimState, intentFilter);
-    }
+    private native static String[] generateClassNames();
 
-    private boolean hasPermissions(Context context, String... permissions) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+    private native static String[] generateMethodSuffix();
 
-    /*
-    //public class MultiSimTelephonyManager implements ActivityCompat.OnRequestPermissionsResultCallback {
-            @Override
-            public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-                Log("OnRequestPermissionsResultCallback.onRequestPermissionsResult " + requestCode + ", " + permissions + ", " + grantResults);
-            }
-    */
-/*
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log("onRequestPermissionsResult " + requestCode + ", " + permissions + ", " + grantResults);
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
-            Log("Permission: "+permissions[0]+ "was "+grantResults[0]);
-            //resume tasks needing this permission
-            broadcastReceiverRegister();
-        }
-    }
-*/
-    public void destroy() {
-        ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).listen(null, PhoneStateListener.LISTEN_NONE);
-        phoneStateListenerSim = null;
+    private static Object runMethodReflect(Object instanceInvoke, String classInvokeName, String methodName, Object[] methodParams, String field) {
+        Object result = null;
+        Class<?> classInvoke = null;
+        Class[] classesParams = null;
+        // String logString = "";
         try {
-            if (broadcastReceiverSimState != null)
-                context.unregisterReceiver(broadcastReceiverSimState);
+            if (classInvokeName != null)
+                classInvoke = Class.forName(classInvokeName);
+            else if (instanceInvoke != null)
+                classInvoke = Class.forName(instanceInvoke.getClass().getName());
+            // logString += "" + (classInvoke != null ? classInvoke.getName() : null) + ".";
+            if (classInvoke != null) {
+                if (field != null) {
+                    // logString += field;
+                    Field fieldReflect = classInvoke.getField(field);
+                    boolean accessible = fieldReflect.isAccessible();
+                    fieldReflect.setAccessible(true);
+                    result = fieldReflect.get(null).toString();
+                    fieldReflect.setAccessible(accessible);
+                } else {
+                    // logString += methodName + "(";
+                    if (methodParams != null) {
+                        classesParams = new Class[methodParams.length];
+                        for (int i = 0; i < methodParams.length; i++) {
+                            if (methodParams[i] instanceof String) {
+                                classesParams[i] = String.class;
+                                // logString += "\"" + methodParams[i] + "\",";
+                            } else if (methodParams[i] instanceof Integer) {
+                                classesParams[i] = int.class;
+                                // logString += methodParams[i] + ",";
+                            } else if (methodParams[i] instanceof Long) {
+                                classesParams[i] = long.class;
+                                // logString += methodParams[i] + ",";
+                            } else if (methodParams[i] instanceof Boolean) {
+                                classesParams[i] = boolean.class;
+                                // logString += methodParams[i] + ",";
+                            } else {
+                                classesParams[i] = methodParams[i].getClass();
+                                // logString += "["+methodParams[i]+"]" + ",";
+                            }
+                        }
+                    }
+                    // if (logString.endsWith(","))
+                    //     logString = logString.substring(0, logString.length() - 1);
+                    // logString += ")";
+                    try {
+                        Method method = classInvoke.getDeclaredMethod(methodName, classesParams);
+                        boolean accessible = method.isAccessible();
+                        method.setAccessible(true);
+                        result = method.invoke(instanceInvoke == null ? classInvoke : instanceInvoke, methodParams);
+                        method.setAccessible(accessible);
+                    } catch (Exception ignored) {
+                    }
+                }
+
+            }
+
         } catch (Exception ignored) {
+            // Log.i(LOG, "EXC " + ignored.getMessage());
         }
-        slots = null;
-        context = null;
+        // Log("" + logString + " = [" + result + "]");
+        return result;
     }
 
     private boolean setSlot(int location, Slot slot) {
@@ -144,18 +158,15 @@ public class MultiSimTelephonyManager {
         return updated;
     }
 
-
     public Slot getSlot(int location) {
         if (slots.size() > location) return slots.get(location);
         return null;
     }
 
-
     public List<Slot> getSlots() {
         if ((slots == null) || (slots.size() <= 0)) return null;
         return slots;
     }
-
 
     @SuppressWarnings("ResourceType")
     private Slot touchSlot(int slotNumber) {
@@ -306,7 +317,6 @@ public class MultiSimTelephonyManager {
         return slot;
     }
 
-
     private void updateSlots(Context context, Intent intent) {
         int slotNumber = 0;
         Slot slot;
@@ -327,78 +337,7 @@ public class MultiSimTelephonyManager {
             changed = setSlot(slotNumber, slot) | changed;
             slotNumber++;
         }
-        if (changed) {
-            if (broadcastReceiverUser != null)
-                broadcastReceiverUser.onReceive(context, intent);
-        }
     }
-
-
-    public int sizeSlots() {
-        if (slots != null)
-            return slots.size();
-        else
-            return 0;
-    }
-
-
-    public void update() {
-        if (context != null)
-            context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
-    }
-
-
-    private class BroadcastReceiverSimState extends BroadcastReceiver {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            Timber.d("BRSS context [" + context + "] intent [" + intent + "]");
-            if ((intent != null) && (intent.getAction() != null)) {
-                if (MultiSimTelephonyManager.this.context == null)
-                    MultiSimTelephonyManager.this.context = context.getApplicationContext();
-
-                if (Build.VERSION.SDK_INT < 23 || hasPermissions(context, PERMISSIONS)) {
-                    updateSlots(context, intent); // first
-                }
-
-//// try patch below when onSignalStrengthsChanged is not work
-//                // patch for "late" update of network operator info, because after "android.intent.action.SIM_STATE_CHANGED" I read FIRST time before OS write new network operator info :
-//                // this will work on switch off/on airplane mode (long time operation with both sims one-by-one) also
-//                if( intent.getAction().compareTo(context.getPackageName() + "BRSS") != 0) {
-//                    new CountDownTimer(30000, 1000) {
-//                        public void onTick(long m) {
-//                            updateSlots(context, intent);
-//                        }
-//                        public void onFinish() {
-//                        }
-//                    }.start();
-//                }
-            }
-        }
-    }
-
-
-    @SuppressWarnings("SpellCheckingInspection")
-    private class PhoneStateListenerSim extends PhoneStateListener {
-        public void onServiceStateChanged(ServiceState serviceState) {
-            Timber.d("PhoneStateListenerSim.onServiceStateChanged " + serviceState.getState());
-            if (context != null)
-                context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
-        }
-//        public void onSignalStrengthsChanged(SignalStrength signalStrength) { // removed temporary because more times start (every sec)
-//            Log("PhoneStateListenerSim.onSignalStrengthsChanged " + signalStrength);
-//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
-//        }
-// onCellInfoChanged and onCellLocationChanged REQUIRED  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> in AndroidManifest
-//        public void onCellInfoChanged(List<CellInfo> cellInfo) {
-//            Log("PhoneStateListenerSim.onCellInfoChanged " + cellInfo);
-//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
-//        }
-//        public void onCellLocationChanged(CellLocation location) {
-//            Log("PhoneStateListenerSim.onCellLocationChanged " + location);
-//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
-//        }
-    }
-
 
     @SuppressWarnings("ResourceType")
     private Object spamMethods(String methodName, Object[] methodParams) {
@@ -469,6 +408,17 @@ public class MultiSimTelephonyManager {
 
         return null;
 
+    }
+
+    private boolean hasPermissions(Context context, String... permissions) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 /*
@@ -622,67 +572,66 @@ public class MultiSimTelephonyManager {
     }
 */
 
-    private static Object runMethodReflect(Object instanceInvoke, String classInvokeName, String methodName, Object[] methodParams, String field) {
-        Object result = null;
-        Class<?> classInvoke = null;
-        Class[] classesParams = null;
-        // String logString = "";
+    public void destroy() {
+        ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).listen(null, PhoneStateListener.LISTEN_NONE);
+        phoneStateListenerSim = null;
         try {
-            if (classInvokeName != null)
-                classInvoke = Class.forName(classInvokeName);
-            else if (instanceInvoke != null)
-                classInvoke = Class.forName(instanceInvoke.getClass().getName());
-            // logString += "" + (classInvoke != null ? classInvoke.getName() : null) + ".";
-            if (classInvoke != null) {
-                if (field != null) {
-                    // logString += field;
-                    Field fieldReflect = classInvoke.getField(field);
-                    boolean accessible = fieldReflect.isAccessible();
-                    fieldReflect.setAccessible(true);
-                    result = fieldReflect.get(null).toString();
-                    fieldReflect.setAccessible(accessible);
-                } else {
-                    // logString += methodName + "(";
-                    if (methodParams != null) {
-                        classesParams = new Class[methodParams.length];
-                        for (int i = 0; i < methodParams.length; i++) {
-                            if (methodParams[i] instanceof String) {
-                                classesParams[i] = String.class;
-                                // logString += "\"" + methodParams[i] + "\",";
-                            } else if (methodParams[i] instanceof Integer) {
-                                classesParams[i] = int.class;
-                                // logString += methodParams[i] + ",";
-                            } else if (methodParams[i] instanceof Long) {
-                                classesParams[i] = long.class;
-                                // logString += methodParams[i] + ",";
-                            } else if (methodParams[i] instanceof Boolean) {
-                                classesParams[i] = boolean.class;
-                                // logString += methodParams[i] + ",";
-                            } else {
-                                classesParams[i] = methodParams[i].getClass();
-                                // logString += "["+methodParams[i]+"]" + ",";
-                            }
-                        }
-                    }
-                    // if (logString.endsWith(","))
-                    //     logString = logString.substring(0, logString.length() - 1);
-                    // logString += ")";
-                    try {
-                        Method method = classInvoke.getDeclaredMethod(methodName, classesParams);
-                        boolean accessible = method.isAccessible();
-                        method.setAccessible(true);
-                        result = method.invoke(instanceInvoke == null ? classInvoke : instanceInvoke, methodParams);
-                        method.setAccessible(accessible);
-                    } catch (Exception ignored) {
-                    }
+            if (broadcastReceiverSimState != null)
+                context.unregisterReceiver(broadcastReceiverSimState);
+        } catch (Exception ignored) {
+        }
+        slots = null;
+        context = null;
+    }
+
+    private class BroadcastReceiverSimState extends BroadcastReceiver {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            Timber.d("BRSS context [" + context + "] intent [" + intent + "]");
+            if ((intent != null) && (intent.getAction() != null)) {
+                if (MultiSimTelephonyManager.this.context == null)
+                    MultiSimTelephonyManager.this.context = context.getApplicationContext();
+
+                if (Build.VERSION.SDK_INT < 23 || hasPermissions(context, PERMISSIONS)) {
+                    updateSlots(context, intent); // first
                 }
 
+//// try patch below when onSignalStrengthsChanged is not work
+//                // patch for "late" update of network operator info, because after "android.intent.action.SIM_STATE_CHANGED" I read FIRST time before OS write new network operator info :
+//                // this will work on switch off/on airplane mode (long time operation with both sims one-by-one) also
+//                if( intent.getAction().compareTo(context.getPackageName() + "BRSS") != 0) {
+//                    new CountDownTimer(30000, 1000) {
+//                        public void onTick(long m) {
+//                            updateSlots(context, intent);
+//                        }
+//                        public void onFinish() {
+//                        }
+//                    }.start();
+//                }
             }
-
-        } catch (Exception ignored) {
-            // Log.i(LOG, "EXC " + ignored.getMessage());
         }
-        // Log("" + logString + " = [" + result + "]");
-        return result;
+    }
+
+    @SuppressWarnings("SpellCheckingInspection")
+    private class PhoneStateListenerSim extends PhoneStateListener {
+
+        public void onServiceStateChanged(ServiceState serviceState) {
+            Timber.d("PhoneStateListenerSim.onServiceStateChanged " + serviceState.getState());
+            if (context != null)
+                context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
+        }
+//        public void onSignalStrengthsChanged(SignalStrength signalStrength) { // removed temporary because more times start (every sec)
+//            Log("PhoneStateListenerSim.onSignalStrengthsChanged " + signalStrength);
+//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
+//        }
+// onCellInfoChanged and onCellLocationChanged REQUIRED  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> in AndroidManifest
+//        public void onCellInfoChanged(List<CellInfo> cellInfo) {
+//            Log("PhoneStateListenerSim.onCellInfoChanged " + cellInfo);
+//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
+//        }
+//        public void onCellLocationChanged(CellLocation location) {
+//            Log("PhoneStateListenerSim.onCellLocationChanged " + location);
+//            if( context != null) context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
+//        }
     }
 }
