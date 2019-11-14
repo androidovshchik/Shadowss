@@ -1,19 +1,27 @@
 package domain.shadowss.manager
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
+import android.provider.Settings
+import android.util.Base64
 import com.neovisionaries.ws.client.*
 import defpackage.marsh.*
 import domain.shadowss.BuildConfig
+import domain.shadowss.extension.areGranted
 import domain.shadowss.extension.getTopActivity
+import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.screen.*
 import io.reactivex.subjects.PublishSubject
 import org.jetbrains.anko.activityManager
+import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.ref.WeakReference
 import kotlin.ByteArray
 
 @Suppress("SpellCheckingInspection")
@@ -39,9 +47,7 @@ class WebSocketManager(context: Context) {
 
     val observer = PublishSubject.create<Any>().toSerialized()
 
-    private val activityManager = context.activityManager
-
-    private val packageName = context.packageName
+    private val reference = WeakReference(context)
 
     private var webSocket: WebSocket? = null
 
@@ -120,11 +126,10 @@ class WebSocketManager(context: Context) {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
-                            form = currentForm
+                            form = currentForm.toString()
                             ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
-                            uid = ""
                             IP = ""
-                            usid = ""
+                            uid = deviceKey.toString()
                         }
                     }
                     is ASRC -> {
@@ -132,7 +137,9 @@ class WebSocketManager(context: Context) {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
-                            form = currentForm
+                            form = currentForm.toString()
+                            IP = ""
+                            uid = deviceKey.toString()
                         }
                     }
                     is ASRM -> {
@@ -140,7 +147,9 @@ class WebSocketManager(context: Context) {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
-                            form = currentForm
+                            form = currentForm.toString()
+                            IP = ""
+                            uid = deviceKey.toString()
                         }
                     }
                     is ASRV -> {
@@ -148,8 +157,10 @@ class WebSocketManager(context: Context) {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
-                            form = currentForm
+                            form = currentForm.toString()
                             ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
+                            IP = ""
+                            uid = deviceKey.toString()
                         }
                     }
                     is ASRR -> {
@@ -157,7 +168,9 @@ class WebSocketManager(context: Context) {
                             os = "A"
                             api = Build.VERSION.RELEASE
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
-                            form = currentForm
+                            form = currentForm.toString()
+                            IP = ""
+                            uid = deviceKey.toString()
                         }
                     }
                 }
@@ -175,13 +188,31 @@ class WebSocketManager(context: Context) {
         }
     }
 
-    private val currentForm: String
-        get() = when (activityManager.getTopActivity(packageName)) {
-            StartActivity::class.java.name, TermsActivity::class.java.name -> "REG1"
-            RegistrationActivity::class.java.name -> "REG2"
-            ManagerActivity::class.java.name -> "MNMA"
-            DriverActivity::class.java.name -> "MNDR"
-            else -> "NULL"
+    private val currentForm: String?
+        get() = reference.get()?.run {
+            when (activityManager.getTopActivity(packageName)) {
+                StartActivity::class.java.name, TermsActivity::class.java.name -> "REG1"
+                RegistrationActivity::class.java.name -> "REG2"
+                ManagerActivity::class.java.name -> "MNMA"
+                DriverActivity::class.java.name -> "MNDR"
+                else -> null
+            }
+        }
+
+    @Suppress("DEPRECATION")
+    private val deviceKey: String?
+        @SuppressLint("HardwareIds")
+        get() = reference.get()?.run {
+            val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+            val imei = if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+                if (isOreoPlus()) {
+                    telephonyManager.imei
+                } else {
+                    telephonyManager.deviceId
+                }
+            }
+            Base64.encode("$androidId:$imei".toByteArray(), Base64.NO_WRAP)
+                .toString(Charsets.UTF_8)
         }
 
     // todo optimization
@@ -198,6 +229,7 @@ class WebSocketManager(context: Context) {
         return output.toByteArray()
     }
 
+    // todo optimization
     private fun unmarshal(bytes: ByteArray): Any? {
         var name = "NULL"
         try {
