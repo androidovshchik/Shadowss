@@ -51,6 +51,7 @@ class WebSocketManager(context: Context) {
 
     private var webSocket: WebSocket? = null
 
+    // todo callbacks
     private val listener = object : WebSocketAdapter() {
 
         override fun onConnected(
@@ -201,18 +202,21 @@ class WebSocketManager(context: Context) {
 
     @Suppress("DEPRECATION")
     private val deviceKey: String?
-        @SuppressLint("HardwareIds")
+        @SuppressLint("HardwareIds", "MissingPermission")
         get() = reference.get()?.run {
-            val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-            val imei = if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-                if (isOreoPlus()) {
+            if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+                val androidId =
+                    Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+                val imei = if (isOreoPlus()) {
                     telephonyManager.imei
                 } else {
                     telephonyManager.deviceId
                 }
+                Base64.encode("$androidId:$imei".toByteArray(), Base64.NO_WRAP)
+                    .toString(Charsets.UTF_8)
+            } else {
+                null
             }
-            Base64.encode("$androidId:$imei".toByteArray(), Base64.NO_WRAP)
-                .toString(Charsets.UTF_8)
         }
 
     // todo optimization

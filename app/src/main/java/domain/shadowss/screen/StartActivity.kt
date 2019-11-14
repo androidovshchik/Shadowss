@@ -28,7 +28,7 @@ interface StartView : BaseView {
 
     fun onSuccess()
 
-    fun onError(instance: Any, data: String)
+    fun onError(data: String, instance: Any? = null)
 }
 
 class StartActivity : BaseActivity(), StartView {
@@ -78,14 +78,14 @@ class StartActivity : BaseActivity(), StartView {
         updateText()
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
-            it.isEnabled = false
-            isDriver = true
-            controller.onChoice()
+            if (controller.onChoice()) {
+                isDriver = true
+            }
         }
         btn_manager.setOnClickListener {
-            it.isEnabled = false
-            isDriver = false
-            controller.onChoice()
+            if (controller.onChoice()) {
+                isDriver = false
+            }
         }
         controller.checkRights(this)
     }
@@ -96,16 +96,12 @@ class StartActivity : BaseActivity(), StartView {
         )
     }
 
-    override fun onError(instance: Any, data: String) {
+    override fun onError(data: String, instance: Any?) {
         errorDialog.apply {
-            if (instance is SARV) {
-                marketLink = instance.dataerr
-            }
+            marketLink = if (instance is SARV) instance.dataerr else null
             setData(data)
             show()
         }
-        btn_driver.isEnabled = true
-        btn_manager.isEnabled = true
     }
 
     @SuppressLint("SetTextI18n")
