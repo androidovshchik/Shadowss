@@ -71,6 +71,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
         android:scaleType="fitCenter"
         android:adjustViewBounds="true"
         tools:src="@mipmap/ic_launcher" />

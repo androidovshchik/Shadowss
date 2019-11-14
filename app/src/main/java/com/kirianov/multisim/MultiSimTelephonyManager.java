@@ -1,7 +1,6 @@
 package com.kirianov.multisim;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,10 +11,14 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyManager;
 
+import androidx.core.content.ContextCompat;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 public class MultiSimTelephonyManager {
 
@@ -24,8 +27,9 @@ public class MultiSimTelephonyManager {
     private native static String[] generateMethodSuffix();
 
     private Context context;
+
     private BroadcastReceiverSimState broadcastReceiverSimState;
-    private BroadcastReceiver broadcastReceiverUser;
+
     private PhoneStateListenerSim phoneStateListenerSim;
 
     String[] PERMISSIONS = {
@@ -34,36 +38,22 @@ public class MultiSimTelephonyManager {
 
     private List<Slot> slots;
 
-
     public MultiSimTelephonyManager(Context context) {
-        this(context, null);
-    }
-
-
-    public MultiSimTelephonyManager(Context context, BroadcastReceiver broadcastReceiverOnChange) {
-
         try {
-            // do not use Log before loadLibrary
             System.loadLibrary("multisimlib");
         } catch (Exception e) {
-            Log("MSIM-LIB exception [" + e.getMessage() + "]");
+            Timber.d("MSIM-LIB exception [" + e.getMessage() + "]");
         }
 
         MultiSimTelephonyManager.this.context = context.getApplicationContext();
-        MultiSimTelephonyManager.this.broadcastReceiverUser = broadcastReceiverOnChange;
 
-        slots = new ArrayList<Slot>();
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (context instanceof Activity && !hasPermissions(context, PERMISSIONS)) {
-                ActivityCompat.requestPermissions((Activity) context, PERMISSIONS, 1);
-            }
-        }
+        slots = new ArrayList<>();
 
         broadcastReceiverRegister();
 
         phoneStateListenerSim = new PhoneStateListenerSim();
-        ((TelephonyManager) this.context.getSystemService(Context.TELEPHONY_SERVICE)).listen(phoneStateListenerSim, PhoneStateListener.LISTEN_SERVICE_STATE | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        ((TelephonyManager) this.context.getSystemService(Context.TELEPHONY_SERVICE))
+                .listen(phoneStateListenerSim, PhoneStateListener.LISTEN_SERVICE_STATE | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
         // printAllMethodsAndFields("android.telephony.TelephonyManager", -1); // all methods
         // printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager", -1); // all methods
@@ -172,7 +162,7 @@ public class MultiSimTelephonyManager {
 
         Slot slot = new Slot();
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        Log("telephonyManager [" + telephonyManager + "] " + telephonyManager.getDeviceId());
+        Timber.d("telephonyManager [" + telephonyManager + "] " + telephonyManager.getDeviceId());
 
 
         ArrayList<String> subscriberIdIntValue = new ArrayList<String>();
@@ -191,7 +181,7 @@ public class MultiSimTelephonyManager {
                 subIdInt = Integer.parseInt("" + runMethodReflect(context.getSystemService(Context.TELEPHONY_SERVICE), "android.telephony.TelephonyManager", "getSubId", new Object[]{slotNumber}, null));
         } catch (Exception ignored) {
         }
-        Log("subIdInt " + subIdInt);
+        Timber.d("subIdInt " + subIdInt);
 
 
         ArrayList<String> subscriberIdLongValue = new ArrayList<String>();
@@ -216,7 +206,7 @@ public class MultiSimTelephonyManager {
         Long subIdLong = subscriberIdLongIndex.size() > slotNumber ? subscriberIdLongIndex.get(slotNumber) : null;
         if (subIdLong == null)
             subIdLong = (Long) runMethodReflect(context.getSystemService(Context.TELEPHONY_SERVICE), "android.telephony.TelephonyManager", "getSubId", new Object[]{slotNumber}, null);
-        Log("subIdLong " + subIdLong);
+        Timber.d("subIdLong " + subIdLong);
 
         List<Object> listParamsSubs = new ArrayList<Object>();
         if ((subIdInt != null) && (!listParamsSubs.contains(subIdInt)))
@@ -227,7 +217,7 @@ public class MultiSimTelephonyManager {
             listParamsSubs.add(slotNumber);
         Object[] objectParamsSubs = listParamsSubs.toArray();
         for (int i = 0; i < objectParamsSubs.length; i++)
-            Log("SPAM PARAMS_SUBS [" + i + "]=[" + objectParamsSubs[i] + "]");
+            Timber.d("SPAM PARAMS_SUBS [" + i + "]=[" + objectParamsSubs[i] + "]");
 
         List<Object> listParamsSlot = new ArrayList<Object>();
         if (!listParamsSlot.contains(slotNumber))
@@ -238,8 +228,7 @@ public class MultiSimTelephonyManager {
             listParamsSlot.add(subIdLong);
         Object[] objectParamsSlot = listParamsSlot.toArray();
         for (int i = 0; i < objectParamsSlot.length; i++)
-            Log("SPAM PARAMS_SLOT [" + i + "]=[" + objectParamsSlot[i] + "]");
-
+            Timber.d("SPAM PARAMS_SLOT [" + i + "]=[" + objectParamsSlot[i] + "]");
 
         // for 6.0+ android sdk - uncomment after upgrade builder to SDK 23+ (now SDK 18 with apache.http*)
         //if(Build.VERSION.SDK_INT >= 23) {
@@ -247,10 +236,9 @@ public class MultiSimTelephonyManager {
         //}
 
         // firstly all Int params, then all Long params
-        Log("------------------------------------------");
-
+        Timber.d("------------------------------------------");
         // imei
-        Log("SLOT                [" + slotNumber + "]");
+        Timber.d("SLOT [" + slotNumber + "]");
         //if( slot.getImei() == null)
         slot.setImei((String) spamMethods("getDeviceId", objectParamsSlot));
         if (slot.getImei() == null)
@@ -259,8 +247,7 @@ public class MultiSimTelephonyManager {
             slot.setImei((String) runMethodReflect(context.getSystemService("phone" + (slotNumber + 1)), null, "getDeviceId", null, null));
         // if( slot.getImei() == null)
         //     slot.setImei((String) runMethodReflect(null, "com.android.internal.telephony.PhoneFactory", "getServiceName", new Object[]{Context.TELEPHONY_SERVICE, slotNumber}, null));
-        Log("IMEI                [" + slot.getImei() + "]");
-
+        Timber.d("IMEI [" + slot.getImei() + "]");
         // default one sim phone
         if (slot.getImei() == null)
             switch (slotNumber) {
@@ -280,68 +267,43 @@ public class MultiSimTelephonyManager {
                     return slot;
             }
         if (slot.getImei() == null) return null;
-
-
         // simState
         slot.setSimState((Integer) spamMethods("getSimState", objectParamsSlot));
-        Log("SIMSTATE            [" + slot.getSimState() + "]");
+        Timber.d("SIMSTATE [" + slot.getSimState() + "]");
         // if( (slot.getSimState() == TelephonyManager.SIM_STATE_UNKNOWN) || (slot.getSimState() == -1))
         //    return slot;
-
-
         // imsi
         slot.setImsi((String) spamMethods("getSubscriberId", objectParamsSubs));
-        Log("IMSI                [" + slot.getImsi() + "]");
-
-
+        Timber.d("IMSI [" + slot.getImsi() + "]");
         // simSerialNumber
         slot.setSimSerialNumber((String) spamMethods("getSimSerialNumber", objectParamsSubs));
-        Log("SIMSERIALNUMBER     [" + slot.getSimSerialNumber() + "]");
-
-
+        Timber.d("SIMSERIALNUMBER [" + slot.getSimSerialNumber() + "]");
         // simOperator
         slot.setSimOperator((String) spamMethods("getSimOperator", objectParamsSubs));
-        Log("SIMOPERATOR         [" + slot.getSimOperator() + "]");
-
-
+        Timber.d("SIMOPERATOR [" + slot.getSimOperator() + "]");
         // simOperatorName
         slot.setSimOperatorName((String) spamMethods("getSimOperatorName", objectParamsSubs));
-        Log("SIMOPERATORNAME     [" + slot.getSimOperatorName() + "]");
-
-
+        Timber.d("SIMOPERATORNAME [" + slot.getSimOperatorName() + "]");
         // simCountryIso
         slot.setSimCountryIso((String) spamMethods("getSimCountryIso", objectParamsSubs));
-        Log("SIMCOUNTRYISO       [" + slot.getSimCountryIso() + "]");
-
-
+        Timber.d("SIMCOUNTRYISO [" + slot.getSimCountryIso() + "]");
         // networkOperator
         slot.setNetworkOperator((String) spamMethods("getNetworkOperator", objectParamsSubs));
-        Log("NETWORKOPERATOR     [" + slot.getNetworkOperator() + "]");
-
-
+        Timber.d("NETWORKOPERATOR [" + slot.getNetworkOperator() + "]");
         // networkOperatorName
         slot.setNetworkOperatorName((String) spamMethods("getNetworkOperatorName", objectParamsSubs));
-        Log("NETWORKOPERATORNAME [" + slot.getNetworkOperatorName() + "]");
-
-
+        Timber.d("NETWORKOPERATORNAME [" + slot.getNetworkOperatorName() + "]");
         // networkCountryIso
         slot.setNetworkCountryIso((String) spamMethods("getNetworkCountryIso", objectParamsSubs));
-        Log("NETWORKCOUNTRYISO   [" + slot.getNetworkCountryIso() + "]");
-
-
+        Timber.d("NETWORKCOUNTRYISO [" + slot.getNetworkCountryIso() + "]");
         // networkType
         slot.setNetworkType((Integer) spamMethods("getNetworkType", objectParamsSubs));
-        Log("NETWORKTYPE         [" + slot.getNetworkType() + "]");
-
-
+        Timber.d("NETWORKTYPE [" + slot.getNetworkType() + "]");
         // networkRoaming
         slot.setNetworkRoaming((Boolean) spamMethods("isNetworkRoaming", objectParamsSubs));
-        Log("NETWORKROAMING      [" + slot.isNetworkRoaming() + "]");
-
-
-        Log("------------------------------------------");
+        Timber.d("NETWORKROAMING [" + slot.isNetworkRoaming() + "]");
+        Timber.d("------------------------------------------");
         return slot;
-
     }
 
 
@@ -389,7 +351,7 @@ public class MultiSimTelephonyManager {
     private class BroadcastReceiverSimState extends BroadcastReceiver {
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            Log("BRSS context [" + context + "] intent [" + intent + "]");
+            Timber.d("BRSS context [" + context + "] intent [" + intent + "]");
             if ((intent != null) && (intent.getAction() != null)) {
                 if (MultiSimTelephonyManager.this.context == null)
                     MultiSimTelephonyManager.this.context = context.getApplicationContext();
@@ -418,7 +380,7 @@ public class MultiSimTelephonyManager {
     @SuppressWarnings("SpellCheckingInspection")
     private class PhoneStateListenerSim extends PhoneStateListener {
         public void onServiceStateChanged(ServiceState serviceState) {
-            Log("PhoneStateListenerSim.onServiceStateChanged " + serviceState.getState());
+            Timber.d("PhoneStateListenerSim.onServiceStateChanged " + serviceState.getState());
             if (context != null)
                 context.sendBroadcast(new Intent(context.getPackageName() + "BRSS"));
         }
@@ -661,34 +623,25 @@ public class MultiSimTelephonyManager {
 */
 
     private static Object runMethodReflect(Object instanceInvoke, String classInvokeName, String methodName, Object[] methodParams, String field) {
-
         Object result = null;
         Class<?> classInvoke = null;
         Class[] classesParams = null;
         // String logString = "";
-
         try {
-
             if (classInvokeName != null)
                 classInvoke = Class.forName(classInvokeName);
             else if (instanceInvoke != null)
                 classInvoke = Class.forName(instanceInvoke.getClass().getName());
             // logString += "" + (classInvoke != null ? classInvoke.getName() : null) + ".";
-
-
             if (classInvoke != null) {
-
                 if (field != null) {
-
                     // logString += field;
                     Field fieldReflect = classInvoke.getField(field);
                     boolean accessible = fieldReflect.isAccessible();
                     fieldReflect.setAccessible(true);
                     result = fieldReflect.get(null).toString();
                     fieldReflect.setAccessible(accessible);
-
                 } else {
-
                     // logString += methodName + "(";
                     if (methodParams != null) {
                         classesParams = new Class[methodParams.length];
@@ -714,7 +667,6 @@ public class MultiSimTelephonyManager {
                     // if (logString.endsWith(","))
                     //     logString = logString.substring(0, logString.length() - 1);
                     // logString += ")";
-
                     try {
                         Method method = classInvoke.getDeclaredMethod(methodName, classesParams);
                         boolean accessible = method.isAccessible();
@@ -730,9 +682,7 @@ public class MultiSimTelephonyManager {
         } catch (Exception ignored) {
             // Log.i(LOG, "EXC " + ignored.getMessage());
         }
-
         // Log("" + logString + " = [" + result + "]");
         return result;
-
     }
 }
