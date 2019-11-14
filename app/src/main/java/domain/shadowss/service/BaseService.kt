@@ -20,6 +20,10 @@ abstract class BaseService : Service(), KodeinAware {
         return null
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
+    }
+
     @SuppressLint("WakelockTimeout")
     protected fun acquireWakeLock(name: String) {
         if (wakeLock == null) {

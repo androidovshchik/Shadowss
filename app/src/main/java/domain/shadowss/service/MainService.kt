@@ -2,7 +2,6 @@ package domain.shadowss.service
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import androidx.core.app.NotificationCompat
 import domain.shadowss.R
 import domain.shadowss.controller.MainController
@@ -51,18 +50,6 @@ class MainService : BaseService(), MainWorker {
         }, 0L, 2000L, TimeUnit.MILLISECONDS)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.let {
-            if (it.hasExtra(EXTRA_CONNECT)) {
-                keepConnection = it.getBooleanExtra(EXTRA_CONNECT, false)
-            }
-            if (it.hasExtra(EXTRA_LOCATION)) {
-                requestLocation = it.getBooleanExtra(EXTRA_LOCATION, false)
-            }
-        }
-        return START_STICKY
-    }
-
     override fun onDestroy() {
         controller.release()
         timer?.cancel(true)
@@ -73,14 +60,10 @@ class MainService : BaseService(), MainWorker {
     companion object {
 
         @Volatile
-        private var keepConnection = true
+        var keepConnection = true
 
         @Volatile
-        private var requestLocation = false
-
-        const val EXTRA_CONNECT = "connect"
-
-        const val EXTRA_LOCATION = "location"
+        var requestLocation = false
 
         @Throws(Throwable::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {

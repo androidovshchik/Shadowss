@@ -11,5 +11,5 @@ class Preferences(context: Context) : KotprefModel(context) {
 
     var agree by booleanPref(false, "0x01")
 
-    var deviceKey by booleanPref(false, "0x03")
+    var deviceKey by nullableStringPref(null, "0x03")
 }
