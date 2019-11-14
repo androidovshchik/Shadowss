@@ -44,8 +44,6 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     protected val socketManager: WebSocketManager by instance()
 
-    protected val preferences: Preferences by instance()
-
     open fun start() {
         disposable.add(socketManager.observer
             .subscribe({ instance ->
@@ -203,59 +201,24 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         reference.clear()
     }
 
-    private fun getDeviceIdBySlot(
-        context: Context,
-        predictedMethodName: String,
-        slotID: Int
-    ): String? {
-        var imsi: String? = null
-        val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        try {
-            val telephonyClass = Class.forName(telephony.javaClass.name)
-            val parameter = arrayOfNulls<Class<*>>(1)
-            parameter[0] = Int::class.javaPrimitiveType
-            val getSimID = telephonyClass.getMethod(predictedMethodName, *parameter)
-            val obParameter = arrayOfNulls<Any>(1)
-            obParameter[0] = slotID
-            val ob_phone = getSimID.invoke(telephony, *obParameter)
-            if (ob_phone != null) {
-                imsi = ob_phone.toString()
-            }
-        } catch (e: Exception) {
-
-        }
-        return imsi
-    }
-
-    private fun getSIMStateBySlot(
-        context: Context,
-        predictedMethodName: String,
-        slotID: Int
-    ): Boolean {
-        var isReady = false
-        val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        try {
-            val telephonyClass = Class.forName(telephony.javaClass.name)
-            val parameter = arrayOfNulls<Class<*>>(1)
-            parameter[0] = Int::class.javaPrimitiveType
-            val getSimState = telephonyClass.getMethod(predictedMethodName, *parameter)
-            val obParameter = arrayOfNulls<Any>(1)
-            obParameter[0] = slotID
-            val ob_phone = getSimState.invoke(telephony, *obParameter)
-
-            if (ob_phone != null) {
-                val simState = Integer.parseInt(ob_phone.toString())
-                telInf.sim2_STATE = simState(simState)
-                if (simState != TelephonyManager.SIM_STATE_ABSENT && simState != TelephonyManager.SIM_STATE_UNKNOWN) {
-                    isReady = true
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw ITgerMethodNotFoundException(predictedMethodName)
+    private val Context.isSIM2Ready: Boolean
+        get() = try {
+            val state =
+                invokeBySlot("getSimState", 1)?.toInt() ?: TelephonyManager.SIM_STATE_UNKNOWN
+            state != TelephonyManager.SIM_STATE_ABSENT && state != TelephonyManager.SIM_STATE_UNKNOWN
+        } catch (e: Throwable) {
+            Timber.e(e)
+            true
         }
 
-        return isReady
+    private fun Context.invokeBySlot(name: String, slotId: Int): String? {
+        return try {
+            val method = telephonyManager.javaClass.getMethod(name, Int::class.java)
+            method.invoke(telephonyManager, slotId) as? String
+        } catch (e: Throwable) {
+            Timber.e(e)
+            null
+        }
     }
 
     companion object {

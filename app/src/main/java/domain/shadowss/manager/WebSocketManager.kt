@@ -121,7 +121,6 @@ class WebSocketManager(context: Context) {
 
     @Synchronized
     fun send(instance: Any) {
-        Timber.e(localIp.toString())
         webSocket?.apply {
             if (isOpen) {
                 when (instance) {
