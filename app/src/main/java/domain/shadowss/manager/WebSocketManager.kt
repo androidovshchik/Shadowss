@@ -22,6 +22,8 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.ref.WeakReference
+import java.net.Inet4Address
+import java.net.NetworkInterface
 import kotlin.ByteArray
 
 @Suppress("SpellCheckingInspection")
@@ -119,6 +121,7 @@ class WebSocketManager(context: Context) {
 
     @Synchronized
     fun send(instance: Any) {
+        Timber.e(localIp.toString())
         webSocket?.apply {
             if (isOpen) {
                 when (instance) {
@@ -129,6 +132,7 @@ class WebSocketManager(context: Context) {
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
                             uid = deviceKey.toString()
+                            IP = localIp.toString()
                             ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
                         }
                     }
@@ -139,6 +143,7 @@ class WebSocketManager(context: Context) {
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
                             uid = deviceKey.toString()
+                            IP = localIp.toString()
                         }
                     }
                     is ASRM -> {// RM – Registration procedure Main data for check
@@ -148,6 +153,7 @@ class WebSocketManager(context: Context) {
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
                             uid = deviceKey.toString()
+                            IP = localIp.toString()
                         }
                     }
                     is ASRV -> {// RV – Registration procedure Version for check
@@ -157,6 +163,7 @@ class WebSocketManager(context: Context) {
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
                             uid = deviceKey.toString()
+                            IP = localIp.toString()
                             ver = "A${"%02d".format(BuildConfig.VERSION_CODE)}"
                         }
                     }
@@ -167,6 +174,7 @@ class WebSocketManager(context: Context) {
                             model = "${Build.MANUFACTURER} ${Build.MODEL}"
                             form = currentForm.toString()
                             uid = deviceKey.toString()
+                            IP = localIp.toString()
                         }
                     }
                 }
@@ -193,6 +201,27 @@ class WebSocketManager(context: Context) {
                 DriverActivity::class.java.name -> "MNDR"
                 else -> null
             }
+        }
+
+    @Suppress("DEPRECATION")
+    private val localIp: String?
+        get() {
+            try {
+                val interfaces = NetworkInterface.getNetworkInterfaces()
+                while (interfaces.hasMoreElements()) {
+                    val network = interfaces.nextElement()
+                    val addresses = network.inetAddresses
+                    while (addresses.hasMoreElements()) {
+                        val address = addresses.nextElement()
+                        if (!address.isLoopbackAddress && address is Inet4Address) {
+                            return address.hostAddress
+                        }
+                    }
+                }
+            } catch (e: Throwable) {
+                Timber.e(e)
+            }
+            return null
         }
 
     @Suppress("DEPRECATION")
