@@ -3,6 +3,7 @@ package domain.shadowss.screen
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
+import defpackage.marsh.RGI1Data
 import domain.shadowss.R
 import domain.shadowss.controller.RegistrationController
 import domain.shadowss.screen.view.setData
@@ -20,10 +21,12 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
 
     override val controller: RegistrationController by instance()
 
+    @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
         val isDriver = intent.getBooleanExtra(EXTRA_DRIVER, false)
+        val data = intent.getSerializableExtra(EXTRA_ARRAY) as Array<RGI1Data>
         toolbar_back.apply {
             visibility = View.VISIBLE
             setOnClickListener {
@@ -46,5 +49,7 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     companion object {
 
         const val EXTRA_DRIVER = "driver"
+
+        const val EXTRA_ARRAY = "array"
     }
 }

@@ -73,14 +73,14 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
             }
             granted = areGranted(*permissions)
             if (!granted) {
-                if (this is Activity) {
+                if (this is Activity && !isFinishing) {
                     requestPermissions(REQUEST_PERMISSIONS, *permissions)
                 }
                 return@run false
             }
             granted = powerManager.isIgnoringBatteryOptimizations(packageName)
             if (!granted) {
-                if (this is Activity) {
+                if (this is Activity && !isFinishing) {
                     startActivityForResult(
                         Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
                         REQUEST_ZONE_MODE

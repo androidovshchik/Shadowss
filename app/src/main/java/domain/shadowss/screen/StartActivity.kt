@@ -9,6 +9,7 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.ArrayAdapter
+import defpackage.marsh.RGI1Data
 import defpackage.marsh.SARV
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
@@ -26,7 +27,7 @@ import kotlin.math.max
 
 interface StartView : BaseView {
 
-    fun onSuccess()
+    fun onSuccess(data: Array<RGI1Data>)
 
     fun onError(data: String, instance: Any? = null)
 }
@@ -90,9 +91,10 @@ class StartActivity : BaseActivity(), StartView {
         controller.checkRights(this)
     }
 
-    override fun onSuccess() {
+    override fun onSuccess(data: Array<RGI1Data>) {
         startActivity<RegistrationActivity>(
-            RegistrationActivity.EXTRA_DRIVER to isDriver
+            RegistrationActivity.EXTRA_DRIVER to isDriver,
+            RegistrationActivity.EXTRA_ARRAY to data
         )
     }
 
