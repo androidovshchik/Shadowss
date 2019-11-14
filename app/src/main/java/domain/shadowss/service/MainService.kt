@@ -16,7 +16,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-interface MainWorker
+interface MainWorker : BaseWorker
 
 class MainService : BaseService(), MainWorker {
 

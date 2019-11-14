@@ -4,13 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import android.view.MenuItem
 import domain.shadowss.controller.Controller
+import domain.shadowss.controller.ControllerReference
 import domain.shadowss.manager.LocationManager
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.instance
 
-interface BaseView
+interface BaseView : ControllerReference
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseActivity : Activity(), KodeinAware, BaseView {

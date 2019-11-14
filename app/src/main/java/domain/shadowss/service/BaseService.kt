@@ -5,12 +5,15 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
+import domain.shadowss.controller.ControllerReference
 import org.jetbrains.anko.powerManager
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 
+interface BaseWorker : ControllerReference
+
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseService : Service(), KodeinAware {
+abstract class BaseService : Service(), KodeinAware, BaseWorker {
 
     override val kodein by closestKodein()
 
