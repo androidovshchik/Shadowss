@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.telephony.SubscriptionManager
-import android.telephony.TelephonyManager
 import android.text.TextUtils
 import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
@@ -19,6 +18,7 @@ import io.reactivex.disposables.CompositeDisposable
 import org.jetbrains.anko.connectivityManager
 import org.jetbrains.anko.powerManager
 import org.jetbrains.anko.telephonyManager
+import org.jetbrains.anko.toast
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.instance
@@ -85,6 +85,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
                         Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
                         REQUEST_ZONE_MODE
                     )
+                    toast("Let app always run in background")
                 }
                 return@run false
             }
@@ -100,20 +101,12 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         return preferences.agree
     }
 
-    fun wssregconnect() {
-
-    }
-
-    fun checkuid() {
-
-    }
-
     fun checkRoot(context: Context): Boolean {
         return !RootBeer(context).isRootedWithoutBusyBoxCheck
     }
 
-    fun checksim() {
-
+    fun checkSim(): Boolean {
+        return false
     }
 
     @SuppressLint("MissingPermission")
@@ -139,44 +132,6 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         return@run null to null
     }
 
-    fun checkRegion() {
-        socketManager.send(ASRR().apply {
-
-        })
-    }
-
-    fun checkVersion() {
-        socketManager.send(ASRV().apply {
-
-        })
-    }
-
-    fun checkMobile() {
-        /*val smsQuery = RxCursorLoader.Query.Builder()
-            .setContentUri(Uri.parse("content://sms"))
-            .setSortOrder("${Telephony.Sms.DATE} DESC LIMIT 5")
-            .create()
-        disposable.add(RxCursorLoader.observable(contentResolver, smsQuery, Schedulers.io())
-            .subscribe({ cursor ->
-                synchronized(this) {
-                    cursor.use {
-                        Timber.i("content://sms ${cursor.count}")
-                        if (cursor.moveToLast()) {
-                            do {
-                                try {
-                                    readSms(it)
-                                } catch (e: Throwable) {
-                                    Timber.e(e)
-                                }
-                            } while (cursor.moveToPrevious())
-                        }
-                    }
-                }
-            }, {
-                Timber.e(it)
-            }))*/
-    }
-
     override fun onSAPI(instance: SAPI) {}
 
     override fun onSAPO(instance: SAPO) {}
@@ -198,7 +153,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     @OverridingMethodsMustInvokeSuper
     open fun callback(requestCode: Int, resultCode: Int = 0) {
         when (requestCode) {
-            REQUEST_PERMISSIONS -> {
+            REQUEST_PERMISSIONS, REQUEST_ZONE_MODE -> {
                 checkRights(reference.get()?.context ?: return)
             }
         }
@@ -208,16 +163,6 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         disposable.dispose()
         reference.clear()
     }
-
-    private val Context.isSIM2Ready: Boolean
-        get() = try {
-            val state =
-                invokeBySlot("getSimState", 1)?.toInt() ?: TelephonyManager.SIM_STATE_UNKNOWN
-            state != TelephonyManager.SIM_STATE_ABSENT && state != TelephonyManager.SIM_STATE_UNKNOWN
-        } catch (e: Throwable) {
-            Timber.e(e)
-            true
-        }
 
     private fun Context.invokeBySlot(name: String, slotId: Int): String? {
         return try {
