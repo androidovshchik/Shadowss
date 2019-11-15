@@ -1,7 +1,8 @@
-package com.kirianov.multisim
+package domain.shadowss.manager
 
 import android.annotation.SuppressLint
 import android.content.Context
+import domain.shadowss.model.Slot
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.util.*

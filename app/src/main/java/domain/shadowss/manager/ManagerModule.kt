@@ -12,6 +12,10 @@ val managerModule = Kodein.Module("manager") {
         WebSocketManager(instance())
     }
 
+    bind<MultiSimTelephonyManager>() with singleton {
+        MultiSimTelephonyManager(instance())
+    }
+
     bind<LocationManager>() with singleton {
         LocationManager(instance())
     }

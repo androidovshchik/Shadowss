@@ -1,4 +1,4 @@
-package com.kirianov.multisim
+package domain.shadowss.model
 
 class Slot {
 
