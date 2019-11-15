@@ -7,6 +7,8 @@ import android.telephony.SubscriptionManager
 import android.text.TextUtils
 import domain.shadowss.extension.areGranted
 import domain.shadowss.extension.isLollipopMR1Plus
+import domain.shadowss.extension.isMarshmallowPlus
+import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.model.Slot
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
@@ -17,7 +19,7 @@ import java.util.*
 /**
  * https://mvnrepository.com/artifact/com.kirianov.multisim/multisim
  */
-@Suppress("DEPRECATION", "MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate")
 class MultiSimManager(context: Context) {
 
     private val reference = WeakReference(context)
@@ -26,54 +28,57 @@ class MultiSimManager(context: Context) {
         @Synchronized get
 
     @SuppressLint("MissingPermission")
-    fun checkMcc(context: Context): Pair<String?, String?> = context.run {
-        return@run if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-            if (isLollipopMR1Plus()) {
+    fun getMcc(): Pair<String?, String?> = reference.get()?.run {
+        if (isLollipopMR1Plus()) {
+            if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
                 val subscriptionManager =
                     getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
                 val list = subscriptionManager.activeSubscriptionInfoList
-                return@run list.getOrNull(0)?.mcc.toString() to list.getOrNull(1)?.mcc.toString()
-            } else {
-                telephonyManager.networkCountryIso to invokeBySlot("getNetworkCountryIso", 1)
+                return list.getOrNull(0)?.mcc.toString() to list.getOrNull(1)?.mcc.toString()
             }
-        } else null to null
+        }
+        return null to null
     }
 
     @Synchronized
     @SuppressLint("MissingPermission")
     fun updateData() = reference.get()?.run {
-        try {
-            var slotNumber = 0
-            while (true) {
-                val slot = touchSlot(slotNumber)
-                if (slot == null) {
-                    for (i in slotNumber until slots.size) {
-                        slots.removeAt(i)
-                    }
-                    break
-                }
-                if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
-                    // protect from Alcatel infinity bug
-                    break
-                }
-                slots.apply {
-                    when {
-                        size > slotNumber -> {
-                            removeAt(slotNumber)
-                            add(slotNumber, slot)
+        if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+            try {
+                var slotNumber = 0
+                while (true) {
+                    val slot = touchSlot(slotNumber)
+                    if (slot == null) {
+                        for (i in slotNumber until slots.size) {
+                            slots.removeAt(i)
                         }
-                        size == slotNumber -> add(slot)
+                        break
                     }
+                    if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
+                        // protect from Alcatel infinity bug
+                        break
+                    }
+                    slots.apply {
+                        when {
+                            size > slotNumber -> {
+                                removeAt(slotNumber)
+                                add(slotNumber, slot)
+                            }
+                            size == slotNumber -> add(slot)
+                        }
+                    }
+                    slotNumber++
                 }
-                slotNumber++
+            } catch (e: Throwable) {
+                Timber.e(e)
             }
-        } catch (e: Throwable) {
-            Timber.e(e)
+            slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
+        } else {
+            slots.clear()
         }
-        slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
     }
 
-    @Suppress("SpellCheckingInspection")
+    @Suppress("SpellCheckingInspection", "DEPRECATION")
     @SuppressLint("MissingPermission", "HardwareIds")
     private fun touchSlot(slotNumber: Int): Slot? = reference.get()?.run {
         val slot = Slot()
@@ -189,7 +194,12 @@ class MultiSimManager(context: Context) {
         // firstly all Int params, then all Long params
         Timber.v("------------------------------------------")
         Timber.v("SLOT [$slotNumber]")
-        slot.imei = iterateMethods("getDeviceId", objectParamsSlot) as? String
+        if (isMarshmallowPlus()) {
+            slot.imei = telephonyManager.getDeviceId(slotNumber)
+        }
+        if (slot.imei == null) {
+            slot.imei = iterateMethods("getDeviceId", objectParamsSlot) as? String
+        }
         if (slot.imei == null) {
             slot.imei = runMethodReflect(
                 null,
@@ -212,7 +222,11 @@ class MultiSimManager(context: Context) {
         if (slot.imei == null) {
             when (slotNumber) {
                 0 -> {
-                    slot.imei = telephonyManager.deviceId
+                    slot.imei = if (isOreoPlus()) {
+                        telephonyManager.imei
+                    } else {
+                        telephonyManager.deviceId
+                    }
                     slot.imsi = telephonyManager.subscriberId
                     slot.simState = telephonyManager.simState
                     slot.simOperator = telephonyManager.simOperator
@@ -368,7 +382,7 @@ class MultiSimManager(context: Context) {
     @Suppress("unused")
     val allMethodsAndFields: String
         get() = """
-            Default: ${reference.get()?.getSystemService(Context.TELEPHONY_SERVICE)}${'\n'}
+            Default: ${reference.get()?.telephonyManager}${'\n'}
             ${printAllMethodsAndFields("android.telephony.TelephonyManager")}
             ${printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager")}
             ${printAllMethodsAndFields("android.telephony.MSimTelephonyManager")}
