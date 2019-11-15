@@ -21,48 +21,45 @@ class MultiSimManager(context: Context) {
     var mcc2 = -1
 
     val slots = arrayListOf<Slot>()
-        @SuppressLint("MissingPermission")
-        @Synchronized
-        get() {
-            try {
-                updateSlots()
-            } catch (e: Throwable) {
-                Timber.e(e)
-            }
-            if (isLollipopMR1Plus()) {
-                val subscriptionManager =
-                    context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-                val list = subscriptionManager.activeSubscriptionInfoList.orEmpty()
-                mcc1 = list.getOrNull(0)?.mcc ?: -1
-                mcc2 = list.getOrNull(1)?.mcc ?: -1
-            }
-            return field
-        }
+        @Synchronized get
 
-    private fun updateSlots() {
-        var slotNumber = 0
-        while (true) {
-            val slot = touchSlot(slotNumber)
-            if (slot == null) {
-                for (i in slotNumber until slots.size) {
-                    slots.removeAt(i)
-                }
-                break
-            }
-            if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
-                // protect from Alcatel infinity bug
-                break
-            }
-            slots.apply {
-                when {
-                    size > slotNumber -> {
-                        removeAt(slotNumber)
-                        add(slotNumber, slot)
+    @Synchronized
+    @SuppressLint("MissingPermission")
+    fun updateSlots() {
+        try {
+            var slotNumber = 0
+            while (true) {
+                val slot = touchSlot(slotNumber)
+                if (slot == null) {
+                    for (i in slotNumber until slots.size) {
+                        slots.removeAt(i)
                     }
-                    size == slotNumber -> add(slot)
+                    break
                 }
+                if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
+                    // protect from Alcatel infinity bug
+                    break
+                }
+                slots.apply {
+                    when {
+                        size > slotNumber -> {
+                            removeAt(slotNumber)
+                            add(slotNumber, slot)
+                        }
+                        size == slotNumber -> add(slot)
+                    }
+                }
+                slotNumber++
             }
-            slotNumber++
+        } catch (e: Throwable) {
+            Timber.e(e)
+        }
+        if (isLollipopMR1Plus()) {
+            val subscriptionManager =
+                context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+            val list = subscriptionManager.activeSubscriptionInfoList.orEmpty()
+            mcc1 = list.getOrNull(0)?.mcc ?: -1
+            mcc2 = list.getOrNull(1)?.mcc ?: -1
         }
     }
 
@@ -374,7 +371,6 @@ class MultiSimManager(context: Context) {
     companion object {
 
         private val classNames = arrayOf(
-            null,
             "android.telephony.TelephonyManager",
             "android.telephony.MSimTelephonyManager",
             "android.telephony.MultiSimTelephonyManager",
@@ -384,7 +380,6 @@ class MultiSimManager(context: Context) {
         )
 
         private val suffixes = arrayOf(
-            "",
             "Gemini",
             "Ext",
             "Ds",
