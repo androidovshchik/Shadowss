@@ -7,26 +7,12 @@ import android.telephony.TelephonyManager
 import timber.log.Timber
 import java.util.*
 
-@Suppress("RedundantEmptyInitializerBlock")
 class MultiSimTelephonyManager(context: Context) {
 
     private val context = context.applicationContext
 
     val slots = ArrayList<Slot>()
         @Synchronized get
-
-    init {
-        // printAllMethodsAndFields("android.telephony.TelephonyManager", -1); // all methods
-        // printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager", -1); // all methods
-        // printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager", 0); // methods with 0 params
-        // printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager", 1); // methods with 1 params
-        // printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager", 2); // methods with 2 params
-        // printAllMethodsAndFields("android.telephony.MSimTelephonyManager", -1); // all methods
-        // printAllMethodsAndFields("com.mediatek.telephony.TelephonyManager", -1); // all methods
-        // printAllMethodsAndFields("com.mediatek.telephony.TelephonyManagerEx", -1); // all methods
-        // printAllMethodsAndFields("com.android.internal.telephony.ITelephony", -1); // all methods
-        // printAllMethodsAndFields("com.android.internal.telephony.ITelephony$Stub$Proxy", -1); // all methods
-    }
 
     @Synchronized
     fun getSlot(location: Int): Slot? {
@@ -44,7 +30,6 @@ class MultiSimTelephonyManager(context: Context) {
                 }
                 break
             }
-            // Log( "slot.containsIn(slots) " + slot.getImei() + " " + slot.containsIn( slots));
             if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
                 // protect from Alcatel infinity bug
                 break
@@ -52,6 +37,30 @@ class MultiSimTelephonyManager(context: Context) {
             setSlot(slotNumber, slot)
             slotNumber++
         }
+    }
+
+    private fun setSlot(location: Int, slot: Slot?): Boolean {
+        var updated = false
+        try {
+            if (slot == null) {
+                if (slots.size > location) {
+                    slots.removeAt(location)
+                    updated = true
+                }
+            } else {
+                if (slots.size > location) {
+                    if (!slot.compare(slots[location])) {
+                        updated = true
+                    }
+                    slots[location] = slot
+                } else {
+                    slots.add(location, slot)
+                    updated = true
+                }
+            }
+        } catch (ignored: Exception) {
+        }
+        return updated
     }
 
     private fun touchSlot(slotNumber: Int): Slot? {
@@ -193,10 +202,8 @@ class MultiSimTelephonyManager(context: Context) {
                 null,
                 null
             ) as String?
-        // if( slot.getImei() == null)
         //     slot.setImei((String) runMethodReflect(null, "com.android.internal.telephony.PhoneFactory", "getServiceName", new Object[]{Context.TELEPHONY_SERVICE, slotNumber}, null));
         Timber.d("IMEI [" + slot.imei + "]")
-        // default one sim phone
         if (slot.imei == null)
             when (slotNumber) {
                 0 -> {
@@ -216,68 +223,32 @@ class MultiSimTelephonyManager(context: Context) {
                 }
             }
         if (slot.imei == null) return null
-        // simState
         slot.setSimState(spamMethods("getSimState", objectParamsSlot) as Int?)
         Timber.d("SIMSTATE [" + slot.simState + "]")
-        // if( (slot.getSimState() == TelephonyManager.SIM_STATE_UNKNOWN) || (slot.getSimState() == -1))
         //    return slot;
-        // imsi
         slot.imsi = spamMethods("getSubscriberId", objectParamsSubs) as String?
         Timber.d("IMSI [" + slot.imsi + "]")
-        // simSerialNumber
         slot.simSerialNumber = spamMethods("getSimSerialNumber", objectParamsSubs) as String?
         Timber.d("SIMSERIALNUMBER [" + slot.simSerialNumber + "]")
-        // simOperator
         slot.simOperator = spamMethods("getSimOperator", objectParamsSubs) as String?
         Timber.d("SIMOPERATOR [" + slot.simOperator + "]")
-        // simOperatorName
         slot.simOperatorName = spamMethods("getSimOperatorName", objectParamsSubs) as String?
         Timber.d("SIMOPERATORNAME [" + slot.simOperatorName + "]")
-        // simCountryIso
         slot.simCountryIso = spamMethods("getSimCountryIso", objectParamsSubs) as String?
         Timber.d("SIMCOUNTRYISO [" + slot.simCountryIso + "]")
-        // networkOperator
         slot.networkOperator = spamMethods("getNetworkOperator", objectParamsSubs) as String?
         Timber.d("NETWORKOPERATOR [" + slot.networkOperator + "]")
-        // networkOperatorName
         slot.networkOperatorName =
             spamMethods("getNetworkOperatorName", objectParamsSubs) as String?
         Timber.d("NETWORKOPERATORNAME [" + slot.networkOperatorName + "]")
-        // networkCountryIso
         slot.networkCountryIso = spamMethods("getNetworkCountryIso", objectParamsSubs) as String?
         Timber.d("NETWORKCOUNTRYISO [" + slot.networkCountryIso + "]")
-        // networkType
         slot.setNetworkType(spamMethods("getNetworkType", objectParamsSubs) as Int?)
         Timber.d("NETWORKTYPE [" + slot.networkType + "]")
-        // networkRoaming
         slot.setNetworkRoaming(spamMethods("isNetworkRoaming", objectParamsSubs) as Boolean?)
         Timber.d("NETWORKROAMING [" + slot.isNetworkRoaming + "]")
         Timber.d("------------------------------------------")
         return slot
-    }
-
-    private fun setSlot(location: Int, slot: Slot?): Boolean {
-        var updated = false
-        try {
-            if (slot == null) {
-                if (slots.size > location) {
-                    slots.removeAt(location)
-                    updated = true
-                }
-            } else {
-                if (slots.size > location) {
-                    if (!slot.compare(slots[location])) {
-                        updated = true
-                    }
-                    slots[location] = slot
-                } else {
-                    slots.add(location, slot)
-                    updated = true
-                }
-            }
-        } catch (ignored: Exception) {
-        }
-        return updated
     }
 
     private fun spamMethods(methodName: String?, methodParams: Array<Any>): Any? {
@@ -340,25 +311,14 @@ class MultiSimTelephonyManager(context: Context) {
             instanceMethods.add(context!!.getSystemService("phone_msim"))
         if (!instanceMethods.contains(null))
             instanceMethods.add(null)
-        //        String[] classNames = {
         //                null,
-        //                "android.telephony.TelephonyManager",
         //                "android.telephony.MSimTelephonyManager",
-        //                "android.telephony.MultiSimTelephonyManager",
         //                "com.mediatek.telephony.TelephonyManagerEx",
-        //                "com.android.internal.telephony.Phone",
         //                "com.android.internal.telephony.PhoneFactory"
-        //        };
         val classNames = generateClassNames()
-
-
-        //        String[] methodSuffixes = {
         //                "",
-        //                "Gemini",
         //                "Ext",
-        //                "Ds",
         //                "ForSubscription",
-        //                "ForPhone"
         //        };
         val methodSuffixes = generateMethodSuffix()
         var result: Any?
@@ -388,66 +348,47 @@ class MultiSimTelephonyManager(context: Context) {
         field: String?
     ): Any? {
         var result: Any? = null
-        var classInvoke: Class<*>? = null
-        var classesParams: Array<Class<*>>? = null
-        // String logString = "";
         try {
-            if (classInvokeName != null)
-                classInvoke = Class.forName(classInvokeName)
-            else if (instanceInvoke != null)
-                classInvoke = Class.forName(instanceInvoke.javaClass.name)
-            // logString += "" + (classInvoke != null ? classInvoke.getName() : null) + ".";
-            if (classInvoke != null) {
-                if (field != null) {
-                    // logString += field;
-                    val fieldReflect = classInvoke.getField(field)
-                    val accessible = fieldReflect.isAccessible
-                    fieldReflect.isAccessible = true
-                    result = fieldReflect.get(null).toString()
-                    fieldReflect.isAccessible = accessible
-                } else {
-                    // logString += methodName + "(";
-                    if (methodParams != null) {
-                        classesParams = arrayOfNulls(methodParams.size)
-                        for (i in methodParams.indices) {
-                            if (methodParams[i] is String) {
-                                classesParams[i] = String::class.java
-                                // logString += "\"" + methodParams[i] + "\",";
-                            } else if (methodParams[i] is Int) {
-                                classesParams[i] = Int::class.javaPrimitiveType
-                                // logString += methodParams[i] + ",";
-                            } else if (methodParams[i] is Long) {
-                                classesParams[i] = Long::class.javaPrimitiveType
-                                // logString += methodParams[i] + ",";
-                            } else if (methodParams[i] is Boolean) {
-                                classesParams[i] = Boolean::class.javaPrimitiveType
-                                // logString += methodParams[i] + ",";
-                            } else {
-                                classesParams[i] = methodParams[i].javaClass
-                                // logString += "["+methodParams[i]+"]" + ",";
-                            }
+            val classInvoke = when {
+                classInvokeName != null -> Class.forName(classInvokeName)
+                instanceInvoke != null -> Class.forName(instanceInvoke.javaClass.name)
+                else -> return null
+            }
+            if (field != null) {
+                val fieldReflect = classInvoke.getField(field)
+                val accessible = fieldReflect.isAccessible
+                fieldReflect.isAccessible = true
+                result = fieldReflect.get(null).toString()
+                fieldReflect.isAccessible = accessible
+            } else {
+                var classesParams: Array<Class<*>>? = null
+                if (methodParams != null) {
+                    classesParams = arrayOfNulls(methodParams.size)
+                    for (i in methodParams.indices) {
+                        when {
+                            methodParams[i] is String -> classesParams[i] = String::class.java
+                            methodParams[i] is Int -> classesParams[i] =
+                                Int::class.javaPrimitiveType
+                            methodParams[i] is Long -> classesParams[i] =
+                                Long::class.javaPrimitiveType
+                            methodParams[i] is Boolean -> classesParams[i] =
+                                Boolean::class.javaPrimitiveType
+                            else -> classesParams[i] = methodParams[i].javaClass
                         }
                     }
-                    // if (logString.endsWith(","))
-                    //     logString = logString.substring(0, logString.length() - 1);
-                    // logString += ")";
-                    try {
-                        val method =
-                            classInvoke.getDeclaredMethod(methodName!!, *classesParams!!)
-                        val accessible = method.isAccessible
-                        method.isAccessible = true
-                        result = method.invoke(instanceInvoke ?: classInvoke, *methodParams)
-                        method.isAccessible = accessible
-                    } catch (ignored: Exception) {
-                    }
-
+                }
+                //     logString = logString.substring(0, logString.length() - 1);
+                try {
+                    val method = classInvoke.getDeclaredMethod(methodName, *classesParams!!)
+                    val accessible = method.isAccessible
+                    method.isAccessible = true
+                    result = method.invoke(instanceInvoke ?: classInvoke, *methodParams)
+                    method.isAccessible = accessible
+                } catch (ignored: Exception) {
                 }
             }
         } catch (ignored: Exception) {
-            // Log.i(LOG, "EXC " + ignored.getMessage());
         }
-
-        // Log("" + logString + " = [" + result + "]");
         return result
     }
 

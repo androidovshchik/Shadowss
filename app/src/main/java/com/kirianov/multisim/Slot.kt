@@ -27,7 +27,7 @@ class Slot {
     // careful find networkTypeName because it will be different with networkType on same devices
     var isNetworkRoaming = false
 
-    // private String msisdn; // not posible now
+    // private String msisdn; // not possible now
 
     fun setSimState(state: Int?) {
         if (state == null) {
