@@ -7,25 +7,23 @@ import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.model.Slot
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
+import java.lang.ref.WeakReference
 import java.util.*
 
+/**
+ * https://mvnrepository.com/artifact/com.kirianov.multisim/multisim
+ */
 @Suppress("DEPRECATION", "MemberVisibilityCanBePrivate")
 class MultiSimManager(context: Context) {
 
-    private val context = context.applicationContext
-
-    @Volatile
-    var mcc1 = -1
-
-    @Volatile
-    var mcc2 = -1
+    private val reference = WeakReference(context)
 
     val slots = arrayListOf<Slot>()
         @Synchronized get
 
     @Synchronized
     @SuppressLint("MissingPermission")
-    fun updateData() {
+    fun updateData() = reference.get()?.run {
         try {
             var slotNumber = 0
             while (true) {
@@ -61,13 +59,14 @@ class MultiSimManager(context: Context) {
             mcc1 = list.getOrNull(0)?.mcc ?: -1
             mcc2 = list.getOrNull(1)?.mcc ?: -1
         }
+        slots.filter { it.imsi != null && it.simOperator.isNotEmpty() }
     }
 
     @Suppress("SpellCheckingInspection")
     @SuppressLint("MissingPermission", "HardwareIds")
-    private fun touchSlot(slotNumber: Int): Slot? {
+    private fun touchSlot(slotNumber: Int): Slot? = reference.get()?.run {
         val slot = Slot()
-        val telephonyManager = context.telephonyManager
+        val telephonyManager = telephonyManager
         Timber.v("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
         val subscriberIdIntValue = ArrayList<String>()
         val subscriberIdIntIndex = ArrayList<Int>()
@@ -190,7 +189,7 @@ class MultiSimManager(context: Context) {
         }
         if (slot.imei == null) {
             slot.imei = runMethodReflect(
-                context.getSystemService("phone" + (slotNumber + 1)),
+                getSystemService("phone" + (slotNumber + 1)),
                 null,
                 "getDeviceId",
                 null,
@@ -228,11 +227,11 @@ class MultiSimManager(context: Context) {
         Timber.v("SIMSERIALNUMBER [${slot.simSerialNumber}]")
         slot.simOperator = iterateMethods("getSimOperator", objectParamsSubs) as? String
         Timber.v("SIMOPERATOR [${slot.simOperator}]")
-        slot.simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as? String
-        Timber.v("SIMOPERATORNAME [${slot.simOperatorName}]")
+        /*slot.simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as? String
+        Timber.v("SIMOPERATORNAME [${slot.simOperatorName}]")*/
         slot.simCountryIso = iterateMethods("getSimCountryIso", objectParamsSubs) as? String
         Timber.v("SIMCOUNTRYISO [${slot.simCountryIso}]")
-        slot.networkOperator = iterateMethods("getNetworkOperator", objectParamsSubs) as? String
+        /*slot.networkOperator = iterateMethods("getNetworkOperator", objectParamsSubs) as? String
         Timber.v("NETWORKOPERATOR [${slot.networkOperator}]")
         slot.networkOperatorName =
             iterateMethods("getNetworkOperatorName", objectParamsSubs) as? String
@@ -242,21 +241,21 @@ class MultiSimManager(context: Context) {
         slot.setNetworkType(iterateMethods("getNetworkType", objectParamsSubs) as? Int)
         Timber.v("NETWORKTYPE [${slot.networkType}]")
         slot.setNetworkRoaming(iterateMethods("isNetworkRoaming", objectParamsSubs) as? Boolean)
-        Timber.v("NETWORKROAMING [${slot.isNetworkRoaming}]")
+        Timber.v("NETWORKROAMING [${slot.isNetworkRoaming}]")*/
         Timber.v("------------------------------------------")
         return slot
     }
 
     @SuppressLint("WrongConstant")
-    private fun iterateMethods(methodName: String?, methodParams: Array<Any?>): Any? {
-        if (methodName == null || methodName.isEmpty()) {
-            return null
-        }
-        val telephonyManager = context.telephonyManager
-        val instanceMethods = ArrayList<Any?>()
-        val multiSimTelephonyManagerExists = telephonyManager.toString()
-            .startsWith("android.telephony.MultiSimTelephonyManager")
-        try {
+    private fun iterateMethods(methodName: String?, methodParams: Array<Any?>): Any? =
+        reference.get()?.run {
+            if (methodName == null || methodName.isEmpty()) {
+                return null
+            }
+            val telephonyManager = telephonyManager
+            val instanceMethods = ArrayList<Any?>()
+            val multiSimTelephonyManagerExists = telephonyManager.toString()
+                .startsWith("android.telephony.MultiSimTelephonyManager")
             for (methodParam in methodParams) {
                 if (methodParam == null) {
                     continue
@@ -276,52 +275,50 @@ class MultiSimManager(context: Context) {
                     instanceMethods.add(objectMulti)
                 }
             }
-        } catch (ignored: Throwable) {
-        }
-        if (!instanceMethods.contains(telephonyManager)) {
-            instanceMethods.add(telephonyManager)
-        }
-        val telephonyManagerEx = runMethodReflect(
-            null,
-            "com.mediatek.telephony.TelephonyManagerEx",
-            "getDefault",
-            null,
-            null
-        )
-        if (!instanceMethods.contains(telephonyManagerEx)) {
-            instanceMethods.add(telephonyManagerEx)
-        }
-        val phoneMsim = context.getSystemService("phone_msim")
-        if (!instanceMethods.contains(phoneMsim)) {
-            instanceMethods.add(phoneMsim)
-        }
-        if (!instanceMethods.contains(null)) {
-            instanceMethods.add(null)
-        }
-        var result: Any?
-        for (methodSuffix in suffixes) {
-            for (className in classNames) {
-                for (instanceMethod in instanceMethods) {
-                    for (methodParam in methodParams) {
-                        if (methodParam == null) {
-                            continue
-                        }
-                        result = runMethodReflect(
-                            instanceMethod,
-                            className,
-                            methodName + methodSuffix,
-                            if (multiSimTelephonyManagerExists) null else arrayOf(methodParam),
-                            null
-                        )
-                        if (result != null) {
-                            return result
+            if (!instanceMethods.contains(telephonyManager)) {
+                instanceMethods.add(telephonyManager)
+            }
+            val telephonyManagerEx = runMethodReflect(
+                null,
+                "com.mediatek.telephony.TelephonyManagerEx",
+                "getDefault",
+                null,
+                null
+            )
+            if (!instanceMethods.contains(telephonyManagerEx)) {
+                instanceMethods.add(telephonyManagerEx)
+            }
+            val phoneMsim = getSystemService("phone_msim")
+            if (!instanceMethods.contains(phoneMsim)) {
+                instanceMethods.add(phoneMsim)
+            }
+            if (!instanceMethods.contains(null)) {
+                instanceMethods.add(null)
+            }
+            var result: Any?
+            for (methodSuffix in suffixes) {
+                for (className in classNames) {
+                    for (instanceMethod in instanceMethods) {
+                        for (methodParam in methodParams) {
+                            if (methodParam == null) {
+                                continue
+                            }
+                            result = runMethodReflect(
+                                instanceMethod,
+                                className,
+                                methodName + methodSuffix,
+                                if (multiSimTelephonyManagerExists) null else arrayOf(methodParam),
+                                null
+                            )
+                            if (result != null) {
+                                return result
+                            }
                         }
                     }
                 }
             }
+            return null
         }
-        return null
-    }
 
     private fun runMethodReflect(
         instanceInvoke: Any?,
@@ -356,11 +353,18 @@ class MultiSimManager(context: Context) {
                         }
                     }
                 }
-                val method =
-                    classInvoke.getDeclaredMethod(methodName.toString(), *classesParams.orEmpty())
+                val method = if (classesParams != null) {
+                    classInvoke.getDeclaredMethod(methodName.toString(), *classesParams)
+                } else {
+                    classInvoke.getDeclaredMethod(methodName.toString())
+                }
                 val accessible = method.isAccessible
                 method.isAccessible = true
-                result = method.invoke(instanceInvoke ?: classInvoke, *methodParams.orEmpty())
+                result = if (methodParams != null) {
+                    method.invoke(instanceInvoke ?: classInvoke, *methodParams)
+                } else {
+                    method.invoke(instanceInvoke ?: classInvoke)
+                }
                 method.isAccessible = accessible
             }
         } catch (ignored: Throwable) {
