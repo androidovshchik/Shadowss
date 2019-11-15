@@ -3,14 +3,14 @@ package domain.shadowss.manager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.telephony.SubscriptionManager
+import android.text.TextUtils
 import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.model.Slot
 import org.jetbrains.anko.telephonyManager
-import org.junit.runner.Request.method
 import timber.log.Timber
 import java.lang.ref.WeakReference
+import java.lang.reflect.Modifier
 import java.util.*
-
 
 /**
  * https://mvnrepository.com/artifact/com.kirianov.multisim/multisim
@@ -358,7 +358,7 @@ class MultiSimManager(context: Context) {
 
     val allMethodsAndFields: String
         get() = """
-            default telephony [" + context.getSystemService(Context.TELEPHONY_SERVICE) + "]"
+            Default: ${reference.get()?.getSystemService(Context.TELEPHONY_SERVICE)}
             ${printAllMethodsAndFields("android.telephony.TelephonyManager")}
             ${printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager")}
             ${printAllMethodsAndFields("android.telephony.MSimTelephonyManager")}
@@ -370,18 +370,18 @@ class MultiSimManager(context: Context) {
     @SuppressWarnings("ResourceType")
     private fun printAllMethodsAndFields(className: String): String {
         val builder = StringBuilder()
-        builder.append("==========\n")
+        builder.append("========== $className\n")
         try {
             val cls = Class.forName(className)
-            builder.append("Methods of [$className]:\n")
             for (method in cls.methods) {
-                var params = ""
-                for (i in method.parameterTypes.indices) {
-                    params += "${method.parameterTypes[i].name}, "
-                }
-                builder.append("M: " + method.name + "[" + method.parameterTypes.size + "](" + (params.length() > 0 ? params . substring (0, params.length()-2) : params)+") -> "+method.getReturnType()+""+(Modifier.isStatic(method.getModifiers()) ? " (static)" : ""))
+                val params = method.parameterTypes.map { it.name }
+                builder.append(
+                    "M: ${method.name} [${params.size}](${TextUtils.join(
+                        ",",
+                        params
+                    )}) -> ${method.returnType} ${if (Modifier.isStatic(method.modifiers)) "(static)" else ""}\n"
+                )
             }
-            builder.append("Fields of [$className]:\n")
             for (field in cls.fields) {
                 builder.append("F: ${field.name} ${field.type}\n")
             }
