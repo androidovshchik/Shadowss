@@ -27,7 +27,9 @@ class Slot {
     private fun compare(slot: Slot?): Boolean {
         return if (slot != null) {
             imei == slot.imei && imsi == slot.imsi && simSerialNumber == slot.simSerialNumber
-        } else false
+        } else {
+            false
+        }
     }
 
     fun indexIn(slots: List<Slot>?): Int {

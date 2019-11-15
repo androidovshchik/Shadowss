@@ -82,11 +82,16 @@ class MultiSimManager(context: Context) {
                 e.toString()
             }
             slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
-            slots.forEach { slot ->
+            val iterator = slots.iterator()
+            while (iterator.hasNext()) {
+                val slot = iterator.next()
                 slot.simStates.apply {
                     clear()
-                    addAll(slots.filter { it.imei == slot.imei || it.imsi == slot.imsi || it.simSerialNumber == slot.simSerialNumber }
-                        .map { it.simState })
+                    addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
+                }
+                slots.apply {
+                    removeAll { it.imsi == slot.imsi }
+                    add(slot)
                 }
             }
             error
