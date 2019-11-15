@@ -343,7 +343,7 @@ class MultiSimTelephonyManager(context: Context) {
     private fun runMethodReflect(
         instanceInvoke: Any?,
         classInvokeName: String?,
-        methodName: String?,
+        methodName: String,
         methodParams: Array<Any>?,
         field: String?
     ): Any? {
@@ -361,28 +361,23 @@ class MultiSimTelephonyManager(context: Context) {
                 result = fieldReflect.get(null).toString()
                 fieldReflect.isAccessible = accessible
             } else {
-                var classesParams: Array<Class<*>>? = null
+                var classesParams: Array<Class<*>?>? = null
                 if (methodParams != null) {
                     classesParams = arrayOfNulls(methodParams.size)
                     for (i in methodParams.indices) {
-                        when {
-                            methodParams[i] is String -> classesParams[i] = String::class.java
-                            methodParams[i] is Int -> classesParams[i] =
-                                Int::class.javaPrimitiveType
-                            methodParams[i] is Long -> classesParams[i] =
-                                Long::class.javaPrimitiveType
-                            methodParams[i] is Boolean -> classesParams[i] =
-                                Boolean::class.javaPrimitiveType
-                            else -> classesParams[i] = methodParams[i].javaClass
+                        classesParams[i] = when {
+                            methodParams[i] is Int -> Int::class.javaPrimitiveType
+                            methodParams[i] is Long -> Long::class.javaPrimitiveType
+                            methodParams[i] is Boolean -> Boolean::class.javaPrimitiveType
+                            else -> methodParams[i].javaClass
                         }
                     }
                 }
-                //     logString = logString.substring(0, logString.length() - 1);
                 try {
-                    val method = classInvoke.getDeclaredMethod(methodName, *classesParams!!)
+                    val method = classInvoke.getDeclaredMethod(methodName, *classesParams.orEmpty())
                     val accessible = method.isAccessible
                     method.isAccessible = true
-                    result = method.invoke(instanceInvoke ?: classInvoke, *methodParams)
+                    result = method.invoke(instanceInvoke ?: classInvoke, *methodParams.orEmpty())
                     method.isAccessible = accessible
                 } catch (ignored: Exception) {
                 }
