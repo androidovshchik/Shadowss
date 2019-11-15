@@ -59,9 +59,10 @@ class Slot {
             "imei=$imei, " +
             "imsi=$imsi, " +
             "simState=$simState, " +
+            "simStates=$simStates, " +
             "simSerialNumber=$simSerialNumber, " +
             "simOperator=$simOperator, " +
-            "simCountryIso=$simCountryIso, " +
+            "simCountryIso=$simCountryIso" +
             ")"
     }
 }
