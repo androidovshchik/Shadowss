@@ -27,18 +27,23 @@ class MultiSimManager(context: Context) {
     val slots = arrayListOf<Slot>()
         @Synchronized get
 
-    @SuppressLint("MissingPermission")
-    fun getMcc(): Pair<String?, String?> = reference.get()?.run {
-        if (isLollipopMR1Plus()) {
-            if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-                val subscriptionManager =
-                    getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-                val list = subscriptionManager.activeSubscriptionInfoList
-                return list.getOrNull(0)?.mcc.toString() to list.getOrNull(1)?.mcc.toString()
+    @Suppress("unused")
+    val dualMcc: Pair<String?, String?>
+        @SuppressLint("MissingPermission")
+        get() = reference.get()?.run {
+            if (isLollipopMR1Plus()) {
+                if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+                    val subscriptionManager =
+                        getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+                    val list = subscriptionManager.activeSubscriptionInfoList
+                    return list.getOrNull(0)?.mcc.toString().padStart(
+                        3,
+                        '0'
+                    ) to list.getOrNull(1)?.mcc.toString().padStart(3, '0')
+                }
             }
-        }
-        return null to null
-    }
+            null to null
+        } ?: null to null
 
     @Synchronized
     @SuppressLint("MissingPermission")
