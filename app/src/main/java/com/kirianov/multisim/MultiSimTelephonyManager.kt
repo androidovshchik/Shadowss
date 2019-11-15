@@ -2,19 +2,18 @@ package com.kirianov.multisim
 
 import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
-import androidx.core.content.ContextCompat
 import timber.log.Timber
 import java.util.*
 
 @Suppress("RedundantEmptyInitializerBlock")
 class MultiSimTelephonyManager(context: Context) {
 
-    private val slots = ArrayList<Slot>()
     private val context = context.applicationContext
+
+    val slots = ArrayList<Slot>()
+        @Synchronized get
 
     init {
         // printAllMethodsAndFields("android.telephony.TelephonyManager", -1); // all methods
@@ -29,38 +28,30 @@ class MultiSimTelephonyManager(context: Context) {
         // printAllMethodsAndFields("com.android.internal.telephony.ITelephony$Stub$Proxy", -1); // all methods
     }
 
-    private fun setSlot(location: Int, slot: Slot?): Boolean {
-        var updated = false
-        try {
-            if (slot == null) {
-                if (slots.size > location) {
-                    slots.removeAt(location)
-                    updated = true
-                }
-            } else {
-                if (slots.size > location) {
-                    if (!slot.compare(slots[location])) {
-                        updated = true
-                    }
-                    slots[location] = slot
-                } else {
-                    slots.add(location, slot)
-                    updated = true
-                }
-            }
-        } catch (ignored: Exception) {
-        }
-        return updated
-    }
-
     @Synchronized
     fun getSlot(location: Int): Slot? {
-        return if (slots.size > location) slots[location] else null
+        return slots.getOrNull(location)
     }
 
     @Synchronized
-    fun getSlots(): List<Slot>? {
-        return if (slots.size <= 0) null else slots
+    fun updateSlots() {
+        var slotNumber = 0
+        while (true) {
+            val slot = touchSlot(slotNumber)
+            if (slot == null) {
+                for (i in slotNumber until slots.size) {
+                    slots.removeAt(i)
+                }
+                break
+            }
+            // Log( "slot.containsIn(slots) " + slot.getImei() + " " + slot.containsIn( slots));
+            if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
+                // protect from Alcatel infinity bug
+                break
+            }
+            setSlot(slotNumber, slot)
+            slotNumber++
+        }
     }
 
     private fun touchSlot(slotNumber: Int): Slot? {
@@ -265,26 +256,28 @@ class MultiSimTelephonyManager(context: Context) {
         return slot
     }
 
-    @Synchronized
-    fun updateSlots() {
-        var slotNumber = 0
-        var slot: Slot?
-        while (true) {
-            slot = touchSlot(slotNumber)
+    private fun setSlot(location: Int, slot: Slot?): Boolean {
+        var updated = false
+        try {
             if (slot == null) {
-                for (i in slotNumber until slots.size) {
-                    slots.removeAt(i)
+                if (slots.size > location) {
+                    slots.removeAt(location)
+                    updated = true
                 }
-                break
+            } else {
+                if (slots.size > location) {
+                    if (!slot.compare(slots[location])) {
+                        updated = true
+                    }
+                    slots[location] = slot
+                } else {
+                    slots.add(location, slot)
+                    updated = true
+                }
             }
-            // Log( "slot.containsIn(slots) " + slot.getImei() + " " + slot.containsIn( slots));
-            if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
-                // protect from Alcatel infinity bug
-                break
-            }
-            setSlot(slotNumber, slot)
-            slotNumber++
+        } catch (ignored: Exception) {
         }
+        return updated
     }
 
     private fun spamMethods(methodName: String?, methodParams: Array<Any>): Any? {
@@ -385,21 +378,6 @@ class MultiSimTelephonyManager(context: Context) {
                             return result
                     }
         return null
-    }
-
-    private fun hasPermissions(context: Context?, vararg permissions: String): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
-            for (permission in permissions) {
-                if (ContextCompat.checkSelfPermission(
-                        context,
-                        permission
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    return false
-                }
-            }
-        }
-        return true
     }
 
     private fun runMethodReflect(
