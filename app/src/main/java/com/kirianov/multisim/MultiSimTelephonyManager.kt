@@ -47,92 +47,85 @@ class MultiSimTelephonyManager(context: Context) {
         val slot = Slot()
         val telephonyManager = context.telephonyManager
         Timber.d("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
-
         val subscriberIdIntValue = ArrayList<String>()
         val subscriberIdIntIndex = ArrayList<Int>()
         for (i in 0..99) {
-            val subscriber: String?
-            subscriber = runMethodReflect(
-                context.getSystemService(Context.TELEPHONY_SERVICE),
+            val subscriber = runMethodReflect(
+                telephonyManager,
                 "android.telephony.TelephonyManager",
                 "getSubscriberId",
                 arrayOf(i),
                 null
-            ) as String?
+            ) as? String
             if (subscriber != null && !subscriberIdIntValue.contains(subscriber)) {
                 subscriberIdIntValue.add(subscriber)
                 subscriberIdIntIndex.add(i)
             }
         }
-        var subIdInt: Int? =
+        var subIdInt =
             if (subscriberIdIntIndex.size > slotNumber) subscriberIdIntIndex[slotNumber] else null
-        try {
-            if (subIdInt == null)
-                subIdInt = Integer.parseInt(
-                    "" + runMethodReflect(
-                        context.getSystemService(Context.TELEPHONY_SERVICE),
-                        "android.telephony.TelephonyManager",
-                        "getSubId",
-                        arrayOf(slotNumber),
-                        null
-                    )!!
-                )
-        } catch (ignored: Exception) {
+        if (subIdInt == null) {
+            try {
+                subIdInt = runMethodReflect(
+                    telephonyManager,
+                    "android.telephony.TelephonyManager",
+                    "getSubId",
+                    arrayOf(slotNumber),
+                    null
+                ).toString().toInt()
+            } catch (ignored: Exception) {
+            }
         }
-
-        Timber.d("subIdInt " + subIdInt!!)
-
-
+        Timber.d("subIdInt $subIdInt")
         val subscriberIdLongValue = ArrayList<String>()
         val subscriberIdLongIndex = ArrayList<Long>()
-        for (i in 0L..100L - 1) {
+        for (i in 0L until 100L) {
             val subscriber = runMethodReflect(
-                context.getSystemService(Context.TELEPHONY_SERVICE),
+                telephonyManager,
                 "android.telephony.TelephonyManager",
                 "getSubscriberId",
                 arrayOf(i),
                 null
-            ) as String?
-            if (runMethodReflect(
-                    context.getSystemService(Context.TELEPHONY_SERVICE),
-                    "android.telephony.TelephonyManagerSprd",
-                    "getSubInfoForSubscriber",
-                    arrayOf(i),
-                    null
-                ) == null
-            )
-                continue
+            ) as? String
+            runMethodReflect(
+                telephonyManager,
+                "android.telephony.TelephonyManagerSprd",
+                "getSubInfoForSubscriber",
+                arrayOf(i),
+                null
+            ) ?: continue
             if (subscriber != null && !subscriberIdLongValue.contains(subscriber)) {
                 subscriberIdLongValue.add(subscriber)
                 subscriberIdLongIndex.add(i)
             }
         }
-        if (subscriberIdLongIndex.size <= 0)
-            for (i in 0L..100L - 1) {
+        if (subscriberIdLongIndex.size <= 0) {
+            for (i in 0L until 100L) {
                 val subscriber = runMethodReflect(
-                    context.getSystemService(Context.TELEPHONY_SERVICE),
+                    telephonyManager,
                     "android.telephony.TelephonyManager",
                     "getSubscriberId",
                     arrayOf(i),
                     null
-                ) as String?
+                ) as? String
                 if (subscriber != null && !subscriberIdLongValue.contains(subscriber)) {
                     subscriberIdLongValue.add(subscriber)
                     subscriberIdLongIndex.add(i)
                 }
             }
-        var subIdLong: Long? =
+        }
+        var subIdLong =
             if (subscriberIdLongIndex.size > slotNumber) subscriberIdLongIndex[slotNumber] else null
-        if (subIdLong == null)
+        if (subIdLong == null) {
             subIdLong = runMethodReflect(
-                context.getSystemService(Context.TELEPHONY_SERVICE),
+                telephonyManager,
                 "android.telephony.TelephonyManager",
                 "getSubId",
                 arrayOf(slotNumber),
                 null
-            ) as Long?
-        Timber.d("subIdLong " + subIdLong!!)
-
+            ) as? Long
+        }
+        Timber.d("subIdLong $subIdLong")
         val listParamsSubs = ArrayList<Any>()
         if (subIdInt != null && !listParamsSubs.contains(subIdInt))
             listParamsSubs.add(subIdInt)
