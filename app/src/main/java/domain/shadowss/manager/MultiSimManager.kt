@@ -25,7 +25,7 @@ class MultiSimManager(context: Context) {
 
     @Synchronized
     @SuppressLint("MissingPermission")
-    fun updateSlots() {
+    fun updateData() {
         try {
             var slotNumber = 0
             while (true) {
@@ -95,7 +95,7 @@ class MultiSimManager(context: Context) {
                     arrayOf(slotNumber),
                     null
                 ).toString().toInt()
-            } catch (ignored: Exception) {
+            } catch (ignored: Throwable) {
             }
         }
         Timber.v("subIdInt $subIdInt")
@@ -276,7 +276,7 @@ class MultiSimManager(context: Context) {
                     instanceMethods.add(objectMulti)
                 }
             }
-        } catch (ignored: Exception) {
+        } catch (ignored: Throwable) {
         }
         if (!instanceMethods.contains(telephonyManager)) {
             instanceMethods.add(telephonyManager)
@@ -363,7 +363,7 @@ class MultiSimManager(context: Context) {
                 result = method.invoke(instanceInvoke ?: classInvoke, *methodParams.orEmpty())
                 method.isAccessible = accessible
             }
-        } catch (ignored: Exception) {
+        } catch (ignored: Throwable) {
         }
         return result
     }
@@ -371,6 +371,7 @@ class MultiSimManager(context: Context) {
     companion object {
 
         private val classNames = arrayOf(
+            null,
             "android.telephony.TelephonyManager",
             "android.telephony.MSimTelephonyManager",
             "android.telephony.MultiSimTelephonyManager",
@@ -380,6 +381,7 @@ class MultiSimManager(context: Context) {
         )
 
         private val suffixes = arrayOf(
+            "",
             "Gemini",
             "Ext",
             "Ds",
