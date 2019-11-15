@@ -1,10 +1,8 @@
 package domain.shadowss.manager
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.telephony.SubscriptionManager
-import domain.shadowss.extension.areGranted
 import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.model.Slot
 import org.jetbrains.anko.telephonyManager
@@ -16,13 +14,18 @@ class MultiSimManager(context: Context) {
 
     private val context = context.applicationContext
 
-    val slots = ArrayList<Slot>()
+    val slots = arrayListOf<Slot>()
         @Synchronized
         get() {
-            updateSlots()
+            try {
+                updateSlots()
+            } catch (e: Throwable) {
+                Timber.e(e)
+            }
             return field
         }
 
+    @SuppressLint("MissingPermission")
     private fun updateSlots() {
         var slotNumber = 0
         while (true) {
@@ -48,6 +51,15 @@ class MultiSimManager(context: Context) {
             }
             slotNumber++
         }
+        if (isLollipopMR1Plus()) {
+            slots.apply {
+                val subscriptionManager =
+                    context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+                val list = subscriptionManager.activeSubscriptionInfoList.orEmpty()
+                getOrNull(0)?.mcc = list.getOrNull(0)?.mcc ?: -1
+                getOrNull(1)?.mcc = list.getOrNull(1)?.mcc ?: -1
+            }
+        }
     }
 
     @Suppress("SpellCheckingInspection")
@@ -55,7 +67,7 @@ class MultiSimManager(context: Context) {
     private fun touchSlot(slotNumber: Int): Slot? {
         val slot = Slot()
         val telephonyManager = context.telephonyManager
-        Timber.d("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
+        Timber.v("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
         val subscriberIdIntValue = ArrayList<String>()
         val subscriberIdIntIndex = ArrayList<Int>()
         for (i in 0..99) {
@@ -85,7 +97,7 @@ class MultiSimManager(context: Context) {
             } catch (ignored: Exception) {
             }
         }
-        Timber.d("subIdInt $subIdInt")
+        Timber.v("subIdInt $subIdInt")
         val subscriberIdLongValue = ArrayList<String>()
         val subscriberIdLongIndex = ArrayList<Long>()
         for (i in 0L until 100L) {
@@ -134,7 +146,7 @@ class MultiSimManager(context: Context) {
                 null
             ) as? Long
         }
-        Timber.d("subIdLong $subIdLong")
+        Timber.v("subIdLong $subIdLong")
         val listParamsSubs = ArrayList<Any?>()
         if (subIdInt != null && !listParamsSubs.contains(subIdInt)) {
             listParamsSubs.add(subIdInt)
@@ -147,7 +159,7 @@ class MultiSimManager(context: Context) {
         }
         val objectParamsSubs = listParamsSubs.toTypedArray()
         for (i in objectParamsSubs.indices) {
-            Timber.d("SPAM PARAMS_SUBS [$i]=[${objectParamsSubs[i]}]")
+            Timber.v("SPAM PARAMS_SUBS [$i]=[${objectParamsSubs[i]}]")
         }
         val listParamsSlot = ArrayList<Any?>()
         if (!listParamsSlot.contains(slotNumber)) {
@@ -161,7 +173,7 @@ class MultiSimManager(context: Context) {
         }
         val objectParamsSlot = listParamsSlot.toTypedArray()
         for (i in objectParamsSlot.indices) {
-            Timber.d("SPAM PARAMS_SLOT [$i]=[${objectParamsSlot[i]}]")
+            Timber.v("SPAM PARAMS_SLOT [$i]=[${objectParamsSlot[i]}]")
         }
         Timber.v("------------------------------------------")
         Timber.v("SLOT [$slotNumber]")
@@ -355,21 +367,10 @@ class MultiSimManager(context: Context) {
         return result
     }
 
-    @SuppressLint("MissingPermission")
-    fun checkMcc(context: Context): Pair<String?, String?> = context.run {
-        return@run if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-            if (isLollipopMR1Plus()) {
-                val subscriptionManager =
-                    getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-                val list = subscriptionManager.activeSubscriptionInfoList.orEmpty()
-                return@run list.getOrNull(0)?.mcc.toString() to list.getOrNull(1)?.mcc.toString()
-            }
-        } else null to null
-    }
-
     companion object {
 
         private val classNames = arrayOf(
+            null,
             "android.telephony.TelephonyManager",
             "android.telephony.MSimTelephonyManager",
             "android.telephony.MultiSimTelephonyManager",
@@ -379,6 +380,7 @@ class MultiSimManager(context: Context) {
         )
 
         private val suffixes = arrayOf(
+            "",
             "Gemini",
             "Ext",
             "Ds",

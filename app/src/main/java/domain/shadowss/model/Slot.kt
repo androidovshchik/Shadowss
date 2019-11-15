@@ -27,6 +27,8 @@ class Slot {
     // careful find networkTypeName because it will be different with networkType on same devices
     var isNetworkRoaming = false
 
+    var mcc = -1
+
     // private String msisdn; // not possible now
 
     fun setSimState(state: Int?) {
@@ -51,21 +53,6 @@ class Slot {
             return
         }
         isNetworkRoaming = networkRoaming
-    }
-
-    override fun toString(): String {
-        return "imei=[" + imei +
-            "] imsi=[" + imsi +
-            "] simState=[" + simState +
-            "] simSerialNumber=[" + simSerialNumber +
-            "] simOperator=[" + simOperator +
-            "] simOperatorName=[" + simOperatorName +
-            "] simCountryIso=[" + simCountryIso +
-            "] networkOperator=[" + networkOperator +
-            "] networkOperatorName=[" + networkOperatorName +
-            "] networkCountryIso=[" + networkCountryIso +
-            "] networkType=[" + networkType +
-            "] networkRoaming=[" + isNetworkRoaming + "]"
     }
 
     private fun compare(slot: Slot?): Boolean {
@@ -96,5 +83,23 @@ class Slot {
             }
         }
         return false
+    }
+
+    override fun toString(): String {
+        return "Slot(" +
+            "imei=$imei, " +
+            "imsi=$imsi, " +
+            "simState=$simState, " +
+            "simSerialNumber=$simSerialNumber, " +
+            "simOperator=$simOperator, " +
+            "simOperatorName=$simOperatorName, " +
+            "simCountryIso=$simCountryIso, " +
+            "networkOperator=$networkOperator, " +
+            "networkOperatorName=$networkOperatorName, " +
+            "networkCountryIso=$networkCountryIso, " +
+            "networkType=$networkType, " +
+            "isNetworkRoaming=$isNetworkRoaming, " +
+            "mcc=$mcc, " +
+            ")"
     }
 }
