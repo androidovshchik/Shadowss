@@ -42,6 +42,7 @@ class MultiSimTelephonyManager(context: Context) {
         }
     }
 
+    @Suppress("SpellCheckingInspection")
     @SuppressLint("MissingPermission", "HardwareIds")
     private fun touchSlot(slotNumber: Int): Slot? {
         val slot = Slot()
@@ -126,60 +127,57 @@ class MultiSimTelephonyManager(context: Context) {
             ) as? Long
         }
         Timber.d("subIdLong $subIdLong")
-        val listParamsSubs = ArrayList<Any>()
-        if (subIdInt != null && !listParamsSubs.contains(subIdInt))
+        val listParamsSubs = ArrayList<Any?>()
+        if (subIdInt != null && !listParamsSubs.contains(subIdInt)) {
             listParamsSubs.add(subIdInt)
-        if (subIdLong != null && !listParamsSubs.contains(subIdLong))
+        }
+        if (subIdLong != null && !listParamsSubs.contains(subIdLong)) {
             listParamsSubs.add(subIdLong)
-        if (!listParamsSubs.contains(slotNumber))
+        }
+        if (!listParamsSubs.contains(slotNumber)) {
             listParamsSubs.add(slotNumber)
+        }
         val objectParamsSubs = listParamsSubs.toTypedArray()
-        for (i in objectParamsSubs.indices)
-            Timber.d("SPAM PARAMS_SUBS [" + i + "]=[" + objectParamsSubs[i] + "]")
-
-        val listParamsSlot = ArrayList<Any>()
-        if (!listParamsSlot.contains(slotNumber))
+        for (i in objectParamsSubs.indices) {
+            Timber.d("SPAM PARAMS_SUBS [$i]=[${objectParamsSubs[i]}]")
+        }
+        val listParamsSlot = ArrayList<Any?>()
+        if (!listParamsSlot.contains(slotNumber)) {
             listParamsSlot.add(slotNumber)
-        if (subIdInt != null && !listParamsSlot.contains(subIdInt))
+        }
+        if (subIdInt != null && !listParamsSlot.contains(subIdInt)) {
             listParamsSlot.add(subIdInt)
-        if (subIdLong != null && !listParamsSlot.contains(subIdLong))
+        }
+        if (subIdLong != null && !listParamsSlot.contains(subIdLong)) {
             listParamsSlot.add(subIdLong)
+        }
         val objectParamsSlot = listParamsSlot.toTypedArray()
-        for (i in objectParamsSlot.indices)
-            Timber.d("SPAM PARAMS_SLOT [" + i + "]=[" + objectParamsSlot[i] + "]")
-
-        // for 6.0+ android sdk - uncomment after upgrade builder to SDK 23+ (now SDK 18 with apache.http*)
-        //if(Build.VERSION.SDK_INT >= 23) {
-        //    slot.setImei(telephonyManager.getDeviceId(slotNumber));
-        //}
-
-        // firstly all Int params, then all Long params
+        for (i in objectParamsSlot.indices) {
+            Timber.d("SPAM PARAMS_SLOT [$i]=[${objectParamsSlot[i]}]")
+        }
         Timber.d("------------------------------------------")
-        // imei
         Timber.d("SLOT [$slotNumber]")
-        //if( slot.getImei() == null)
-        slot.imei = iterateMethods("getDeviceId", objectParamsSlot) as String
-        if (slot.imei == null)
+        slot.imei = iterateMethods("getDeviceId", objectParamsSlot) as? String
+        if (slot.imei == null) {
             slot.imei = runMethodReflect(
                 null,
                 "com.android.internal.telephony.Phone",
                 null,
                 null,
                 "GEMINI_SIM_" + (slotNumber + 1)
-            ) as String?
-        if (slot.imei == null)
+            ) as? String
+        }
+        if (slot.imei == null) {
             slot.imei = runMethodReflect(
                 context.getSystemService("phone" + (slotNumber + 1)),
                 null,
                 "getDeviceId",
                 null,
                 null
-            ) as String?
-        // if( slot.getImei() == null)
-        //     slot.setImei((String) runMethodReflect(null, "com.android.internal.telephony.PhoneFactory", "getServiceName", new Object[]{Context.TELEPHONY_SERVICE, slotNumber}, null));
-        Timber.d("IMEI [" + slot.imei + "]")
-        // default one sim phone
-        if (slot.imei == null)
+            ) as? String
+        }
+        Timber.d("IMEI [${slot.imei}]")
+        if (slot.imei == null) {
             when (slotNumber) {
                 0 -> {
                     slot.imei = telephonyManager.deviceId
@@ -197,43 +195,33 @@ class MultiSimTelephonyManager(context: Context) {
                     return slot
                 }
             }
-        if (slot.imei == null) return null
-        // simState
-        slot.setSimState(iterateMethods("getSimState", objectParamsSlot) as Int)
-        Timber.d("SIMSTATE [" + slot.simState + "]")
-        // if( (slot.getSimState() == TelephonyManager.SIM_STATE_UNKNOWN) || (slot.getSimState() == -1))
-        //    return slot;
-        // imsi
-        slot.imsi = iterateMethods("getSubscriberId", objectParamsSubs) as String
-        Timber.d("IMSI [" + slot.imsi + "]")
-        // simSerialNumber
-        slot.simSerialNumber = iterateMethods("getSimSerialNumber", objectParamsSubs) as String
-        Timber.d("SIMSERIALNUMBER [" + slot.simSerialNumber + "]")
-        // simOperator
-        slot.simOperator = iterateMethods("getSimOperator", objectParamsSubs) as String
-        Timber.d("SIMOPERATOR [" + slot.simOperator + "]")
-        // simOperatorName
-        slot.simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as String
-        Timber.d("SIMOPERATORNAME [" + slot.simOperatorName + "]")
-        // simCountryIso
-        slot.simCountryIso = iterateMethods("getSimCountryIso", objectParamsSubs) as String
-        Timber.d("SIMCOUNTRYISO [" + slot.simCountryIso + "]")
-        // networkOperator
-        slot.networkOperator = iterateMethods("getNetworkOperator", objectParamsSubs) as String
-        Timber.d("NETWORKOPERATOR [" + slot.networkOperator + "]")
-        // networkOperatorName
+        }
+        if (slot.imei == null) {
+            return null
+        }
+        slot.setSimState(iterateMethods("getSimState", objectParamsSlot) as? Int)
+        Timber.d("SIMSTATE [${slot.simState}]")
+        slot.imsi = iterateMethods("getSubscriberId", objectParamsSubs) as? String
+        Timber.d("IMSI [${slot.imsi}]")
+        slot.simSerialNumber = iterateMethods("getSimSerialNumber", objectParamsSubs) as? String
+        Timber.d("SIMSERIALNUMBER [${slot.simSerialNumber}]")
+        slot.simOperator = iterateMethods("getSimOperator", objectParamsSubs) as? String
+        Timber.d("SIMOPERATOR [${slot.simOperator}]")
+        slot.simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as? String
+        Timber.d("SIMOPERATORNAME [${slot.simOperatorName}]")
+        slot.simCountryIso = iterateMethods("getSimCountryIso", objectParamsSubs) as? String
+        Timber.d("SIMCOUNTRYISO [${slot.simCountryIso}]")
+        slot.networkOperator = iterateMethods("getNetworkOperator", objectParamsSubs) as? String
+        Timber.d("NETWORKOPERATOR [${slot.networkOperator}]")
         slot.networkOperatorName =
-            iterateMethods("getNetworkOperatorName", objectParamsSubs) as String
-        Timber.d("NETWORKOPERATORNAME [" + slot.networkOperatorName + "]")
-        // networkCountryIso
-        slot.networkCountryIso = iterateMethods("getNetworkCountryIso", objectParamsSubs) as String
-        Timber.d("NETWORKCOUNTRYISO [" + slot.networkCountryIso + "]")
-        // networkType
-        slot.setNetworkType(iterateMethods("getNetworkType", objectParamsSubs) as Int)
-        Timber.d("NETWORKTYPE [" + slot.networkType + "]")
-        // networkRoaming
-        slot.setNetworkRoaming(iterateMethods("isNetworkRoaming", objectParamsSubs) as Boolean)
-        Timber.d("NETWORKROAMING [" + slot.isNetworkRoaming + "]")
+            iterateMethods("getNetworkOperatorName", objectParamsSubs) as? String
+        Timber.d("NETWORKOPERATORNAME [${slot.networkOperatorName}]")
+        slot.networkCountryIso = iterateMethods("getNetworkCountryIso", objectParamsSubs) as? String
+        Timber.d("NETWORKCOUNTRYISO [${slot.networkCountryIso}]")
+        slot.setNetworkType(iterateMethods("getNetworkType", objectParamsSubs) as? Int)
+        Timber.d("NETWORKTYPE [${slot.networkType}]")
+        slot.setNetworkRoaming(iterateMethods("isNetworkRoaming", objectParamsSubs) as? Boolean)
+        Timber.d("NETWORKROAMING [${slot.isNetworkRoaming}]")
         Timber.d("------------------------------------------")
         return slot
     }
@@ -319,7 +307,7 @@ class MultiSimTelephonyManager(context: Context) {
     private fun runMethodReflect(
         instanceInvoke: Any?,
         classInvokeName: String?,
-        methodName: String,
+        methodName: String?,
         methodParams: Array<Any>?,
         field: String?
     ): Any? {
@@ -349,7 +337,8 @@ class MultiSimTelephonyManager(context: Context) {
                         }
                     }
                 }
-                val method = classInvoke.getDeclaredMethod(methodName, *classesParams.orEmpty())
+                val method =
+                    classInvoke.getDeclaredMethod(methodName.toString(), *classesParams.orEmpty())
                 val accessible = method.isAccessible
                 method.isAccessible = true
                 result = method.invoke(instanceInvoke ?: classInvoke, *methodParams.orEmpty())
