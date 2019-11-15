@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
+import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.util.*
 
@@ -251,62 +252,50 @@ class MultiSimTelephonyManager(context: Context) {
         return slot
     }
 
-    private fun spamMethods(methodName: String?, methodParams: Array<Any>): Any? {
-        if (methodName == null || methodName.length <= 0) return null
+    private fun spamMethods(methodName: String?, methodParams: Array<Any?>): Any? {
+        if (methodName == null || methodName.isEmpty()) {
+            return null
+        }
+        val telephonyManager = context.telephonyManager
         val instanceMethods = ArrayList<Any>()
         var multiSimTelephonyManagerExists = false
         try {
-            multiSimTelephonyManagerExists =
-                context!!.getSystemService(Context.TELEPHONY_SERVICE).toString()
-                    .startsWith("android.telephony.MultiSimTelephonyManager")
-            for (i in methodParams.indices) {
-                if (methodParams[i] == null) continue
-                val objectMulti = if (multiSimTelephonyManagerExists)
-                    if (methodParams.size >= 1)
-                        runMethodReflect(
-                            null,
-                            "android.telephony.MultiSimTelephonyManager",
-                            "getDefault",
-                            arrayOf(methodParams[i]),
-                            null
-                        )
-                    else
-                        runMethodReflect(
-                            null,
-                            "android.telephony.MultiSimTelephonyManager",
-                            "getDefault",
-                            null,
-                            null
-                        )
-                else
-                    context!!.getSystemService(Context.TELEPHONY_SERVICE)
-                if (!instanceMethods.contains(objectMulti))
+            multiSimTelephonyManagerExists = telephonyManager.toString()
+                .startsWith("android.telephony.MultiSimTelephonyManager")
+            for (methodParam in methodParams) {
+                if (methodParam == null) {
+                    continue
+                }
+                val objectMulti = if (multiSimTelephonyManagerExists) {
+                    runMethodReflect(
+                        null,
+                        "android.telephony.MultiSimTelephonyManager",
+                        "getDefault",
+                        arrayOf(methodParam),
+                        null
+                    ) ?: continue
+                } else {
+                    telephonyManager
+                }
+                if (!instanceMethods.contains(objectMulti)) {
                     instanceMethods.add(objectMulti)
+                }
             }
         } catch (ignored: Exception) {
         }
-
-        if (!instanceMethods.contains(context!!.getSystemService(Context.TELEPHONY_SERVICE)))
-            instanceMethods.add(context!!.getSystemService(Context.TELEPHONY_SERVICE))
-        if (!instanceMethods.contains(
-                runMethodReflect(
-                    null,
-                    "com.mediatek.telephony.TelephonyManagerEx",
-                    "getDefault",
-                    null,
-                    null
-                )
-            )
+        if (!instanceMethods.contains(telephonyManager)) {
+            instanceMethods.add(telephonyManager)
+        }
+        val telephonyManagerEx = runMethodReflect(
+            null,
+            "com.mediatek.telephony.TelephonyManagerEx",
+            "getDefault",
+            null,
+            null
         )
-            instanceMethods.add(
-                runMethodReflect(
-                    null,
-                    "com.mediatek.telephony.TelephonyManagerEx",
-                    "getDefault",
-                    null,
-                    null
-                )
-            )
+        if (!instanceMethods.contains(telephonyManagerEx)) {
+            instanceMethods.add(telephonyManagerEx)
+        }
         if (!instanceMethods.contains(context!!.getSystemService("phone_msim")))
             instanceMethods.add(context!!.getSystemService("phone_msim"))
         if (!instanceMethods.contains(null))
