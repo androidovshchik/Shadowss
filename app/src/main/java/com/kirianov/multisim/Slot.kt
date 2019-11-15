@@ -72,7 +72,7 @@ class Slot {
         return if (slot == null) {
             false
         } else {
-            imei.toString().compareToslot.imei.toString() == 0 && imsi.toString().compareToslot.imsi.toString() == 0 && simSerialNumber.toString().compareToslot.simSerialNumber.toString() == 0
+            imei == slot.imei && imsi == slot.imsi && simSerialNumber == slot.simSerialNumber
         }// &&
         // (("" + getSimOperator()).compareTo("" + slot.getSimOperator()) == 0) &&
         // (("" + getSimOperatorName()).compareTo("" + slot.getSimOperatorName()) == 0) &&
