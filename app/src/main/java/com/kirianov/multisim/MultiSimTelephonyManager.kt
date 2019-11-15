@@ -1,8 +1,7 @@
 package com.kirianov.multisim
 
-import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
-import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
@@ -252,16 +251,16 @@ class MultiSimTelephonyManager(context: Context) {
         return slot
     }
 
+    @SuppressLint("WrongConstant")
     private fun spamMethods(methodName: String?, methodParams: Array<Any?>): Any? {
         if (methodName == null || methodName.isEmpty()) {
             return null
         }
         val telephonyManager = context.telephonyManager
-        val instanceMethods = ArrayList<Any>()
-        var multiSimTelephonyManagerExists = false
+        val instanceMethods = ArrayList<Any?>()
+        val multiSimTelephonyManagerExists = telephonyManager.toString()
+            .startsWith("android.telephony.MultiSimTelephonyManager")
         try {
-            multiSimTelephonyManagerExists = telephonyManager.toString()
-                .startsWith("android.telephony.MultiSimTelephonyManager")
             for (methodParam in methodParams) {
                 if (methodParam == null) {
                     continue
@@ -273,7 +272,7 @@ class MultiSimTelephonyManager(context: Context) {
                         "getDefault",
                         arrayOf(methodParam),
                         null
-                    ) ?: continue
+                    )
                 } else {
                     telephonyManager
                 }
@@ -296,36 +295,37 @@ class MultiSimTelephonyManager(context: Context) {
         if (!instanceMethods.contains(telephonyManagerEx)) {
             instanceMethods.add(telephonyManagerEx)
         }
-        if (!instanceMethods.contains(context!!.getSystemService("phone_msim")))
-            instanceMethods.add(context!!.getSystemService("phone_msim"))
-        if (!instanceMethods.contains(null))
+        val phoneMsim = context.getSystemService("phone_msim")
+        if (!instanceMethods.contains(phoneMsim)) {
+            instanceMethods.add(phoneMsim)
+        }
+        if (!instanceMethods.contains(null)) {
             instanceMethods.add(null)
-        //                null,
-        //                "android.telephony.MSimTelephonyManager",
-        //                "com.mediatek.telephony.TelephonyManagerEx",
-        //                "com.android.internal.telephony.PhoneFactory"
+        }
         val classNames = generateClassNames()
-        //                "",
-        //                "Ext",
-        //                "ForSubscription",
-        //        };
         val methodSuffixes = generateMethodSuffix()
         var result: Any?
-        for (methodSuffix in methodSuffixes)
-            for (className in classNames)
-                for (instanceMethod in instanceMethods)
-                    for (i in methodParams.indices) {
-                        if (methodParams[i] == null) continue
+        for (methodSuffix in methodSuffixes) {
+            for (className in classNames) {
+                for (instanceMethod in instanceMethods) {
+                    for (methodParam in methodParams) {
+                        if (methodParam == null) {
+                            continue
+                        }
                         result = runMethodReflect(
                             instanceMethod,
                             className,
                             methodName + methodSuffix,
-                            if (multiSimTelephonyManagerExists) null else arrayOf(methodParams[i]),
+                            if (multiSimTelephonyManagerExists) null else arrayOf(methodParam),
                             null
                         )
-                        if (result != null)
+                        if (result != null) {
                             return result
+                        }
                     }
+                }
+            }
+        }
         return null
     }
 
@@ -362,14 +362,11 @@ class MultiSimTelephonyManager(context: Context) {
                         }
                     }
                 }
-                try {
-                    val method = classInvoke.getDeclaredMethod(methodName, *classesParams.orEmpty())
-                    val accessible = method.isAccessible
-                    method.isAccessible = true
-                    result = method.invoke(instanceInvoke ?: classInvoke, *methodParams.orEmpty())
-                    method.isAccessible = accessible
-                } catch (ignored: Exception) {
-                }
+                val method = classInvoke.getDeclaredMethod(methodName, *classesParams.orEmpty())
+                val accessible = method.isAccessible
+                method.isAccessible = true
+                result = method.invoke(instanceInvoke ?: classInvoke, *methodParams.orEmpty())
+                method.isAccessible = accessible
             }
         } catch (ignored: Exception) {
         }
@@ -380,14 +377,7 @@ class MultiSimTelephonyManager(context: Context) {
 
     private external fun generateMethodSuffix(): Array<String>
 
-    fun destroy() {
-        (context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager)
-            .listen(null, PhoneStateListener.LISTEN_NONE)
-    }
-
     companion object {
-
-        private val PERMISSIONS = arrayOf(Manifest.permission.READ_PHONE_STATE)
 
         init {
             try {
