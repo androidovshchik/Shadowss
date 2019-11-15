@@ -27,8 +27,6 @@ class Slot {
     // careful find networkTypeName because it will be different with networkType on same devices
     var isNetworkRoaming = false
 
-    var mcc = -1
-
     // private String msisdn; // not possible now
 
     fun setSimState(state: Int?) {
@@ -99,7 +97,6 @@ class Slot {
             "networkCountryIso=$networkCountryIso, " +
             "networkType=$networkType, " +
             "isNetworkRoaming=$isNetworkRoaming, " +
-            "mcc=$mcc, " +
             ")"
     }
 }

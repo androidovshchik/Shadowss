@@ -14,7 +14,14 @@ class MultiSimManager(context: Context) {
 
     private val context = context.applicationContext
 
+    @Volatile
+    var mcc1 = -1
+
+    @Volatile
+    var mcc2 = -1
+
     val slots = arrayListOf<Slot>()
+        @SuppressLint("MissingPermission")
         @Synchronized
         get() {
             try {
@@ -22,10 +29,16 @@ class MultiSimManager(context: Context) {
             } catch (e: Throwable) {
                 Timber.e(e)
             }
+            if (isLollipopMR1Plus()) {
+                val subscriptionManager =
+                    context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+                val list = subscriptionManager.activeSubscriptionInfoList.orEmpty()
+                mcc1 = list.getOrNull(0)?.mcc ?: -1
+                mcc2 = list.getOrNull(1)?.mcc ?: -1
+            }
             return field
         }
 
-    @SuppressLint("MissingPermission")
     private fun updateSlots() {
         var slotNumber = 0
         while (true) {
@@ -50,15 +63,6 @@ class MultiSimManager(context: Context) {
                 }
             }
             slotNumber++
-        }
-        if (isLollipopMR1Plus()) {
-            slots.apply {
-                val subscriptionManager =
-                    context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-                val list = subscriptionManager.activeSubscriptionInfoList.orEmpty()
-                getOrNull(0)?.mcc = list.getOrNull(0)?.mcc ?: -1
-                getOrNull(1)?.mcc = list.getOrNull(1)?.mcc ?: -1
-            }
         }
     }
 
