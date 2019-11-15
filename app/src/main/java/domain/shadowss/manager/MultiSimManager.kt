@@ -12,6 +12,7 @@ import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.extension.isMarshmallowPlus
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.model.Slot
+import org.jetbrains.anko.collections.forEachReversedWithIndex
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.lang.ref.WeakReference
@@ -82,16 +83,16 @@ class MultiSimManager(context: Context) {
                 e.toString()
             }
             slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
-            val iterator = slots.iterator()
-            while (iterator.hasNext()) {
-                val slot = iterator.next()
-                slot.simStates.apply {
-                    clear()
-                    addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
-                }
-                slots.apply {
-                    removeAll { it.imsi == slot.imsi }
-                    add(slot)
+            val imsi = arrayListOf<String?>()
+            slots.forEachReversedWithIndex { i, slot ->
+                if (imsi.contains(slot.imsi)) {
+                    slots.removeAt(i)
+                } else {
+                    imsi.add(slot.imsi)
+                    slot.simStates.apply {
+                        clear()
+                        addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
+                    }
                 }
             }
             error
