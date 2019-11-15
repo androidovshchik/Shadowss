@@ -49,7 +49,7 @@ class MultiSimManager(context: Context) {
 
     @Synchronized
     @SuppressLint("MissingPermission")
-    fun updateData(): String? = reference.get()?.run {
+    fun updateInfo(): String? = reference.get()?.run {
         if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
             val error = try {
                 var slotNumber = 0
@@ -85,7 +85,7 @@ class MultiSimManager(context: Context) {
             slots.forEach { slot ->
                 slot.simStates.apply {
                     clear()
-                    addAll(slots.filter { it.imsi == slot.imsi || it.simSerialNumber == slot.simSerialNumber }
+                    addAll(slots.filter { it.imei == slot.imei || it.imsi == slot.imsi || it.simSerialNumber == slot.simSerialNumber }
                         .map { it.simState })
                 }
             }
@@ -427,7 +427,6 @@ class MultiSimManager(context: Context) {
                 builder.append("F: ${field.name} ${field.type}\n")
             }
         } catch (e: Throwable) {
-            Timber.e(e)
             builder.append("E: $e\n")
         }
         return builder.toString()
