@@ -81,7 +81,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
                 if (this is Activity) {
                     requestPermissions(REQUEST_PERMISSIONS, *permissions)
                 }
-                return@run false
+                return false
             }
             granted = powerManager.isIgnoringBatteryOptimizations(packageName)
             if (!granted) {
@@ -92,10 +92,10 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
                     )
                     toast("Let app always run in background")
                 }
-                return@run false
+                return false
             }
         }
-        return@run true
+        true
     }
 
     fun checkInternet(context: Context): Boolean {

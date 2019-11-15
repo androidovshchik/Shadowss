@@ -8,6 +8,8 @@ class Slot {
 
     var simState = -1
 
+    val simStates = hashSetOf<Int>()
+
     var simSerialNumber: String? = null
 
     var simOperator: String? = null

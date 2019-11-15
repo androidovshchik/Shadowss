@@ -2,7 +2,9 @@ package domain.shadowss.manager
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.content.Context
+import android.os.Build
 import android.telephony.SubscriptionManager
 import android.text.TextUtils
 import domain.shadowss.extension.areGranted
@@ -30,16 +32,16 @@ class MultiSimManager(context: Context) {
     @Suppress("unused")
     val dualMcc: Pair<String?, String?>
         @SuppressLint("MissingPermission")
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
         get() = reference.get()?.run {
             if (isLollipopMR1Plus()) {
                 if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
                     val subscriptionManager =
                         getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
                     val list = subscriptionManager.activeSubscriptionInfoList
-                    return list.getOrNull(0)?.mcc.toString().padStart(
-                        3,
-                        '0'
-                    ) to list.getOrNull(1)?.mcc.toString().padStart(3, '0')
+                    return list.getOrNull(0)?.mcc?.toString()
+                        ?.padStart(3, '0') to list.getOrNull(1)?.mcc?.toString()
+                        ?.padStart(3, '0')
                 }
             }
             null to null
@@ -47,9 +49,9 @@ class MultiSimManager(context: Context) {
 
     @Synchronized
     @SuppressLint("MissingPermission")
-    fun updateData() = reference.get()?.run {
+    fun updateData(): String? = reference.get()?.run {
         if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-            try {
+            val error = try {
                 var slotNumber = 0
                 while (true) {
                     val slot = touchSlot(slotNumber)
@@ -74,12 +76,23 @@ class MultiSimManager(context: Context) {
                     }
                     slotNumber++
                 }
+                null
             } catch (e: Throwable) {
                 Timber.e(e)
+                e.toString()
             }
             slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
+            slots.forEach {
+                it.simStates.apply {
+                    clear()
+                    add(it.simState)
+                    addAll(slots.map { it.imsi })
+                }
+            }
+            error
         } else {
             slots.clear()
+            null
         }
     }
 
