@@ -68,7 +68,7 @@ class Slot {
             "] networkRoaming=[" + isNetworkRoaming + "]"
     }
 
-    fun compare(slot: Slot?): Boolean {
+    private fun compare(slot: Slot?): Boolean {
         return if (slot == null) {
             false
         } else {

@@ -2,22 +2,17 @@ package com.kirianov.multisim
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.telephony.TelephonyManager
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.util.*
 
+@Suppress("DEPRECATION")
 class MultiSimTelephonyManager(context: Context) {
 
     private val context = context.applicationContext
 
     val slots = ArrayList<Slot>()
         @Synchronized get
-
-    @Synchronized
-    fun getSlot(location: Int): Slot? {
-        return slots.getOrNull(location)
-    }
 
     @Synchronized
     fun updateSlots() {
@@ -34,47 +29,31 @@ class MultiSimTelephonyManager(context: Context) {
                 // protect from Alcatel infinity bug
                 break
             }
-            setSlot(slotNumber, slot)
+            slots.apply {
+                when {
+                    size > slotNumber -> {
+                        removeAt(slotNumber)
+                        add(slotNumber, slot)
+                    }
+                    size == slotNumber -> add(slot)
+                }
+            }
             slotNumber++
         }
     }
 
-    private fun setSlot(location: Int, slot: Slot?): Boolean {
-        var updated = false
-        try {
-            if (slot == null) {
-                if (slots.size > location) {
-                    slots.removeAt(location)
-                    updated = true
-                }
-            } else {
-                if (slots.size > location) {
-                    if (!slot.compare(slots[location])) {
-                        updated = true
-                    }
-                    slots[location] = slot
-                } else {
-                    slots.add(location, slot)
-                    updated = true
-                }
-            }
-        } catch (ignored: Exception) {
-        }
-        return updated
-    }
-
+    @SuppressLint("MissingPermission", "HardwareIds")
     private fun touchSlot(slotNumber: Int): Slot? {
         val slot = Slot()
-        val telephonyManager =
-            context!!.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        Timber.d("telephonyManager [" + telephonyManager + "] " + telephonyManager.deviceId)
+        val telephonyManager = context.telephonyManager
+        Timber.d("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
 
         val subscriberIdIntValue = ArrayList<String>()
         val subscriberIdIntIndex = ArrayList<Int>()
         for (i in 0..99) {
             val subscriber: String?
             subscriber = runMethodReflect(
-                context!!.getSystemService(Context.TELEPHONY_SERVICE),
+                context.getSystemService(Context.TELEPHONY_SERVICE),
                 "android.telephony.TelephonyManager",
                 "getSubscriberId",
                 arrayOf(i),
@@ -91,7 +70,7 @@ class MultiSimTelephonyManager(context: Context) {
             if (subIdInt == null)
                 subIdInt = Integer.parseInt(
                     "" + runMethodReflect(
-                        context!!.getSystemService(Context.TELEPHONY_SERVICE),
+                        context.getSystemService(Context.TELEPHONY_SERVICE),
                         "android.telephony.TelephonyManager",
                         "getSubId",
                         arrayOf(slotNumber),
@@ -103,18 +82,19 @@ class MultiSimTelephonyManager(context: Context) {
 
         Timber.d("subIdInt " + subIdInt!!)
 
+
         val subscriberIdLongValue = ArrayList<String>()
         val subscriberIdLongIndex = ArrayList<Long>()
         for (i in 0L..100L - 1) {
             val subscriber = runMethodReflect(
-                context!!.getSystemService(Context.TELEPHONY_SERVICE),
+                context.getSystemService(Context.TELEPHONY_SERVICE),
                 "android.telephony.TelephonyManager",
                 "getSubscriberId",
                 arrayOf(i),
                 null
             ) as String?
             if (runMethodReflect(
-                    context!!.getSystemService(Context.TELEPHONY_SERVICE),
+                    context.getSystemService(Context.TELEPHONY_SERVICE),
                     "android.telephony.TelephonyManagerSprd",
                     "getSubInfoForSubscriber",
                     arrayOf(i),
@@ -130,7 +110,7 @@ class MultiSimTelephonyManager(context: Context) {
         if (subscriberIdLongIndex.size <= 0)
             for (i in 0L..100L - 1) {
                 val subscriber = runMethodReflect(
-                    context!!.getSystemService(Context.TELEPHONY_SERVICE),
+                    context.getSystemService(Context.TELEPHONY_SERVICE),
                     "android.telephony.TelephonyManager",
                     "getSubscriberId",
                     arrayOf(i),
@@ -145,7 +125,7 @@ class MultiSimTelephonyManager(context: Context) {
             if (subscriberIdLongIndex.size > slotNumber) subscriberIdLongIndex[slotNumber] else null
         if (subIdLong == null)
             subIdLong = runMethodReflect(
-                context!!.getSystemService(Context.TELEPHONY_SERVICE),
+                context.getSystemService(Context.TELEPHONY_SERVICE),
                 "android.telephony.TelephonyManager",
                 "getSubId",
                 arrayOf(slotNumber),
@@ -185,7 +165,7 @@ class MultiSimTelephonyManager(context: Context) {
         // imei
         Timber.d("SLOT [$slotNumber]")
         //if( slot.getImei() == null)
-        slot.imei = spamMethods("getDeviceId", objectParamsSlot) as String?
+        slot.imei = iterateMethods("getDeviceId", objectParamsSlot) as String
         if (slot.imei == null)
             slot.imei = runMethodReflect(
                 null,
@@ -196,14 +176,16 @@ class MultiSimTelephonyManager(context: Context) {
             ) as String?
         if (slot.imei == null)
             slot.imei = runMethodReflect(
-                context!!.getSystemService("phone" + (slotNumber + 1)),
+                context.getSystemService("phone" + (slotNumber + 1)),
                 null,
                 "getDeviceId",
                 null,
                 null
             ) as String?
+        // if( slot.getImei() == null)
         //     slot.setImei((String) runMethodReflect(null, "com.android.internal.telephony.PhoneFactory", "getServiceName", new Object[]{Context.TELEPHONY_SERVICE, slotNumber}, null));
         Timber.d("IMEI [" + slot.imei + "]")
+        // default one sim phone
         if (slot.imei == null)
             when (slotNumber) {
                 0 -> {
@@ -223,36 +205,48 @@ class MultiSimTelephonyManager(context: Context) {
                 }
             }
         if (slot.imei == null) return null
-        slot.setSimState(spamMethods("getSimState", objectParamsSlot) as Int?)
+        // simState
+        slot.setSimState(iterateMethods("getSimState", objectParamsSlot) as Int)
         Timber.d("SIMSTATE [" + slot.simState + "]")
+        // if( (slot.getSimState() == TelephonyManager.SIM_STATE_UNKNOWN) || (slot.getSimState() == -1))
         //    return slot;
-        slot.imsi = spamMethods("getSubscriberId", objectParamsSubs) as String?
+        // imsi
+        slot.imsi = iterateMethods("getSubscriberId", objectParamsSubs) as String
         Timber.d("IMSI [" + slot.imsi + "]")
-        slot.simSerialNumber = spamMethods("getSimSerialNumber", objectParamsSubs) as String?
+        // simSerialNumber
+        slot.simSerialNumber = iterateMethods("getSimSerialNumber", objectParamsSubs) as String
         Timber.d("SIMSERIALNUMBER [" + slot.simSerialNumber + "]")
-        slot.simOperator = spamMethods("getSimOperator", objectParamsSubs) as String?
+        // simOperator
+        slot.simOperator = iterateMethods("getSimOperator", objectParamsSubs) as String
         Timber.d("SIMOPERATOR [" + slot.simOperator + "]")
-        slot.simOperatorName = spamMethods("getSimOperatorName", objectParamsSubs) as String?
+        // simOperatorName
+        slot.simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as String
         Timber.d("SIMOPERATORNAME [" + slot.simOperatorName + "]")
-        slot.simCountryIso = spamMethods("getSimCountryIso", objectParamsSubs) as String?
+        // simCountryIso
+        slot.simCountryIso = iterateMethods("getSimCountryIso", objectParamsSubs) as String
         Timber.d("SIMCOUNTRYISO [" + slot.simCountryIso + "]")
-        slot.networkOperator = spamMethods("getNetworkOperator", objectParamsSubs) as String?
+        // networkOperator
+        slot.networkOperator = iterateMethods("getNetworkOperator", objectParamsSubs) as String
         Timber.d("NETWORKOPERATOR [" + slot.networkOperator + "]")
+        // networkOperatorName
         slot.networkOperatorName =
-            spamMethods("getNetworkOperatorName", objectParamsSubs) as String?
+            iterateMethods("getNetworkOperatorName", objectParamsSubs) as String
         Timber.d("NETWORKOPERATORNAME [" + slot.networkOperatorName + "]")
-        slot.networkCountryIso = spamMethods("getNetworkCountryIso", objectParamsSubs) as String?
+        // networkCountryIso
+        slot.networkCountryIso = iterateMethods("getNetworkCountryIso", objectParamsSubs) as String
         Timber.d("NETWORKCOUNTRYISO [" + slot.networkCountryIso + "]")
-        slot.setNetworkType(spamMethods("getNetworkType", objectParamsSubs) as Int?)
+        // networkType
+        slot.setNetworkType(iterateMethods("getNetworkType", objectParamsSubs) as Int)
         Timber.d("NETWORKTYPE [" + slot.networkType + "]")
-        slot.setNetworkRoaming(spamMethods("isNetworkRoaming", objectParamsSubs) as Boolean?)
+        // networkRoaming
+        slot.setNetworkRoaming(iterateMethods("isNetworkRoaming", objectParamsSubs) as Boolean)
         Timber.d("NETWORKROAMING [" + slot.isNetworkRoaming + "]")
         Timber.d("------------------------------------------")
         return slot
     }
 
     @SuppressLint("WrongConstant")
-    private fun spamMethods(methodName: String?, methodParams: Array<Any?>): Any? {
+    private fun iterateMethods(methodName: String?, methodParams: Array<Any?>): Any? {
         if (methodName == null || methodName.isEmpty()) {
             return null
         }
