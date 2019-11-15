@@ -1,12 +1,10 @@
 package domain.shadowss.controller
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.telephony.SubscriptionManager
 import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
 import domain.shadowss.extension.*
@@ -16,7 +14,6 @@ import domain.shadowss.manager.WebSocketManager
 import io.reactivex.disposables.CompositeDisposable
 import org.jetbrains.anko.connectivityManager
 import org.jetbrains.anko.powerManager
-import org.jetbrains.anko.telephonyManager
 import org.jetbrains.anko.toast
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
@@ -117,20 +114,6 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         return false
     }
 
-    @SuppressLint("MissingPermission")
-    fun checkMcc(context: Context): Pair<String?, String?> = context.run {
-        return@run if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-            if (isLollipopMR1Plus()) {
-                val subscriptionManager =
-                    getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-                val list = subscriptionManager.activeSubscriptionInfoList
-                return@run list.getOrNull(0)?.mcc.toString() to list.getOrNull(1)?.mcc.toString()
-            } else {
-                telephonyManager.networkCountryIso to invokeBySlot("getNetworkCountryIso", 1)
-            }
-        } else null to null
-    }
-
     override fun onSAPI(instance: SAPI) {}
 
     override fun onSAPO(instance: SAPO) {}
@@ -161,18 +144,6 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     open fun release() {
         disposable.dispose()
         reference.clear()
-    }
-
-    private fun Context.invokeBySlot(name: String, slotId: Int): String? {
-        return try {
-            telephonyManager.run {
-                val method = javaClass.getMethod(name, Int::class.java)
-                method.invoke(this, slotId) as? String
-            }
-        } catch (e: Throwable) {
-            Timber.e(e)
-            null
-        }
     }
 
     companion object {

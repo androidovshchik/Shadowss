@@ -1,9 +1,11 @@
 package domain.shadowss.manager
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.telephony.SubscriptionManager
 import android.text.TextUtils
+import domain.shadowss.extension.areGranted
 import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.model.Slot
 import org.jetbrains.anko.telephonyManager
@@ -22,6 +24,20 @@ class MultiSimManager(context: Context) {
 
     val slots = arrayListOf<Slot>()
         @Synchronized get
+
+    @SuppressLint("MissingPermission")
+    fun checkMcc(context: Context): Pair<String?, String?> = context.run {
+        return@run if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+            if (isLollipopMR1Plus()) {
+                val subscriptionManager =
+                    getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+                val list = subscriptionManager.activeSubscriptionInfoList
+                return@run list.getOrNull(0)?.mcc.toString() to list.getOrNull(1)?.mcc.toString()
+            } else {
+                telephonyManager.networkCountryIso to invokeBySlot("getNetworkCountryIso", 1)
+            }
+        } else null to null
+    }
 
     @Synchronized
     @SuppressLint("MissingPermission")
@@ -54,14 +70,7 @@ class MultiSimManager(context: Context) {
         } catch (e: Throwable) {
             Timber.e(e)
         }
-        if (isLollipopMR1Plus()) {
-            val subscriptionManager =
-                context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-            val list = subscriptionManager.activeSubscriptionInfoList.orEmpty()
-            mcc1 = list.getOrNull(0)?.mcc ?: -1
-            mcc2 = list.getOrNull(1)?.mcc ?: -1
-        }
-        slots.filter { it.imsi != null && it.simOperator.isNotEmpty() }
+        slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
     }
 
     @Suppress("SpellCheckingInspection")
@@ -356,9 +365,10 @@ class MultiSimManager(context: Context) {
         return result
     }
 
+    @Suppress("unused")
     val allMethodsAndFields: String
         get() = """
-            Default: ${reference.get()?.getSystemService(Context.TELEPHONY_SERVICE)}
+            Default: ${reference.get()?.getSystemService(Context.TELEPHONY_SERVICE)}${'\n'}
             ${printAllMethodsAndFields("android.telephony.TelephonyManager")}
             ${printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager")}
             ${printAllMethodsAndFields("android.telephony.MSimTelephonyManager")}
@@ -367,7 +377,6 @@ class MultiSimManager(context: Context) {
             ${printAllMethodsAndFields("com.android.internal.telephony.ITelephony")}
         """.trimIndent()
 
-    @SuppressWarnings("ResourceType")
     private fun printAllMethodsAndFields(className: String): String {
         val builder = StringBuilder()
         builder.append("========== $className\n")
@@ -386,6 +395,7 @@ class MultiSimManager(context: Context) {
                 builder.append("F: ${field.name} ${field.type}\n")
             }
         } catch (e: Throwable) {
+            Timber.e(e)
             builder.append("E: $e\n")
         }
         return builder.toString()
