@@ -16,6 +16,9 @@ class Slot {
 
     var simCountryIso: String? = null
 
+    val isReady: Boolean
+        get() = simStates.contains(5)
+
     fun setSimState(state: Int?) {
         if (state == null) {
             simState = -1

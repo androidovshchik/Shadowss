@@ -20,6 +20,7 @@ import java.lang.reflect.Modifier
 import java.util.*
 
 /**
+ * For better performance should be called on background thread
  * https://mvnrepository.com/artifact/com.kirianov.multisim/multisim
  */
 @Suppress("MemberVisibilityCanBePrivate")
