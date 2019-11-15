@@ -6,7 +6,7 @@ import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.util.*
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "MemberVisibilityCanBePrivate")
 class MultiSimTelephonyManager(context: Context) {
 
     private val context = context.applicationContext
@@ -277,10 +277,8 @@ class MultiSimTelephonyManager(context: Context) {
         if (!instanceMethods.contains(null)) {
             instanceMethods.add(null)
         }
-        val classNames = generateClassNames()
-        val methodSuffixes = generateMethodSuffix()
         var result: Any?
-        for (methodSuffix in methodSuffixes) {
+        for (methodSuffix in suffixes) {
             for (className in classNames) {
                 for (instanceMethod in instanceMethods) {
                     for (methodParam in methodParams) {
@@ -349,18 +347,23 @@ class MultiSimTelephonyManager(context: Context) {
         return result
     }
 
-    private external fun generateClassNames(): Array<String>
-
-    private external fun generateMethodSuffix(): Array<String>
-
     companion object {
 
-        init {
-            try {
-                System.loadLibrary("multisimlib")
-            } catch (e: Exception) {
-                Timber.e(e)
-            }
-        }
+        private val classNames = arrayOf(
+            "android.telephony.TelephonyManager",
+            "android.telephony.MSimTelephonyManager",
+            "android.telephony.MultiSimTelephonyManager",
+            "com.mediatek.telephony.TelephonyManagerEx",
+            "com.android.internal.telephony.Phone",
+            "com.android.internal.telephony.PhoneFactory"
+        )
+
+        private val suffixes = arrayOf(
+            "Gemini",
+            "Ext",
+            "Ds",
+            "ForSubscription",
+            "ForPhone"
+        )
     }
 }
