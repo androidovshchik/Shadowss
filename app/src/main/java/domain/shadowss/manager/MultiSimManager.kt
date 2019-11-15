@@ -6,9 +6,11 @@ import android.telephony.SubscriptionManager
 import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.model.Slot
 import org.jetbrains.anko.telephonyManager
+import org.junit.runner.Request.method
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.util.*
+
 
 /**
  * https://mvnrepository.com/artifact/com.kirianov.multisim/multisim
@@ -354,44 +356,37 @@ class MultiSimManager(context: Context) {
         return result
     }
 
-    fun sdsdf() = """
-        default telephony [" + context.getSystemService(Context.TELEPHONY_SERVICE) + "]"
-        ${printAllMethodsAndFields("android.telephony.TelephonyManager")}
-        ${printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager")}
-        ${printAllMethodsAndFields("android.telephony.MSimTelephonyManager")}
-        ${printAllMethodsAndFields("com.mediatek.telephony.TelephonyManager")}
-        ${printAllMethodsAndFields("com.mediatek.telephony.TelephonyManagerEx")}
-        ${printAllMethodsAndFields("com.android.internal.telephony.ITelephony")}
-    """.trimIndent()
+    val allMethodsAndFields: String
+        get() = """
+            default telephony [" + context.getSystemService(Context.TELEPHONY_SERVICE) + "]"
+            ${printAllMethodsAndFields("android.telephony.TelephonyManager")}
+            ${printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager")}
+            ${printAllMethodsAndFields("android.telephony.MSimTelephonyManager")}
+            ${printAllMethodsAndFields("com.mediatek.telephony.TelephonyManager")}
+            ${printAllMethodsAndFields("com.mediatek.telephony.TelephonyManagerEx")}
+            ${printAllMethodsAndFields("com.android.internal.telephony.ITelephony")}
+        """.trimIndent()
 
     @SuppressWarnings("ResourceType")
-    private fun printAllMethodsAndFields(className: String?): String {
+    private fun printAllMethodsAndFields(className: String): String {
         val builder = StringBuilder()
-        builder.append("=========================")
-        if (className != null) {
-            try {
-                val MultiSimClass = Class.forName(className);
-
-                Log.i(LOG, "Methods of [" + className + "] (" + paramsCount + "):");
-                for (Method method : MultiSimClass.getMethods()) {
-                    if ((method.getParameterTypes().length == paramsCount) || (paramsCount == -1)) {
-                        String params = "";
-                        for (int i = 0; i < method.getParameterTypes().length; i++)
-                        params += method.getParameterTypes()[i].getName() + ", ";
-                        Log.i(
-                            LOG,
-                            " m " + method.getName() + "[" + method.getParameterTypes().length + "](" + (params.length() > 0 ? params . substring (0, params.length()-2) : params)+") -> "+method.getReturnType()+""+(Modifier.isStatic(method.getModifiers()) ? " (static)" : ""));
-                    }
+        builder.append("==========\n")
+        try {
+            val cls = Class.forName(className)
+            builder.append("Methods of [$className]:\n")
+            for (method in cls.methods) {
+                var params = ""
+                for (i in method.parameterTypes.indices) {
+                    params += "${method.parameterTypes[i].name}, "
                 }
-
-                Log.i(LOG, "Fields of [" + className + "]:");
-                for (Field field : MultiSimClass.getFields()) {
-                    Log.i(LOG, " f " + field.getName() + " " + field.getType());
-                }
-
-            } catch (Exception e) {
-                Log.i(LOG, "EXC " + e.getMessage());
+                builder.append("M: " + method.name + "[" + method.parameterTypes.size + "](" + (params.length() > 0 ? params . substring (0, params.length()-2) : params)+") -> "+method.getReturnType()+""+(Modifier.isStatic(method.getModifiers()) ? " (static)" : ""))
             }
+            builder.append("Fields of [$className]:\n")
+            for (field in cls.fields) {
+                builder.append("F: ${field.name} ${field.type}\n")
+            }
+        } catch (e: Throwable) {
+            builder.append("E: $e\n")
         }
         return builder.toString()
     }
