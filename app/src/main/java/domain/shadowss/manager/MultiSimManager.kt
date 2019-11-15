@@ -175,6 +175,7 @@ class MultiSimManager(context: Context) {
         for (i in objectParamsSlot.indices) {
             Timber.v("SPAM PARAMS_SLOT [$i]=[${objectParamsSlot[i]}]")
         }
+        // firstly all Int params, then all Long params
         Timber.v("------------------------------------------")
         Timber.v("SLOT [$slotNumber]")
         slot.imei = iterateMethods("getDeviceId", objectParamsSlot) as? String
@@ -204,14 +205,8 @@ class MultiSimManager(context: Context) {
                     slot.imsi = telephonyManager.subscriberId
                     slot.simState = telephonyManager.simState
                     slot.simOperator = telephonyManager.simOperator
-                    slot.simOperatorName = telephonyManager.simOperatorName
                     slot.simSerialNumber = telephonyManager.simSerialNumber
                     slot.simCountryIso = telephonyManager.simCountryIso
-                    slot.networkOperator = telephonyManager.networkOperator
-                    slot.networkOperatorName = telephonyManager.networkOperatorName
-                    slot.networkCountryIso = telephonyManager.networkCountryIso
-                    slot.networkType = telephonyManager.networkType
-                    slot.isNetworkRoaming = telephonyManager.isNetworkRoaming
                     return slot
                 }
             }
@@ -227,21 +222,8 @@ class MultiSimManager(context: Context) {
         Timber.v("SIMSERIALNUMBER [${slot.simSerialNumber}]")
         slot.simOperator = iterateMethods("getSimOperator", objectParamsSubs) as? String
         Timber.v("SIMOPERATOR [${slot.simOperator}]")
-        /*slot.simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as? String
-        Timber.v("SIMOPERATORNAME [${slot.simOperatorName}]")*/
         slot.simCountryIso = iterateMethods("getSimCountryIso", objectParamsSubs) as? String
         Timber.v("SIMCOUNTRYISO [${slot.simCountryIso}]")
-        /*slot.networkOperator = iterateMethods("getNetworkOperator", objectParamsSubs) as? String
-        Timber.v("NETWORKOPERATOR [${slot.networkOperator}]")
-        slot.networkOperatorName =
-            iterateMethods("getNetworkOperatorName", objectParamsSubs) as? String
-        Timber.v("NETWORKOPERATORNAME [${slot.networkOperatorName}]")
-        slot.networkCountryIso = iterateMethods("getNetworkCountryIso", objectParamsSubs) as? String
-        Timber.v("NETWORKCOUNTRYISO [${slot.networkCountryIso}]")
-        slot.setNetworkType(iterateMethods("getNetworkType", objectParamsSubs) as? Int)
-        Timber.v("NETWORKTYPE [${slot.networkType}]")
-        slot.setNetworkRoaming(iterateMethods("isNetworkRoaming", objectParamsSubs) as? Boolean)
-        Timber.v("NETWORKROAMING [${slot.isNetworkRoaming}]")*/
         Timber.v("------------------------------------------")
         return slot
     }
@@ -370,6 +352,48 @@ class MultiSimManager(context: Context) {
         } catch (ignored: Throwable) {
         }
         return result
+    }
+
+    fun sdsdf() = """
+        default telephony [" + context.getSystemService(Context.TELEPHONY_SERVICE) + "]"
+        ${printAllMethodsAndFields("android.telephony.TelephonyManager")}
+        ${printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager")}
+        ${printAllMethodsAndFields("android.telephony.MSimTelephonyManager")}
+        ${printAllMethodsAndFields("com.mediatek.telephony.TelephonyManager")}
+        ${printAllMethodsAndFields("com.mediatek.telephony.TelephonyManagerEx")}
+        ${printAllMethodsAndFields("com.android.internal.telephony.ITelephony")}
+    """.trimIndent()
+
+    @SuppressWarnings("ResourceType")
+    private fun printAllMethodsAndFields(className: String?): String {
+        val builder = StringBuilder()
+        builder.append("=========================")
+        if (className != null) {
+            try {
+                val MultiSimClass = Class.forName(className);
+
+                Log.i(LOG, "Methods of [" + className + "] (" + paramsCount + "):");
+                for (Method method : MultiSimClass.getMethods()) {
+                    if ((method.getParameterTypes().length == paramsCount) || (paramsCount == -1)) {
+                        String params = "";
+                        for (int i = 0; i < method.getParameterTypes().length; i++)
+                        params += method.getParameterTypes()[i].getName() + ", ";
+                        Log.i(
+                            LOG,
+                            " m " + method.getName() + "[" + method.getParameterTypes().length + "](" + (params.length() > 0 ? params . substring (0, params.length()-2) : params)+") -> "+method.getReturnType()+""+(Modifier.isStatic(method.getModifiers()) ? " (static)" : ""));
+                    }
+                }
+
+                Log.i(LOG, "Fields of [" + className + "]:");
+                for (Field field : MultiSimClass.getFields()) {
+                    Log.i(LOG, " f " + field.getName() + " " + field.getType());
+                }
+
+            } catch (Exception e) {
+                Log.i(LOG, "EXC " + e.getMessage());
+            }
+        }
+        return builder.toString()
     }
 
     companion object {

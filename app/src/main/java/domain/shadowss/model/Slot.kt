@@ -12,22 +12,7 @@ class Slot {
 
     var simOperator: String? = null
 
-    var simOperatorName: String? = null
-
     var simCountryIso: String? = null
-
-    var networkOperator: String? = null
-
-    var networkOperatorName: String? = null
-
-    var networkCountryIso: String? = null
-
-    var networkType = 0
-
-    // careful find networkTypeName because it will be different with networkType on same devices
-    var isNetworkRoaming = false
-
-    // private String msisdn; // not possible now
 
     fun setSimState(state: Int?) {
         if (state == null) {
@@ -35,22 +20,6 @@ class Slot {
             return
         }
         simState = state
-    }
-
-    fun setNetworkType(type: Int?) {
-        if (type == null) {
-            networkType = 0
-            return
-        }
-        networkType = type
-    }
-
-    fun setNetworkRoaming(networkRoaming: Boolean?) {
-        if (networkRoaming == null) {
-            isNetworkRoaming = false
-            return
-        }
-        isNetworkRoaming = networkRoaming
     }
 
     private fun compare(slot: Slot?): Boolean {
@@ -90,13 +59,7 @@ class Slot {
             "simState=$simState, " +
             "simSerialNumber=$simSerialNumber, " +
             "simOperator=$simOperator, " +
-            "simOperatorName=$simOperatorName, " +
             "simCountryIso=$simCountryIso, " +
-            "networkOperator=$networkOperator, " +
-            "networkOperatorName=$networkOperatorName, " +
-            "networkCountryIso=$networkCountryIso, " +
-            "networkType=$networkType, " +
-            "isNetworkRoaming=$isNetworkRoaming, " +
             ")"
     }
 }
