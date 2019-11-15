@@ -69,21 +69,9 @@ class Slot {
     }
 
     private fun compare(slot: Slot?): Boolean {
-        return if (slot == null) {
-            false
-        } else {
+        return if (slot != null) {
             imei == slot.imei && imsi == slot.imsi && simSerialNumber == slot.simSerialNumber
-        }// &&
-        // (("" + getSimOperator()).compareTo("" + slot.getSimOperator()) == 0) &&
-        // (("" + getSimOperatorName()).compareTo("" + slot.getSimOperatorName()) == 0) &&
-        // (("" + getSimCountryIso()).compareTo("" + slot.getSimCountryIso()) == 0) &&
-        // (getSimState() == slot.getSimState()) &&
-        // (("" + getSimSerialNumber()).compareTo("" + slot.getSimSerialNumber()) == 0) &&
-        // (("" + getNetworkOperator()).compareTo("" + slot.getNetworkOperator()) == 0) &&
-        // (("" + getNetworkOperatorName()).compareTo("" + slot.getNetworkOperatorName()) == 0) &&
-        // (("" + getNetworkCountryIso()).compareTo("" + slot.getNetworkCountryIso()) == 0) &&
-        // (getNetworkType() == slot.getNetworkType()) &&
-        // (isNetworkRoaming() == slot.isNetworkRoaming())
+        } else false
     }
 
     fun indexIn(slots: List<Slot>?): Int {

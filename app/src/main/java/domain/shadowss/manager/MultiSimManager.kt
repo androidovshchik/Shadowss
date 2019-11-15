@@ -1,22 +1,29 @@
 package domain.shadowss.manager
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.telephony.SubscriptionManager
+import domain.shadowss.extension.areGranted
+import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.model.Slot
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.util.*
 
 @Suppress("DEPRECATION", "MemberVisibilityCanBePrivate")
-class MultiSimTelephonyManager(context: Context) {
+class MultiSimManager(context: Context) {
 
     private val context = context.applicationContext
 
     val slots = ArrayList<Slot>()
-        @Synchronized get
+        @Synchronized
+        get() {
+            updateSlots()
+            return field
+        }
 
-    @Synchronized
-    fun updateSlots() {
+    private fun updateSlots() {
         var slotNumber = 0
         while (true) {
             val slot = touchSlot(slotNumber)
@@ -156,8 +163,8 @@ class MultiSimTelephonyManager(context: Context) {
         for (i in objectParamsSlot.indices) {
             Timber.d("SPAM PARAMS_SLOT [$i]=[${objectParamsSlot[i]}]")
         }
-        Timber.d("------------------------------------------")
-        Timber.d("SLOT [$slotNumber]")
+        Timber.v("------------------------------------------")
+        Timber.v("SLOT [$slotNumber]")
         slot.imei = iterateMethods("getDeviceId", objectParamsSlot) as? String
         if (slot.imei == null) {
             slot.imei = runMethodReflect(
@@ -177,7 +184,7 @@ class MultiSimTelephonyManager(context: Context) {
                 null
             ) as? String
         }
-        Timber.d("IMEI [${slot.imei}]")
+        Timber.v("IMEI [${slot.imei}]")
         if (slot.imei == null) {
             when (slotNumber) {
                 0 -> {
@@ -201,29 +208,29 @@ class MultiSimTelephonyManager(context: Context) {
             return null
         }
         slot.setSimState(iterateMethods("getSimState", objectParamsSlot) as? Int)
-        Timber.d("SIMSTATE [${slot.simState}]")
+        Timber.v("SIMSTATE [${slot.simState}]")
         slot.imsi = iterateMethods("getSubscriberId", objectParamsSubs) as? String
-        Timber.d("IMSI [${slot.imsi}]")
+        Timber.v("IMSI [${slot.imsi}]")
         slot.simSerialNumber = iterateMethods("getSimSerialNumber", objectParamsSubs) as? String
-        Timber.d("SIMSERIALNUMBER [${slot.simSerialNumber}]")
+        Timber.v("SIMSERIALNUMBER [${slot.simSerialNumber}]")
         slot.simOperator = iterateMethods("getSimOperator", objectParamsSubs) as? String
-        Timber.d("SIMOPERATOR [${slot.simOperator}]")
+        Timber.v("SIMOPERATOR [${slot.simOperator}]")
         slot.simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as? String
-        Timber.d("SIMOPERATORNAME [${slot.simOperatorName}]")
+        Timber.v("SIMOPERATORNAME [${slot.simOperatorName}]")
         slot.simCountryIso = iterateMethods("getSimCountryIso", objectParamsSubs) as? String
-        Timber.d("SIMCOUNTRYISO [${slot.simCountryIso}]")
+        Timber.v("SIMCOUNTRYISO [${slot.simCountryIso}]")
         slot.networkOperator = iterateMethods("getNetworkOperator", objectParamsSubs) as? String
-        Timber.d("NETWORKOPERATOR [${slot.networkOperator}]")
+        Timber.v("NETWORKOPERATOR [${slot.networkOperator}]")
         slot.networkOperatorName =
             iterateMethods("getNetworkOperatorName", objectParamsSubs) as? String
-        Timber.d("NETWORKOPERATORNAME [${slot.networkOperatorName}]")
+        Timber.v("NETWORKOPERATORNAME [${slot.networkOperatorName}]")
         slot.networkCountryIso = iterateMethods("getNetworkCountryIso", objectParamsSubs) as? String
-        Timber.d("NETWORKCOUNTRYISO [${slot.networkCountryIso}]")
+        Timber.v("NETWORKCOUNTRYISO [${slot.networkCountryIso}]")
         slot.setNetworkType(iterateMethods("getNetworkType", objectParamsSubs) as? Int)
-        Timber.d("NETWORKTYPE [${slot.networkType}]")
+        Timber.v("NETWORKTYPE [${slot.networkType}]")
         slot.setNetworkRoaming(iterateMethods("isNetworkRoaming", objectParamsSubs) as? Boolean)
-        Timber.d("NETWORKROAMING [${slot.isNetworkRoaming}]")
-        Timber.d("------------------------------------------")
+        Timber.v("NETWORKROAMING [${slot.isNetworkRoaming}]")
+        Timber.v("------------------------------------------")
         return slot
     }
 
@@ -314,7 +321,7 @@ class MultiSimTelephonyManager(context: Context) {
         try {
             val classInvoke = when {
                 classInvokeName != null -> Class.forName(classInvokeName)
-                instanceInvoke != null -> Class.forName(instanceInvoke.javaClass.name)
+                instanceInvoke != null -> instanceInvoke.javaClass
                 else -> return null
             }
             if (field != null) {
@@ -346,6 +353,18 @@ class MultiSimTelephonyManager(context: Context) {
         } catch (ignored: Exception) {
         }
         return result
+    }
+
+    @SuppressLint("MissingPermission")
+    fun checkMcc(context: Context): Pair<String?, String?> = context.run {
+        return@run if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+            if (isLollipopMR1Plus()) {
+                val subscriptionManager =
+                    getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+                val list = subscriptionManager.activeSubscriptionInfoList.orEmpty()
+                return@run list.getOrNull(0)?.mcc.toString() to list.getOrNull(1)?.mcc.toString()
+            }
+        } else null to null
     }
 
     companion object {
