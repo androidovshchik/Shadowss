@@ -19,9 +19,6 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     private val preferences: Preferences by instance()
 
     @Volatile
-    private var random = 0
-
-    @Volatile
     private var attempts = 0
 
     private val aspiRunnable = object : Runnable {
@@ -30,7 +27,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
             if (checkState("start_aspi")) {
                 if (attempts < MAX_ATTEMPTS) {
                     attempts++
-                    random = (1..32_000).random()
+                    nextRandom()
                     socketManager.send(ASPI().apply {
                         rnd = random.toShort()
                     })
@@ -46,9 +43,9 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         return if (checkState(null)) {
             nextState("start_none")
             attempts = 0
-            if (checkRights(context)) {
-                if (preferences.agree) {
-                    if (!MainApp.isRooted) {
+            if (!MainApp.isRooted) {
+                if (checkRights(context)) {
+                    if (preferences.agree) {
                         if (context.connectivityManager.isConnected) {
                             nextState("start_aspi")
                             aspiRunnable.run()
@@ -58,18 +55,18 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                             false
                         }
                     } else {
-                        socketManager.send(ASER().apply {
-                            errortype = "root"
-                        })
-                        reference.get()?.onError("[[MSG,0005]]")
+                        reference.get()?.onError("[[MSG,0001]]")
                         false
                     }
                 } else {
-                    reference.get()?.onError("[[MSG,0001]]")
+                    reference.get()?.onError("[[MSG,0000]]")
                     false
                 }
             } else {
-                reference.get()?.onError("[[MSG,0000]]")
+                socketManager.send(ASER().apply {
+                    errortype = "root"
+                })
+                reference.get()?.onError("[[MSG,0005]]")
                 false
             }
         } else {
@@ -79,7 +76,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     override fun onSAPO(instance: SAPO) {
         if (checkState("start_aspi")) {
-            if (random == instance.rnd.toInt()) {
+            if (checkRandom(instance.rnd)) {
                 nextState("start_sim")
                 val error = multiSimManager.updateInfo()
                 val slots = multiSimManager.getSlots()
@@ -116,8 +113,8 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                         return
                     }
                     nextState("start_asrv")
-                    random = (1..32_000).random()
-                    socketManager.send(ASRV().apply {
+                    nextRandom()
+                    socketManager.send(ASPI().apply {
                         rnd = random.toShort()
                     })
                 }
@@ -127,17 +124,17 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     override fun onSARV(instance: SARV) {
         if (checkState("start_asrv")) {
-            if (random == instance.rnd.toInt()) {
+            if (checkRandom(instance.rnd)) {
                 nextState("start_asrr")
                 when (instance.error) {
                     "0" -> {
                         //reference.get()?.onSuccess()
                     }
                     "0010" -> {
-                        //reference.get()?.onError()
+                        reference.get()?.onError()
                     }
                     else -> {
-                        //reference.get()?.onError()
+                        reference.get()?.onError()
                     }
                 }
             }
