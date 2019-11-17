@@ -99,7 +99,6 @@ class StartActivity : BaseActivity(), StartView {
     }
 
     override fun onError(data: String, instance: Any?) {
-        controller.nextState(null)
         errorDialog.apply {
             textData = data
             marketLink = if (instance is SARV) {
@@ -107,7 +106,11 @@ class StartActivity : BaseActivity(), StartView {
             } else {
                 null
             }
-            show()
+            runOnUiThread {
+                if (!isFinishing) {
+                    show()
+                }
+            }
         }
     }
 

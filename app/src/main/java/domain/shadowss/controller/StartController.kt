@@ -2,10 +2,7 @@ package domain.shadowss.controller
 
 import android.content.Context
 import android.os.Handler
-import defpackage.marsh.ASPI
-import defpackage.marsh.SAPO
-import defpackage.marsh.SARR
-import defpackage.marsh.SARV
+import defpackage.marsh.*
 import domain.shadowss.MainApp
 import domain.shadowss.extension.isConnected
 import domain.shadowss.local.Preferences
@@ -61,6 +58,9 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                             false
                         }
                     } else {
+                        socketManager.send(ASER().apply {
+                            errortype = "root"
+                        })
                         reference.get()?.onError("[[MSG,0005]]")
                         false
                     }
@@ -81,9 +81,17 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         if (checkState("start_aspi")) {
             if (random == instance.rnd.toInt()) {
                 nextState("start_sim")
-                multiSimManager.updateInfo()
+                val error = multiSimManager.updateInfo()
                 val slots = multiSimManager.getSlots()
                 synchronized(slots) {
+                    if (slots.isEmpty() || slots.none { it.isActive }) {
+                        socketManager.send(ASER().apply {
+                            errortype = "sim"
+                        })
+                        reference.get()?.onError("[[MSG,0006]]")
+                    } else {
+
+                    }
                     slots.forEach {
                         Timber.e(it.toString())
                     }

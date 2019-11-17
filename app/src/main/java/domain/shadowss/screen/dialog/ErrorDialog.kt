@@ -15,8 +15,10 @@ import timber.log.Timber
 
 class ErrorDialog(activity: Activity) : BaseDialog(activity) {
 
+    @Volatile
     var textData: String? = null
 
+    @Volatile
     var marketLink: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

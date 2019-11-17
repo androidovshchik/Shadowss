@@ -3,6 +3,10 @@
 package domain.shadowss.extension
 
 import android.os.Build
+import android.os.Looper
+
+val isUiThread: Boolean
+    get() = Looper.myLooper() == Looper.getMainLooper()
 
 fun isKitkat() = Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT
 
