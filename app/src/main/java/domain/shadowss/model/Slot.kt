@@ -12,12 +12,9 @@ class Slot {
 
     var imsi: String? = null
 
-    var simState = -1
-
-    // for duplicates
-    val simStates = hashSetOf<Int>()
-
     var simSerialNumber: String? = null
+
+    var simState = -1
 
     var simOperator: String? = null
 
@@ -29,7 +26,7 @@ class Slot {
     var mcc: String? = null
 
     val isActive: Boolean
-        get() = simStates.contains(TelephonyManager.SIM_STATE_READY)
+        get() = simState == TelephonyManager.SIM_STATE_READY
 
     fun getMCC(): String? {
         if (isLollipopMR1Plus() && mcc != null) {
@@ -63,9 +60,8 @@ class Slot {
         return "Slot(" +
             "imei=$imei, " +
             "imsi=$imsi, " +
-            "simState=$simState, " +
-            "simStates=$simStates, " +
             "simSerialNumber=$simSerialNumber, " +
+            "simState=$simState, " +
             "simOperator=$simOperator, " +
             "simOperatorName=$simOperatorName, " +
             "simCountryIso=$simCountryIso, " +

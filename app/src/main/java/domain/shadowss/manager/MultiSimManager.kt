@@ -121,7 +121,18 @@ class MultiSimManager(context: Context) {
                         iterator.remove()
                     } else {
                         imsi.add(slot.imsi)
-                        slot.simStates.addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
+                        slots.forEach {
+                            if (it.imsi == slot.imsi) {
+                                if (it.isActive) {
+                                    slot.simState = it.simState
+                                }
+                                if (TextUtils.isEmpty(slot.simOperator)) {
+                                    slot.simOperator = it.simOperator
+                                    slot.simOperatorName = it.simOperatorName
+                                    slot.simCountryIso = it.simCountryIso
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -228,10 +239,10 @@ class MultiSimManager(context: Context) {
                             telephonyManager.deviceId
                         }
                         imsi = telephonyManager.subscriberId
+                        simSerialNumber = telephonyManager.simSerialNumber
                         simState = telephonyManager.simState
                         simOperator = telephonyManager.simOperator
                         simOperatorName = telephonyManager.simOperatorName
-                        simSerialNumber = telephonyManager.simSerialNumber
                         simCountryIso = telephonyManager.simCountryIso
                         return this
                     }
@@ -239,12 +250,12 @@ class MultiSimManager(context: Context) {
                 if (imei == null) {
                     return null
                 }
-                setSimState(iterateMethods("getSimState", objectParamsSlot) as? Int)
-                Timber.v("SIMSTATE [$simState]")
                 imsi = iterateMethods("getSubscriberId", objectParamsSubs) as? String
                 Timber.v("IMSI [$imsi]")
                 simSerialNumber = iterateMethods("getSimSerialNumber", objectParamsSubs) as? String
                 Timber.v("SIMSERIALNUMBER [$simSerialNumber]")
+                setSimState(iterateMethods("getSimState", objectParamsSlot) as? Int)
+                Timber.v("SIMSTATE [$simState]")
                 simOperator = iterateMethods("getSimOperator", objectParamsSubs) as? String
                 Timber.v("SIMOPERATOR [$simOperator]")
                 simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as? String
