@@ -26,8 +26,11 @@ class MultiSimManager(context: Context) {
 
     private val reference = WeakReference(context)
 
-    val slots = mutableListOf<Slot>()
-        get() = Collections.synchronizedList(field)
+    private val slots = arrayListOf<Slot>()
+
+    fun getSlots(): MutableList<Slot> {
+        return Collections.synchronizedList(slots)
+    }
 
     @Synchronized
     @SuppressLint("MissingPermission")
@@ -64,6 +67,7 @@ class MultiSimManager(context: Context) {
                 e.toString()
             }
             slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
+            // remove duplicates
             val imsi = arrayListOf<String?>()
             slots.forEachReversedWithIndex { i, slot ->
                 if (imsi.contains(slot.imsi)) {
@@ -80,8 +84,11 @@ class MultiSimManager(context: Context) {
                 val subscriptionManager =
                     getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
                 val list = subscriptionManager.activeSubscriptionInfoList
-                list.getOrNull(0)?.mcc?.toString()?.padStart(3, '0')
-                list.getOrNull(1)?.mcc?.toString()?.padStart(3, '0')
+                list?.forEach { info ->
+                    slots.filter { it.simSerialNumber == info.iccId }.forEach {
+                        it.mcc = info.mcc.toString().padStart(3, '0')
+                    }
+                }
             }
             error
         } else {
@@ -96,8 +103,8 @@ class MultiSimManager(context: Context) {
         val slot = Slot()
         val telephonyManager = telephonyManager
         Timber.v("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
-        val subscriberIdIntValue = ArrayList<String>()
-        val subscriberIdIntIndex = ArrayList<Int>()
+        val subscriberIdIntValue = arrayListOf<String>()
+        val subscriberIdIntIndex = arrayListOf<Int>()
         for (i in 0 until 100) {
             val subscriber = runMethodReflect(
                 telephonyManager,
@@ -111,8 +118,7 @@ class MultiSimManager(context: Context) {
                 subscriberIdIntIndex.add(i)
             }
         }
-        var subIdInt =
-            if (subscriberIdIntIndex.size > slotNumber) subscriberIdIntIndex[slotNumber] else null
+        var subIdInt = subscriberIdIntIndex.getOrNull(slotNumber)
         if (subIdInt == null) {
             try {
                 subIdInt = runMethodReflect(
@@ -126,16 +132,9 @@ class MultiSimManager(context: Context) {
             }
         }
         Timber.v("subIdInt $subIdInt")
-        val subscriberIdLongValue = ArrayList<String>()
-        val subscriberIdLongIndex = ArrayList<Long>()
+        val subscriberIdLongValue = arrayListOf<String>()
+        val subscriberIdLongIndex = arrayListOf<Long>()
         for (i in 0L until 100L) {
-            val subscriber = runMethodReflect(
-                telephonyManager,
-                "android.telephony.TelephonyManager",
-                "getSubscriberId",
-                arrayOf(i),
-                null
-            ) as? String
             runMethodReflect(
                 telephonyManager,
                 "android.telephony.TelephonyManagerSprd",
@@ -143,6 +142,13 @@ class MultiSimManager(context: Context) {
                 arrayOf(i),
                 null
             ) ?: continue
+            val subscriber = runMethodReflect(
+                telephonyManager,
+                "android.telephony.TelephonyManager",
+                "getSubscriberId",
+                arrayOf(i),
+                null
+            ) as? String
             if (subscriber != null && !subscriberIdLongValue.contains(subscriber)) {
                 subscriberIdLongValue.add(subscriber)
                 subscriberIdLongIndex.add(i)
@@ -163,8 +169,7 @@ class MultiSimManager(context: Context) {
                 }
             }
         }
-        var subIdLong =
-            if (subscriberIdLongIndex.size > slotNumber) subscriberIdLongIndex[slotNumber] else null
+        var subIdLong = subscriberIdLongIndex.getOrNull(slotNumber)
         if (subIdLong == null) {
             subIdLong = runMethodReflect(
                 telephonyManager,
@@ -175,7 +180,7 @@ class MultiSimManager(context: Context) {
             ) as? Long
         }
         Timber.v("subIdLong $subIdLong")
-        val listParamsSubs = ArrayList<Any?>()
+        val listParamsSubs = arrayListOf<Any>()
         if (subIdInt != null && !listParamsSubs.contains(subIdInt)) {
             listParamsSubs.add(subIdInt)
         }
@@ -189,7 +194,7 @@ class MultiSimManager(context: Context) {
         for (i in objectParamsSubs.indices) {
             Timber.v("SPAM PARAMS_SUBS [$i]=[${objectParamsSubs[i]}]")
         }
-        val listParamsSlot = ArrayList<Any?>()
+        val listParamsSlot = arrayListOf<Any>()
         if (!listParamsSlot.contains(slotNumber)) {
             listParamsSlot.add(slotNumber)
         }
@@ -266,19 +271,16 @@ class MultiSimManager(context: Context) {
     }
 
     @SuppressLint("WrongConstant")
-    private fun iterateMethods(methodName: String?, methodParams: Array<Any?>): Any? =
+    private fun iterateMethods(methodName: String, methodParams: Array<Any>): Any? =
         reference.get()?.run {
-            if (methodName == null || methodName.isEmpty()) {
+            if (methodName.isEmpty()) {
                 return null
             }
             val telephonyManager = telephonyManager
-            val instanceMethods = ArrayList<Any?>()
+            val instanceMethods = arrayListOf<Any?>()
             val multiSimTelephonyManagerExists = telephonyManager.toString()
                 .startsWith("android.telephony.MultiSimTelephonyManager")
             for (methodParam in methodParams) {
-                if (methodParam == null) {
-                    continue
-                }
                 val objectMulti = if (multiSimTelephonyManagerExists) {
                     runMethodReflect(
                         null,
@@ -315,13 +317,10 @@ class MultiSimManager(context: Context) {
                 instanceMethods.add(null)
             }
             var result: Any?
-            for (methodSuffix in suffixes) {
-                for (className in classNames) {
+            for (className in classNames) {
+                for (methodSuffix in suffixes) {
                     for (instanceMethod in instanceMethods) {
                         for (methodParam in methodParams) {
-                            if (methodParam == null) {
-                                continue
-                            }
                             result = runMethodReflect(
                                 instanceMethod,
                                 className,
