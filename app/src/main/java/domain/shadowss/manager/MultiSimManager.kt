@@ -100,6 +100,11 @@ class MultiSimManager(context: Context) {
                     val subIdInt = subscriberIdIntIndex.getOrNull(slotNumber)
                     val subIdLong = subscriberIdLongIndex.getOrNull(slotNumber)
                     val slot = touchSlot(slotNumber, subIdInt, subIdLong) ?: break
+                    if (slot.indexIn(slots) in 0..slotNumber) {
+                        // protect from Alcatel infinity bug
+                        break
+                    }
+                    slot.simStates.add(slot.simState)
                     if (!TextUtils.isEmpty(slot.imsi) && !TextUtils.isEmpty(slot.simOperator)) {
                         slots.firstOrNull { it.imsi == slot.imsi }?.simStates?.add(slot.simState)
                             ?: slots.add(slot)
@@ -130,6 +135,8 @@ class MultiSimManager(context: Context) {
     private fun touchSlot(slotNumber: Int, subIdI: Int?, subIdL: Long?): Slot? =
         reference.get()?.run {
             val telephonyManager = telephonyManager
+            Timber.v("------------------------------------------")
+            Timber.v("SLOT [$slotNumber]")
             val subIdInt = subIdI ?: try {
                 runMethodReflect(
                     telephonyManager,
@@ -150,28 +157,40 @@ class MultiSimManager(context: Context) {
                 null
             ) as? Long
             Timber.v("subIdLong $subIdLong")
-            val listParams = arrayListOf<Any>()
-            if (subIdInt != null && !listParams.contains(subIdInt)) {
-                listParams.add(subIdInt)
+            val listParamsSubs = ArrayList<Any>()
+            if (subIdInt != null && !listParamsSubs.contains(subIdInt)) {
+                listParamsSubs.add(subIdInt)
             }
-            if (subIdLong != null && !listParams.contains(subIdLong)) {
-                listParams.add(subIdLong)
+            if (subIdLong != null && !listParamsSubs.contains(subIdLong)) {
+                listParamsSubs.add(subIdLong)
             }
-            if (!listParams.contains(slotNumber)) {
-                listParams.add(slotNumber)
+            if (!listParamsSubs.contains(slotNumber)) {
+                listParamsSubs.add(slotNumber)
             }
-            val arrayParams = listParams.toTypedArray()
-            for (i in arrayParams.indices) {
-                Timber.v("ITERATE PARAMS [$i]=[${arrayParams[i]}]")
+            val objectParamsSubs = listParamsSubs.toTypedArray()
+            for (i in objectParamsSubs.indices) {
+                Timber.v("ITERATE PARAMS_SUBS [$i]=[${objectParamsSubs[i]}]")
+            }
+            val listParamsSlot = ArrayList<Any>()
+            if (!listParamsSlot.contains(slotNumber)) {
+                listParamsSlot.add(slotNumber)
+            }
+            if (subIdInt != null && !listParamsSlot.contains(subIdInt)) {
+                listParamsSlot.add(subIdInt)
+            }
+            if (subIdLong != null && !listParamsSlot.contains(subIdLong)) {
+                listParamsSlot.add(subIdLong)
+            }
+            val objectParamsSlot = listParamsSlot.toTypedArray()
+            for (i in objectParamsSlot.indices) {
+                Timber.v("ITERATE PARAMS_SLOT [$i]=[${objectParamsSlot[i]}]")
             }
             return Slot().apply {
-                Timber.v("------------------------------------------")
-                Timber.v("SLOT [$slotNumber]")
                 if (isMarshmallowPlus()) {
                     imei = telephonyManager.getDeviceId(slotNumber)
                 }
                 if (imei == null) {
-                    imei = iterateMethods("getDeviceId", arrayParams) as? String
+                    imei = iterateMethods("getDeviceId", objectParamsSlot) as? String
                 }
                 if (imei == null) {
                     imei = runMethodReflect(
@@ -209,17 +228,16 @@ class MultiSimManager(context: Context) {
                         null
                     }
                 }
-                setSimState(iterateMethods("getSimState", arrayParams) as? Int)
+                setSimState(iterateMethods("getSimState", objectParamsSlot) as? Int)
                 Timber.v("SIMSTATE [$simState]")
-                imsi = iterateMethods("getSubscriberId", arrayParams) as? String
+                imsi = iterateMethods("getSubscriberId", objectParamsSubs) as? String
                 Timber.v("IMSI [$imsi]")
-                simSerialNumber = iterateMethods("getSimSerialNumber", arrayParams) as? String
+                simSerialNumber = iterateMethods("getSimSerialNumber", objectParamsSubs) as? String
                 Timber.v("SIMSERIALNUMBER [$simSerialNumber]")
-                simOperator = iterateMethods("getSimOperator", arrayParams) as? String
+                simOperator = iterateMethods("getSimOperator", objectParamsSubs) as? String
                 Timber.v("SIMOPERATOR [$simOperator]")
-                simCountryIso = iterateMethods("getSimCountryIso", arrayParams) as? String
+                simCountryIso = iterateMethods("getSimCountryIso", objectParamsSubs) as? String
                 Timber.v("SIMCOUNTRYISO [$simCountryIso]")
-                Timber.v("------------------------------------------")
             }
         }
 
