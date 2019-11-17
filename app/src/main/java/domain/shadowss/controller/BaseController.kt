@@ -54,11 +54,12 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     protected fun getShortRandom(): Short = random.toShort()
 
-    protected fun nextRandom() {
+    protected fun nextRandom(): Short {
         random = (1..32_000).random()
+        return getShortRandom()
     }
 
-    protected inline fun checkState(value: String?, block: () -> Boolean): Boolean {
+    protected inline fun checkProgress(value: String?, block: () -> Boolean): Boolean {
         return if (state == value) {
             block()
         } else {
@@ -66,17 +67,25 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         }
     }
 
-    protected inline fun checkState(value: String, number: Short, block: () -> Boolean): Boolean {
+    protected inline fun checkProgress(
+        value: String,
+        number: Short,
+        block: () -> Boolean
+    ): Boolean {
         return if (checkRandom(number)) {
-            checkState(value, block)
+            checkProgress(value, block)
         } else {
             false
         }
     }
 
-    fun nextState(value: String? = null) {
+    fun nextProgress(value: String?) {
         state = value
         nextRandom()
+    }
+
+    fun resetProgress() {
+        nextProgress(null)
     }
 
     open fun start() {

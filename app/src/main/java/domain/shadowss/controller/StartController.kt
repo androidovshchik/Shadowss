@@ -24,15 +24,15 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     private val aspiRunnable = object : Runnable {
 
         override fun run() {
-            checkState("start_aspi") {
+            checkProgress("start_aspi") {
                 if (attempts < MAX_ATTEMPTS) {
                     attempts++
                     socketManager.send(ASPI().apply {
-                        rnd = getShortRandom()
+                        rnd = nextRandom()
                     })
                     Handler().postDelayed(this, 2000)
                 } else {
-                    reference.get()?.onError("[[MSG,0009]]")
+                    onError("[[MSG,0009]]")
                 }
                 true
             }
@@ -40,41 +40,38 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     }
 
     fun onChoice(context: Context): Boolean {
-        return checkState(null) {
-            nextState("start_none")
+        return checkProgress(null) {
+            nextProgress("start_none")
             attempts = 0
             if (!MainApp.isRooted) {
                 if (checkRights(context)) {
                     if (preferences.agree) {
                         if (context.connectivityManager.isConnected) {
-                            nextState("start_aspi")
+                            nextProgress("start_aspi")
                             aspiRunnable.run()
-                            true
+                            return true
                         } else {
-                            reference.get()?.onError("[[MSG,0002]]")
-                            false
+                            onError("[[MSG,0002]]")
                         }
                     } else {
-                        reference.get()?.onError("[[MSG,0001]]")
-                        false
+                        onError("[[MSG,0001]]")
                     }
                 } else {
-                    reference.get()?.onError("[[MSG,0000]]")
-                    false
+                    onError("[[MSG,0000]]")
                 }
             } else {
                 socketManager.send(ASER().apply {
                     errortype = "root"
                 })
-                reference.get()?.onError("[[MSG,0005]]")
-                false
+                onError("[[MSG,0005]]")
             }
+            false
         }
     }
 
     override fun onSAPO(instance: SAPO) {
-        checkState("start_aspi", instance.rnd) {
-            nextState("start_sim")
+        checkProgress("start_aspi", instance.rnd) {
+            nextProgress("start_sim")
             val error = multiSimManager.updateInfo()
             val slots = multiSimManager.getSlots()
             synchronized(slots) {
@@ -109,17 +106,18 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                     reference.get()?.onError("[[MSG,0007]]")
                     return
                 }
-                nextState("start_asrv")
+                nextProgress("start_asrv")
                 socketManager.send(ASPI().apply {
                     rnd = getShortRandom()
                 })
             }
+            true
         }
     }
 
     override fun onSARV(instance: SARV) {
-        if (checkState("start_asrv", instance.rnd)) {
-            nextState("start_asrr")
+        if (checkProgress("start_asrv", instance.rnd)) {
+            nextProgress("start_asrr")
             when (instance.error) {
                 "0" -> {
                     //reference.get()?.onSuccess()
@@ -146,6 +144,11 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
             }
         }
+    }
+
+    private fun onError(data: String, instance: Any? = null) {
+        reference.get()?.onError(data, instance)
+        resetProgress()
     }
 
     companion object {
