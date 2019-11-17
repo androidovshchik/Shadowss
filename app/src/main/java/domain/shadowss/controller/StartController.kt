@@ -31,10 +31,10 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                         rnd = nextRandom()
                     })
                     Handler().postDelayed(this, 2000)
+                    true
                 } else {
                     onError("[[MSG,0009]]")
                 }
-                true
             }
         }
     }
@@ -49,7 +49,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                         if (context.connectivityManager.isConnected) {
                             nextProgress("start_aspi")
                             aspiRunnable.run()
-                            return true
+                            true
                         } else {
                             onError("[[MSG,0002]]")
                         }
@@ -65,11 +65,20 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                 })
                 onError("[[MSG,0005]]")
             }
-            false
         }
     }
 
     override fun onSAPO(instance: SAPO) {
+        checkProgress("start_aspi", instance.rnd) {
+            nextProgress("start_sim")
+            socketManager.send(ASRV().apply {
+                rnd = nextRandom()
+            })
+            true
+        }
+    }
+
+    override fun onSARV(instance: SARV) {
         checkProgress("start_aspi", instance.rnd) {
             nextProgress("start_sim")
             val error = multiSimManager.updateInfo()
@@ -95,7 +104,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                             dataerr = multiSimManager.allMethods
                         })
                     }
-                    reference.get()?.onError("[[MSG,0006]]")
+                    onError("[[MSG,0006]]")
                     return
                 }
                 if (slots.none { it.getMCC()?.length == 3 }) {
@@ -103,20 +112,16 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                         errortype = "mcc"
                         dataerr = "${slots[0].getMCC()},${slots.getOrNull(1)?.getMCC()}"
                     })
-                    reference.get()?.onError("[[MSG,0007]]")
+                    onError("[[MSG,0007]]")
                     return
                 }
-                nextProgress("start_asrv")
-                socketManager.send(ASPI().apply {
-                    rnd = getShortRandom()
-                })
             }
+            socketManager.send(ASPI().apply {
+                rnd = nextProgress("start_asrv")
+            })
             true
         }
-    }
-
-    override fun onSARV(instance: SARV) {
-        if (checkProgress("start_asrv", instance.rnd)) {
+        checkProgress("start_asrv", instance.rnd) {
             nextProgress("start_asrr")
             when (instance.error) {
                 "0" -> {
@@ -129,6 +134,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                     reference.get()?.onError()
                 }
             }
+            true
         }
     }
 
@@ -146,9 +152,10 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         }
     }
 
-    private fun onError(data: String, instance: Any? = null) {
+    private fun onError(data: String, instance: Any? = null): Boolean {
         reference.get()?.onError(data, instance)
         resetProgress()
+        return false
     }
 
     companion object {

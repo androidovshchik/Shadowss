@@ -52,11 +52,9 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     protected fun checkRandom(number: Short) = checkRandom(number.toInt())
 
-    protected fun getShortRandom(): Short = random.toShort()
-
     protected fun nextRandom(): Short {
         random = (1..32_000).random()
-        return getShortRandom()
+        return random.toShort()
     }
 
     protected inline fun checkProgress(value: String?, block: () -> Boolean): Boolean {
@@ -79,9 +77,9 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         }
     }
 
-    fun nextProgress(value: String?) {
+    fun nextProgress(value: String?): Short {
         state = value
-        nextRandom()
+        return nextRandom()
     }
 
     fun resetProgress() {
