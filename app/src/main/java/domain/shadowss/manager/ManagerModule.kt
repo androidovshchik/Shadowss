@@ -1,19 +1,16 @@
 package domain.shadowss.manager
 
 import org.kodein.di.Kodein
-import org.kodein.di.generic.bind
-import org.kodein.di.generic.eagerSingleton
-import org.kodein.di.generic.instance
-import org.kodein.di.generic.singleton
+import org.kodein.di.generic.*
 
 val managerModule = Kodein.Module("manager") {
 
-    bind<WebSocketManager>() with singleton {
-        WebSocketManager(instance())
+    bind<MultiSimManager>() with provider {
+        MultiSimManager(instance())
     }
 
-    bind<MultiSimManager>() with singleton {
-        MultiSimManager(instance())
+    bind<WebSocketManager>() with singleton {
+        WebSocketManager(instance())
     }
 
     bind<LocationManager>() with singleton {

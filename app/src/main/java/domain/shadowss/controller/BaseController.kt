@@ -5,14 +5,14 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
-import domain.shadowss.extension.*
-import domain.shadowss.local.Preferences
+import domain.shadowss.extension.areGranted
+import domain.shadowss.extension.isMarshmallowPlus
+import domain.shadowss.extension.isOreoPlus
+import domain.shadowss.extension.requestPermissions
 import domain.shadowss.manager.WebSocketCallback
 import domain.shadowss.manager.WebSocketManager
 import io.reactivex.disposables.CompositeDisposable
-import org.jetbrains.anko.connectivityManager
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.powerManager
 import org.kodein.di.KodeinAware
@@ -43,7 +43,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     protected fun checkState(value: String?) = state == value
 
-    protected fun nextState(value: String? = null) {
+    fun nextState(value: String? = null) {
         state = value
     }
 
@@ -93,18 +93,6 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
             }
         }
         true
-    }
-
-    fun checkInternet(context: Context): Boolean {
-        return context.connectivityManager.isConnected
-    }
-
-    fun checkAgree(preferences: Preferences): Boolean {
-        return preferences.agree
-    }
-
-    fun checkRoot(context: Context): Boolean {
-        return !RootBeer(context).isRootedWithoutBusyBoxCheck
     }
 
     override fun onSAPI(instance: SAPI) {}

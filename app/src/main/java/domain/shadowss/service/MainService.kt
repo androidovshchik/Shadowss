@@ -5,10 +5,12 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import domain.shadowss.R
 import domain.shadowss.controller.MainController
+import domain.shadowss.extension.isConnected
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
 import domain.shadowss.manager.WebSocketManager
 import org.jetbrains.anko.activityManager
+import org.jetbrains.anko.connectivityManager
 import org.jetbrains.anko.startService
 import org.jetbrains.anko.stopService
 import org.kodein.di.generic.instance
@@ -40,12 +42,12 @@ class MainService : BaseService(), MainWorker {
         controller.start()
         val executor = Executors.newScheduledThreadPool(1)
         timer = executor.scheduleAtFixedRate({
-            if (keepConnection) {
-                if (controller.checkInternet(applicationContext)) {
-                    socketManager.reconnect()
+            socketManager.apply {
+                if (connectivityManager.isConnected) {
+                    reconnect()
+                } else {
+                    disconnect()
                 }
-            } else {
-                socketManager.disconnect()
             }
         }, 0L, 2000L, TimeUnit.MILLISECONDS)
     }
@@ -58,12 +60,6 @@ class MainService : BaseService(), MainWorker {
     }
 
     companion object {
-
-        @Volatile
-        var keepConnection = true
-
-        @Volatile
-        var requestLocation = false
 
         @Throws(Throwable::class)
         fun start(context: Context, vararg params: Pair<String, Any?>): Boolean = context.run {

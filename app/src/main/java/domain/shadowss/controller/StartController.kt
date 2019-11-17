@@ -6,9 +6,12 @@ import defpackage.marsh.ASPI
 import defpackage.marsh.SAPO
 import defpackage.marsh.SARR
 import defpackage.marsh.SARV
+import domain.shadowss.MainApp
+import domain.shadowss.extension.isConnected
 import domain.shadowss.local.Preferences
 import domain.shadowss.manager.MultiSimManager
 import domain.shadowss.screen.StartView
+import org.jetbrains.anko.connectivityManager
 import org.kodein.di.generic.instance
 
 class StartController(referent: StartView) : Controller<StartView>(referent) {
@@ -30,36 +33,34 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         socketManager.send(ASPI().apply {
             rnd = random.toShort()
         })
+        attempts++
     }
 
     fun onChoice(context: Context): Boolean {
         return if (checkState(null)) {
             nextState("start_none")
+            attempts = 0
             if (checkRights(context)) {
-                if (checkAgree(preferences)) {
-                    if (checkRoot(context)) {
-                        if (checkInternet(context.applicationContext)) {
+                if (preferences.agree) {
+                    if (!MainApp.isRooted) {
+                        if (context.connectivityManager.isConnected) {
                             nextState("start_aspi")
                             closableRunnable.run()
                             true
                         } else {
                             reference.get()?.onError("[[MSG,0002]]")
-                            nextState(null)
                             false
                         }
                     } else {
                         reference.get()?.onError("[[MSG,0005]]")
-                        nextState(null)
                         false
                     }
                 } else {
                     reference.get()?.onError("[[MSG,0001]]")
-                    nextState(null)
                     false
                 }
             } else {
                 reference.get()?.onError("[[MSG,0000]]")
-                nextState(null)
                 false
             }
         } else {
@@ -119,15 +120,6 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
             }
             else -> {
                 //reference.get()?.onError()
-            }
-        }
-    }
-
-    override fun callback(context: Context, requestCode: Int, resultCode: Int) {
-        super.callback(context, requestCode, resultCode)
-        when (requestCode) {
-            REQUEST_ZONE_MODE -> {
-
             }
         }
     }
