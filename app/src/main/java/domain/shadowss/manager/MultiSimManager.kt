@@ -10,6 +10,7 @@ import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.extension.isMarshmallowPlus
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.model.Slot
+import org.jetbrains.anko.collections.forEachReversedWithIndex
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.lang.ref.WeakReference
@@ -80,7 +81,7 @@ class MultiSimManager(context: Context) {
                         subscriberIdLongIndex.add(i)
                     }
                 }
-                if (subscriberIdLongIndex.size <= 0) {
+                if (subscriberIdLongIndex.isEmpty()) {
                     for (i in 0L until 100L) {
                         val subscriber = runMethodReflect(
                             telephonyManager,
@@ -100,21 +101,30 @@ class MultiSimManager(context: Context) {
                     val subIdInt = subscriberIdIntIndex.getOrNull(slotNumber)
                     val subIdLong = subscriberIdLongIndex.getOrNull(slotNumber)
                     val slot = touchSlot(slotNumber, subIdInt, subIdLong) ?: break
-                    if (slot.indexIn(slots) in 0..slotNumber) {
+                    if (slot.indexIn(slots) in 0 until slotNumber) {
                         // protect from Alcatel infinity bug
                         break
                     }
-                    slot.simStates.add(slot.simState)
-                    if (!TextUtils.isEmpty(slot.imsi) && !TextUtils.isEmpty(slot.simOperator)) {
-                        slots.firstOrNull { it.imsi == slot.imsi }?.simStates?.add(slot.simState)
-                            ?: slots.add(slot)
-                    }
+                    slots.add(slot)
                     slotNumber++
                 }
                 null
             } catch (e: Throwable) {
                 Timber.e(e)
                 e.toString()
+            }
+            slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
+            val imsi = arrayListOf<String?>()
+            slots.forEachReversedWithIndex { i, slot ->
+                if (imsi.contains(slot.imsi)) {
+                    slots.removeAt(i)
+                } else {
+                    imsi.add(slot.imsi)
+                    slot.simStates.apply {
+                        clear()
+                        addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
+                    }
+                }
             }
             if (isLollipopMR1Plus()) {
                 val subscriptionManager =
@@ -198,12 +208,12 @@ class MultiSimManager(context: Context) {
                         "com.android.internal.telephony.Phone",
                         null,
                         null,
-                        "GEMINI_SIM_" + (slotNumber + 1)
+                        "GEMINI_SIM_${slotNumber + 1}"
                     ) as? String
                 }
                 if (imei == null) {
                     imei = runMethodReflect(
-                        getSystemService("phone" + (slotNumber + 1)),
+                        getSystemService("phone${slotNumber + 1}"),
                         null,
                         "getDeviceId",
                         null,
@@ -212,7 +222,7 @@ class MultiSimManager(context: Context) {
                 }
                 Timber.v("IMEI [$imei]")
                 if (imei == null) {
-                    return if (slotNumber == 0) {
+                    if (slotNumber == 0) {
                         imei = if (isOreoPlus()) {
                             telephonyManager.imei
                         } else {
@@ -223,10 +233,11 @@ class MultiSimManager(context: Context) {
                         simOperator = telephonyManager.simOperator
                         simSerialNumber = telephonyManager.simSerialNumber
                         simCountryIso = telephonyManager.simCountryIso
-                        this
-                    } else {
-                        null
+                        return this
                     }
+                }
+                if (imei == null) {
+                    return null
                 }
                 setSimState(iterateMethods("getSimState", objectParamsSlot) as? Int)
                 Timber.v("SIMSTATE [$simState]")
