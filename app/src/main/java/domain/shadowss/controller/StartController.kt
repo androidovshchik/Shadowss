@@ -1,19 +1,19 @@
 package domain.shadowss.controller
 
-import defpackage.marsh.ASPI
+import android.content.Context
 import defpackage.marsh.SAPO
 import defpackage.marsh.SARR
 import defpackage.marsh.SARV
-import domain.shadowss.local.Preferences
+import domain.shadowss.manager.MultiSimManager
 import domain.shadowss.screen.StartView
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import org.kodein.di.generic.instance
+import timber.log.Timber
 
 class StartController(referent: StartView) : Controller<StartView>(referent) {
 
-    private val preferences: Preferences by instance()
-
-    @Volatile
-    private var step = 0
+    private val multiSimManager: MultiSimManager by instance()
 
     @Volatile
     private var random = 0
@@ -21,9 +21,27 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     @Volatile
     private var attempts = 0
 
-    fun onChoice(isDriver: Boolean) {
-        step = 0
-        if (checkRights()) {
+    fun onChoice(context: Context): Boolean {
+        if (!checkHash(null)) {
+            return false
+        }
+        nextHash("start")
+        disposable.add(Observable.just(true)
+            .observeOn(Schedulers.io())
+            .subscribe({
+                multiSimManager.updateInfo()
+                val slots = multiSimManager.getSlots()
+                synchronized(slots) {
+                    slots.forEach {
+                        Timber.e(it.toString())
+                    }
+                }
+            }, {
+                Timber.e(it)
+            })
+        )
+        // multiSimManager.updateSlots()
+        /*if (checkRights()) {
             if (checkAgree(preferences)) {
                 if (checkInternet()) {
                     random = (1..99).random()
@@ -34,7 +52,8 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
             }
         } else {
 
-        }
+        }*/
+        return false
     }
 
     override fun onSAPO(instance: SAPO) {
@@ -58,22 +77,20 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     override fun onSARV(instance: SARV) {
         when (instance.error) {
             "0" -> {
-                reference.get()?.onSuccess()
+                //reference.get()?.onSuccess()
             }
             "0010" -> {
-                reference.get()?.onError()
+                //reference.get()?.onError()
             }
             else -> {
-                reference.get()?.onError()
+                //reference.get()?.onError()
             }
         }
     }
 
-    override fun callback(requestCode: Int, resultCode: Int) {
+    override fun callback(context: Context, requestCode: Int, resultCode: Int) {
+        super.callback(context, requestCode, resultCode)
         when (requestCode) {
-            REQUEST_PERMISSIONS -> {
-
-            }
             REQUEST_ZONE_MODE -> {
 
             }

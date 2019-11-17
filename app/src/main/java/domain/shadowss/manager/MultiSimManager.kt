@@ -291,12 +291,11 @@ class MultiSimManager(context: Context) {
             if (!instanceMethods.contains(null)) {
                 instanceMethods.add(null)
             }
-            var result: Any?
             for (className in classNames) {
                 for (methodSuffix in suffixes) {
                     for (instanceMethod in instanceMethods) {
                         for (methodParam in methodParams) {
-                            result = runMethodReflect(
+                            val result = runMethodReflect(
                                 instanceMethod,
                                 className,
                                 methodName + methodSuffix,
@@ -320,19 +319,19 @@ class MultiSimManager(context: Context) {
         methodParams: Array<Any>?,
         field: String?
     ): Any? {
-        var result: Any? = null
         try {
             val classInvoke = when {
                 classInvokeName != null -> Class.forName(classInvokeName)
                 instanceInvoke != null -> instanceInvoke.javaClass
                 else -> return null
             }
-            if (field != null) {
+            return if (field != null) {
                 val fieldReflect = classInvoke.getField(field)
                 val accessible = fieldReflect.isAccessible
                 fieldReflect.isAccessible = true
-                result = fieldReflect.get(null).toString()
+                val result = fieldReflect.get(null).toString()
                 fieldReflect.isAccessible = accessible
+                result
             } else {
                 var classesParams: Array<Class<*>?>? = null
                 if (methodParams != null) {
@@ -353,22 +352,23 @@ class MultiSimManager(context: Context) {
                 }
                 val accessible = method.isAccessible
                 method.isAccessible = true
-                result = if (methodParams != null) {
+                val result = if (methodParams != null) {
                     method.invoke(instanceInvoke ?: classInvoke, *methodParams)
                 } else {
                     method.invoke(instanceInvoke ?: classInvoke)
                 }
                 method.isAccessible = accessible
+                result
             }
         } catch (ignored: Throwable) {
         }
-        return result
+        return null
     }
 
     @Suppress("unused")
     val allMethodsAndFields: String
         get() = """
-            Default: ${reference.get()?.telephonyManager}${'\n'}
+            Default: ${reference.get()?.telephonyManager}
             ${printAllMethodsAndFields("android.telephony.TelephonyManager")}
             ${printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager")}
             ${printAllMethodsAndFields("android.telephony.MSimTelephonyManager")}
