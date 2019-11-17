@@ -10,7 +10,6 @@ import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.extension.isMarshmallowPlus
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.model.Slot
-import org.jetbrains.anko.collections.forEachReversedWithIndex
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.lang.ref.WeakReference
@@ -21,7 +20,7 @@ import java.util.*
  * For better performance should be called on background thread
  * https://mvnrepository.com/artifact/com.kirianov.multisim/multisim
  */
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "DEPRECATION")
 class MultiSimManager(context: Context) {
 
     private val reference = WeakReference(context)
@@ -33,7 +32,7 @@ class MultiSimManager(context: Context) {
     }
 
     @Synchronized
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "HardwareIds")
     fun updateInfo(): String? = reference.get()?.run {
         if (!areGranted(Manifest.permission.READ_PHONE_STATE)) {
             return null
@@ -43,6 +42,7 @@ class MultiSimManager(context: Context) {
         synchronized(slots) {
             slots.clear()
             val error = try {
+                Timber.v("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
                 val subscriberIdIntValue = arrayListOf<String>()
                 val subscriberIdIntIndex = arrayListOf<Int>()
                 for (i in 0 until 100) {
@@ -100,19 +100,9 @@ class MultiSimManager(context: Context) {
                     val subIdInt = subscriberIdIntIndex.getOrNull(slotNumber)
                     val subIdLong = subscriberIdLongIndex.getOrNull(slotNumber)
                     val slot = touchSlot(slotNumber, subIdInt, subIdLong) ?: break
-                    slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
-                    // remove duplicates
-                    val imsi = arrayListOf<String?>()
-                    slots.forEachReversedWithIndex { i, slot ->
-                        if (imsi.contains(slot.imsi)) {
-                            slots.removeAt(i)
-                        } else {
-                            imsi.add(slot.imsi)
-                            slot.simStates.apply {
-                                clear()
-                                addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
-                            }
-                        }
+                    if (!TextUtils.isEmpty(slot.imsi) && !TextUtils.isEmpty(slot.simOperator)) {
+                        slots.firstOrNull { it.imsi == slot.imsi }?.simStates?.add(slot.simState)
+                            ?: slots.add(slot)
                     }
                     slotNumber++
                 }
@@ -135,12 +125,11 @@ class MultiSimManager(context: Context) {
         }
     }
 
-    @Suppress("SpellCheckingInspection", "DEPRECATION")
+    @Suppress("SpellCheckingInspection")
     @SuppressLint("MissingPermission", "HardwareIds")
     private fun touchSlot(slotNumber: Int, subIdI: Int?, subIdL: Long?): Slot? =
         reference.get()?.run {
-        val telephonyManager = telephonyManager
-        Timber.v("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
+            val telephonyManager = telephonyManager
             val subIdInt = subIdI ?: try {
                 runMethodReflect(
                     telephonyManager,
@@ -151,8 +140,8 @@ class MultiSimManager(context: Context) {
                 ).toString().toInt()
             } catch (ignored: Throwable) {
                 null
-        }
-        Timber.v("subIdInt $subIdInt")
+            }
+            Timber.v("subIdInt $subIdInt")
             val subIdLong = subIdL ?: runMethodReflect(
                 telephonyManager,
                 "android.telephony.TelephonyManager",
@@ -160,79 +149,79 @@ class MultiSimManager(context: Context) {
                 arrayOf(slotNumber),
                 null
             ) as? Long
-        Timber.v("subIdLong $subIdLong")
-        val listParams = arrayListOf<Any>()
-        if (subIdInt != null && !listParams.contains(subIdInt)) {
-            listParams.add(subIdInt)
-        }
-        if (subIdLong != null && !listParams.contains(subIdLong)) {
-            listParams.add(subIdLong)
-        }
-        if (!listParams.contains(slotNumber)) {
-            listParams.add(slotNumber)
-        }
-        val arrayParams = listParams.toTypedArray()
-        for (i in arrayParams.indices) {
-            Timber.v("ITERATE PARAMS [$i]=[${arrayParams[i]}]")
-        }
-        return Slot().apply {
-            Timber.v("------------------------------------------")
-            Timber.v("SLOT [$slotNumber]")
-            if (isMarshmallowPlus()) {
-                imei = telephonyManager.getDeviceId(slotNumber)
+            Timber.v("subIdLong $subIdLong")
+            val listParams = arrayListOf<Any>()
+            if (subIdInt != null && !listParams.contains(subIdInt)) {
+                listParams.add(subIdInt)
             }
-            if (imei == null) {
-                imei = iterateMethods("getDeviceId", arrayParams) as? String
+            if (subIdLong != null && !listParams.contains(subIdLong)) {
+                listParams.add(subIdLong)
             }
-            if (imei == null) {
-                imei = runMethodReflect(
-                    null,
-                    "com.android.internal.telephony.Phone",
-                    null,
-                    null,
-                    "GEMINI_SIM_" + (slotNumber + 1)
-                ) as? String
+            if (!listParams.contains(slotNumber)) {
+                listParams.add(slotNumber)
             }
-            if (imei == null) {
-                imei = runMethodReflect(
-                    getSystemService("phone" + (slotNumber + 1)),
-                    null,
-                    "getDeviceId",
-                    null,
-                    null
-                ) as? String
+            val arrayParams = listParams.toTypedArray()
+            for (i in arrayParams.indices) {
+                Timber.v("ITERATE PARAMS [$i]=[${arrayParams[i]}]")
             }
-            Timber.v("IMEI [$imei]")
-            if (imei == null) {
-                return if (slotNumber == 0) {
-                    imei = if (isOreoPlus()) {
-                        telephonyManager.imei
-                    } else {
-                        telephonyManager.deviceId
-                    }
-                    imsi = telephonyManager.subscriberId
-                    simState = telephonyManager.simState
-                    simOperator = telephonyManager.simOperator
-                    simSerialNumber = telephonyManager.simSerialNumber
-                    simCountryIso = telephonyManager.simCountryIso
-                    this
-                } else {
-                    null
+            return Slot().apply {
+                Timber.v("------------------------------------------")
+                Timber.v("SLOT [$slotNumber]")
+                if (isMarshmallowPlus()) {
+                    imei = telephonyManager.getDeviceId(slotNumber)
                 }
+                if (imei == null) {
+                    imei = iterateMethods("getDeviceId", arrayParams) as? String
+                }
+                if (imei == null) {
+                    imei = runMethodReflect(
+                        null,
+                        "com.android.internal.telephony.Phone",
+                        null,
+                        null,
+                        "GEMINI_SIM_" + (slotNumber + 1)
+                    ) as? String
+                }
+                if (imei == null) {
+                    imei = runMethodReflect(
+                        getSystemService("phone" + (slotNumber + 1)),
+                        null,
+                        "getDeviceId",
+                        null,
+                        null
+                    ) as? String
+                }
+                Timber.v("IMEI [$imei]")
+                if (imei == null) {
+                    return if (slotNumber == 0) {
+                        imei = if (isOreoPlus()) {
+                            telephonyManager.imei
+                        } else {
+                            telephonyManager.deviceId
+                        }
+                        imsi = telephonyManager.subscriberId
+                        simState = telephonyManager.simState
+                        simOperator = telephonyManager.simOperator
+                        simSerialNumber = telephonyManager.simSerialNumber
+                        simCountryIso = telephonyManager.simCountryIso
+                        this
+                    } else {
+                        null
+                    }
+                }
+                setSimState(iterateMethods("getSimState", arrayParams) as? Int)
+                Timber.v("SIMSTATE [$simState]")
+                imsi = iterateMethods("getSubscriberId", arrayParams) as? String
+                Timber.v("IMSI [$imsi]")
+                simSerialNumber = iterateMethods("getSimSerialNumber", arrayParams) as? String
+                Timber.v("SIMSERIALNUMBER [$simSerialNumber]")
+                simOperator = iterateMethods("getSimOperator", arrayParams) as? String
+                Timber.v("SIMOPERATOR [$simOperator]")
+                simCountryIso = iterateMethods("getSimCountryIso", arrayParams) as? String
+                Timber.v("SIMCOUNTRYISO [$simCountryIso]")
+                Timber.v("------------------------------------------")
             }
-            setSimState(iterateMethods("getSimState", arrayParams) as? Int)
-            Timber.v("SIMSTATE [$simState]")
-            imsi = iterateMethods("getSubscriberId", arrayParams) as? String
-            Timber.v("IMSI [$imsi]")
-            simSerialNumber = iterateMethods("getSimSerialNumber", arrayParams) as? String
-            Timber.v("SIMSERIALNUMBER [$simSerialNumber]")
-            simOperator = iterateMethods("getSimOperator", arrayParams) as? String
-            Timber.v("SIMOPERATOR [$simOperator]")
-            simCountryIso = iterateMethods("getSimCountryIso", arrayParams) as? String
-            Timber.v("SIMCOUNTRYISO [$simCountryIso]")
-            Timber.v("------------------------------------------")
         }
-    }
 
     @SuppressLint("WrongConstant")
     private fun iterateMethods(methodName: String, methodParams: Array<Any>): Any? =
