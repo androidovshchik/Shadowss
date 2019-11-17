@@ -73,7 +73,7 @@ class Slot {
 
     private fun compare(slot: Slot?): Boolean {
         return if (slot != null) {
-            imsi == slot.imsi && simSerialNumber == slot.simSerialNumber
+            imei == slot.imei && imsi == slot.imsi && simSerialNumber == slot.simSerialNumber
         } else {
             false
         }
