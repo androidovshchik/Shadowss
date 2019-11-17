@@ -382,19 +382,43 @@ class MultiSimManager(context: Context) {
         return null
     }
 
-    @Suppress("unused")
-    val allMethodsAndFields: String
+    val allFields: String
         get() = """
             Default: ${reference.get()?.telephonyManager}
-            ${printAllMethodsAndFields("android.telephony.TelephonyManager")}
-            ${printAllMethodsAndFields("android.telephony.MultiSimTelephonyManager")}
-            ${printAllMethodsAndFields("android.telephony.MSimTelephonyManager")}
-            ${printAllMethodsAndFields("com.mediatek.telephony.TelephonyManager")}
-            ${printAllMethodsAndFields("com.mediatek.telephony.TelephonyManagerEx")}
-            ${printAllMethodsAndFields("com.android.internal.telephony.ITelephony")}
+            ${printAllFields("android.telephony.TelephonyManager")}
+            ${printAllFields("android.telephony.MultiSimTelephonyManager")}
+            ${printAllFields("android.telephony.MSimTelephonyManager")}
+            ${printAllFields("com.mediatek.telephony.TelephonyManager")}
+            ${printAllFields("com.mediatek.telephony.TelephonyManagerEx")}
+            ${printAllFields("com.android.internal.telephony.ITelephony")}
         """.trimIndent()
 
-    private fun printAllMethodsAndFields(className: String): String {
+    val allMethods: String
+        get() = """
+            Default: ${reference.get()?.telephonyManager}
+            ${printAllMethods("android.telephony.TelephonyManager")}
+            ${printAllMethods("android.telephony.MultiSimTelephonyManager")}
+            ${printAllMethods("android.telephony.MSimTelephonyManager")}
+            ${printAllMethods("com.mediatek.telephony.TelephonyManager")}
+            ${printAllMethods("com.mediatek.telephony.TelephonyManagerEx")}
+            ${printAllMethods("com.android.internal.telephony.ITelephony")}
+        """.trimIndent()
+
+    private fun printAllFields(className: String): String {
+        val builder = StringBuilder()
+        builder.append("========== $className\n")
+        try {
+            val cls = Class.forName(className)
+            for (field in cls.fields) {
+                builder.append("F: ${field.name} ${field.type}\n")
+            }
+        } catch (e: Throwable) {
+            builder.append("E: $e\n")
+        }
+        return builder.toString()
+    }
+
+    private fun printAllMethods(className: String): String {
         val builder = StringBuilder()
         builder.append("========== $className\n")
         try {
@@ -407,9 +431,6 @@ class MultiSimManager(context: Context) {
                         params
                     )}) -> ${method.returnType}${if (Modifier.isStatic(method.modifiers)) " (static)" else ""}\n"
                 )
-            }
-            for (field in cls.fields) {
-                builder.append("F: ${field.name} ${field.type}\n")
             }
         } catch (e: Throwable) {
             builder.append("E: $e\n")

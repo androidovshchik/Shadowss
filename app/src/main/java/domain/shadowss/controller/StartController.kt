@@ -30,7 +30,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
             if (checkState("start_aspi")) {
                 if (attempts < MAX_ATTEMPTS) {
                     attempts++
-                    random = (1..99).random()
+                    random = (1..32_000).random()
                     socketManager.send(ASPI().apply {
                         rnd = random.toShort()
                     })
@@ -84,6 +84,9 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                 val error = multiSimManager.updateInfo()
                 val slots = multiSimManager.getSlots()
                 synchronized(slots) {
+                    slots.forEach {
+                        Timber.i(it.toString())
+                    }
                     if (error != null || slots.isEmpty() || slots.none { it.isActive }) {
                         socketManager.apply {
                             if (error != null) {
@@ -94,11 +97,11 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                             }
                             send(ASER().apply {
                                 errortype = "sim"
-                                dataerr = multiSimManager.allMethodsAndFields
+                                dataerr = multiSimManager.allFields
                             })
                             send(ASER().apply {
                                 errortype = "sim"
-                                dataerr = multiSimManager.allMethodsAndFields
+                                dataerr = multiSimManager.allMethods
                             })
                         }
                         reference.get()?.onError("[[MSG,0006]]")
@@ -112,15 +115,29 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                         reference.get()?.onError("[[MSG,0007]]")
                         return
                     }
-                    random = (1..99).random()
+                    nextState("start_asrv")
+                    random = (1..32_000).random()
                     socketManager.send(ASRV().apply {
                         rnd = random.toShort()
                     })
-                    slots.forEach {
-                        Timber.e(it.toString())
+                }
+            }
+        }
+    }
+
+    override fun onSARV(instance: SARV) {
+        if (checkState("start_asrv")) {
+            if (random == instance.rnd.toInt()) {
+                nextState("start_asrr")
+                when (instance.error) {
+                    "0" -> {
+                        //reference.get()?.onSuccess()
                     }
-                    if (slots.isEmpty()) {
-                        Timber.e(multiSimManager.allMethodsAndFields)
+                    "0010" -> {
+                        //reference.get()?.onError()
+                    }
+                    else -> {
+                        //reference.get()?.onError()
                     }
                 }
             }
@@ -137,20 +154,6 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
             }
             else -> {
 
-            }
-        }
-    }
-
-    override fun onSARV(instance: SARV) {
-        when (instance.error) {
-            "0" -> {
-                //reference.get()?.onSuccess()
-            }
-            "0010" -> {
-                //reference.get()?.onError()
-            }
-            else -> {
-                //reference.get()?.onError()
             }
         }
     }

@@ -16,7 +16,7 @@ import timber.log.Timber
 class ErrorDialog(activity: Activity) : BaseDialog(activity) {
 
     @Volatile
-    var textData: String? = null
+    var txtData: String? = null
 
     @Volatile
     var marketLink: String? = null
@@ -34,7 +34,7 @@ class ErrorDialog(activity: Activity) : BaseDialog(activity) {
     override fun onShow(dialog: DialogInterface?) {
         super.onShow(dialog)
         dialog_title.updateData()
-        textData?.let {
+        txtData?.let {
             it.split(",")[1].apply {
                 dialog_code.text = substring(0, indexOf("]]"))
             }

@@ -100,7 +100,7 @@ class StartActivity : BaseActivity(), StartView {
 
     override fun onError(data: String, instance: Any?) {
         errorDialog.apply {
-            textData = data
+            txtData = data
             marketLink = if (instance is SARV) {
                 instance.dataerr
             } else {
