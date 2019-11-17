@@ -84,14 +84,38 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                 val error = multiSimManager.updateInfo()
                 val slots = multiSimManager.getSlots()
                 synchronized(slots) {
-                    if (slots.isEmpty() || slots.none { it.isActive }) {
-                        socketManager.send(ASER().apply {
-                            errortype = "sim"
-                        })
+                    if (error != null || slots.isEmpty() || slots.none { it.isActive }) {
+                        socketManager.apply {
+                            if (error != null) {
+                                send(ASER().apply {
+                                    errortype = "sim"
+                                    dataerr = error
+                                })
+                            }
+                            send(ASER().apply {
+                                errortype = "sim"
+                                dataerr = multiSimManager.allMethodsAndFields
+                            })
+                            send(ASER().apply {
+                                errortype = "sim"
+                                dataerr = multiSimManager.allMethodsAndFields
+                            })
+                        }
                         reference.get()?.onError("[[MSG,0006]]")
-                    } else {
-
+                        return
                     }
+                    if (slots.none { it.getMCC()?.length == 3 }) {
+                        socketManager.send(ASER().apply {
+                            errortype = "mcc"
+                            dataerr = "${slots[0].getMCC()},${slots.getOrNull(1)?.getMCC()}"
+                        })
+                        reference.get()?.onError("[[MSG,0007]]")
+                        return
+                    }
+                    random = (1..99).random()
+                    socketManager.send(ASRV().apply {
+                        rnd = random.toShort()
+                    })
                     slots.forEach {
                         Timber.e(it.toString())
                     }
