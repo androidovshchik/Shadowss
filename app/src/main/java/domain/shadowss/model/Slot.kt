@@ -1,5 +1,10 @@
 package domain.shadowss.model
 
+import android.annotation.TargetApi
+import android.os.Build
+import android.text.TextUtils
+import domain.shadowss.extension.isLollipopMR1Plus
+
 class Slot {
 
     var imei: String? = null
@@ -8,6 +13,7 @@ class Slot {
 
     var simState = -1
 
+    // for duplicates
     val simStates = hashSetOf<Int>()
 
     var simSerialNumber: String? = null
@@ -16,8 +22,22 @@ class Slot {
 
     var simCountryIso: String? = null
 
-    val isReady: Boolean
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+    var mcc: String? = null
+
+    val isActive: Boolean
         get() = simStates.contains(5)
+
+    fun getMCC(): String? {
+        if (isLollipopMR1Plus() && !TextUtils.isEmpty(mcc)) {
+            return mcc
+        }
+        return try {
+            simOperator?.substring(0, 3)
+        } catch (e: Throwable) {
+            null
+        }
+    }
 
     fun setSimState(state: Int?) {
         if (state == null) {
@@ -25,14 +45,6 @@ class Slot {
             return
         }
         simState = state
-    }
-
-    private fun compare(slot: Slot?): Boolean {
-        return if (slot != null) {
-            imei == slot.imei && imsi == slot.imsi && simSerialNumber == slot.simSerialNumber
-        } else {
-            false
-        }
     }
 
     fun indexIn(slots: List<Slot>?): Int {
@@ -59,6 +71,14 @@ class Slot {
         return false
     }
 
+    private fun compare(slot: Slot?): Boolean {
+        return if (slot != null) {
+            imsi == slot.imsi && simSerialNumber == slot.simSerialNumber
+        } else {
+            false
+        }
+    }
+
     override fun toString(): String {
         return "Slot(" +
             "imei=$imei, " +
@@ -67,7 +87,8 @@ class Slot {
             "simStates=$simStates, " +
             "simSerialNumber=$simSerialNumber, " +
             "simOperator=$simOperator, " +
-            "simCountryIso=$simCountryIso" +
+            "simCountryIso=$simCountryIso, " +
+            "mcc=$mcc" +
             ")"
     }
 }
