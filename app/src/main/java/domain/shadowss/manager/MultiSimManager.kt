@@ -10,7 +10,6 @@ import domain.shadowss.extension.isLollipopMR1Plus
 import domain.shadowss.extension.isMarshmallowPlus
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.model.Slot
-import org.jetbrains.anko.collections.forEachReversedWithIndex
 import org.jetbrains.anko.telephonyManager
 import timber.log.Timber
 import java.lang.ref.WeakReference
@@ -113,16 +112,17 @@ class MultiSimManager(context: Context) {
                 Timber.e(e)
                 e.toString()
             }
-            slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
-            val imsi = arrayListOf<String?>()
-            slots.forEachReversedWithIndex { i, slot ->
-                if (imsi.contains(slot.imsi)) {
-                    slots.removeAt(i)
-                } else {
-                    imsi.add(slot.imsi)
-                    slot.simStates.apply {
-                        clear()
-                        addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
+            slots.apply {
+                removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
+                val imsi = arrayListOf<String?>()
+                val iterator = iterator()
+                while (iterator.hasNext()) {
+                    val slot = iterator.next()
+                    if (imsi.contains(slot.imsi)) {
+                        iterator.remove()
+                    } else {
+                        imsi.add(slot.imsi)
+                        slot.simStates.addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
                     }
                 }
             }
@@ -167,31 +167,31 @@ class MultiSimManager(context: Context) {
                 null
             ) as? Long
             Timber.v("subIdLong $subIdLong")
-            val listParamsSubs = ArrayList<Any>()
-            if (subIdInt != null && !listParamsSubs.contains(subIdInt)) {
-                listParamsSubs.add(subIdInt)
-            }
-            if (subIdLong != null && !listParamsSubs.contains(subIdLong)) {
-                listParamsSubs.add(subIdLong)
-            }
-            if (!listParamsSubs.contains(slotNumber)) {
-                listParamsSubs.add(slotNumber)
-            }
-            val objectParamsSubs = listParamsSubs.toTypedArray()
+            val objectParamsSubs = arrayListOf<Any>().apply {
+                if (subIdInt != null && !contains(subIdInt)) {
+                    add(subIdInt)
+                }
+                if (subIdLong != null && !contains(subIdLong)) {
+                    add(subIdLong)
+                }
+                if (!contains(slotNumber)) {
+                    add(slotNumber)
+                }
+            }.toTypedArray()
             for (i in objectParamsSubs.indices) {
                 Timber.v("ITERATE PARAMS_SUBS [$i]=[${objectParamsSubs[i]}]")
             }
-            val listParamsSlot = ArrayList<Any>()
-            if (!listParamsSlot.contains(slotNumber)) {
-                listParamsSlot.add(slotNumber)
-            }
-            if (subIdInt != null && !listParamsSlot.contains(subIdInt)) {
-                listParamsSlot.add(subIdInt)
-            }
-            if (subIdLong != null && !listParamsSlot.contains(subIdLong)) {
-                listParamsSlot.add(subIdLong)
-            }
-            val objectParamsSlot = listParamsSlot.toTypedArray()
+            val objectParamsSlot = arrayListOf<Any>().apply {
+                if (!contains(slotNumber)) {
+                    add(slotNumber)
+                }
+                if (subIdInt != null && !contains(subIdInt)) {
+                    add(subIdInt)
+                }
+                if (subIdLong != null && !contains(subIdLong)) {
+                    add(subIdLong)
+                }
+            }.toTypedArray()
             for (i in objectParamsSlot.indices) {
                 Timber.v("ITERATE PARAMS_SLOT [$i]=[${objectParamsSlot[i]}]")
             }
