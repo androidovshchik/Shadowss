@@ -1,6 +1,7 @@
 package domain.shadowss.controller
 
 import android.content.Context
+import android.os.Handler
 import defpackage.marsh.ASPI
 import defpackage.marsh.SAPO
 import defpackage.marsh.SARR
@@ -22,30 +23,47 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     @Volatile
     private var attempts = 0
 
+    private val handler = Handler()
+
+    private val closableRunnable = Runnable {
+        random = (1..99).random()
+        socketManager.send(ASPI().apply {
+            rnd = random.toShort()
+        })
+    }
+
     fun onChoice(context: Context): Boolean {
-        if (!checkHash(null)) {
-            return false
-        }
-        nextHash("start_none")
-        if (checkRights(context)) {
-            if (checkAgree(preferences)) {
-                if (checkInternet(context.applicationContext)) {
-                    nextHash("start_aspi")
-                    random = (1..99).random()
-                    socketManager.send(ASPI().apply {
-                        rnd = random.toShort()
-                    })
+        return if (checkState(null)) {
+            nextState("start_none")
+            if (checkRights(context)) {
+                if (checkAgree(preferences)) {
+                    if (checkRoot(context)) {
+                        if (checkInternet(context.applicationContext)) {
+                            nextState("start_aspi")
+                            closableRunnable.run()
+                            true
+                        } else {
+                            reference.get()?.onError("[[MSG,0002]]")
+                            nextState(null)
+                            false
+                        }
+                    } else {
+                        reference.get()?.onError("[[MSG,0005]]")
+                        nextState(null)
+                        false
+                    }
                 } else {
-                    reference.get()?.onError("[[MSG,0002]]")
-                    nextHash(null)
+                    reference.get()?.onError("[[MSG,0001]]")
+                    nextState(null)
+                    false
                 }
             } else {
-                reference.get()?.onError("[[MSG,0001]]")
-                nextHash(null)
+                reference.get()?.onError("[[MSG,0000]]")
+                nextState(null)
+                false
             }
         } else {
-            reference.get()?.onError("[[MSG,0000]]")
-            nextHash(null)
+            false
         }
         /*disposable.add(Observable.just(true)
             .observeOn(Schedulers.io())
@@ -64,11 +82,17 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                 Timber.e(it)
             })
         )*/
-        return false
     }
 
     override fun onSAPO(instance: SAPO) {
+        if (checkState("start_aspi")) {
+            if (random == instance.rnd.toInt()) {
+                handler.removeCallbacks(closableRunnable)
+                if () {
 
+                }
+            }
+        }
     }
 
     override fun onSARR(instance: SARR) {

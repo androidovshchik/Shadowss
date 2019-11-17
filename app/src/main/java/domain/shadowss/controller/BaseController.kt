@@ -39,12 +39,12 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     protected val socketManager: WebSocketManager by instance()
 
     @Volatile
-    protected var hash: String? = null
+    private var state: String? = null
 
-    protected fun checkHash(value: String?) = hash == value
+    protected fun checkState(value: String?) = state == value
 
-    protected fun nextHash(value: String? = null) {
-        hash = value
+    protected fun nextState(value: String? = null) {
+        state = value
     }
 
     open fun start() {
