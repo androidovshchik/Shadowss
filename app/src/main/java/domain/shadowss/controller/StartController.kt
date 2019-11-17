@@ -24,23 +24,23 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     private val aspiRunnable = object : Runnable {
 
         override fun run() {
-            if (checkState("start_aspi")) {
+            checkState("start_aspi") {
                 if (attempts < MAX_ATTEMPTS) {
                     attempts++
-                    nextRandom()
                     socketManager.send(ASPI().apply {
-                        rnd = random.toShort()
+                        rnd = getShortRandom()
                     })
                     Handler().postDelayed(this, 2000)
                 } else {
                     reference.get()?.onError("[[MSG,0009]]")
                 }
+                true
             }
         }
     }
 
     fun onChoice(context: Context): Boolean {
-        return if (checkState(null)) {
+        return checkState(null) {
             nextState("start_none")
             attempts = 0
             if (!MainApp.isRooted) {
@@ -69,73 +69,66 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                 reference.get()?.onError("[[MSG,0005]]")
                 false
             }
-        } else {
-            false
         }
     }
 
     override fun onSAPO(instance: SAPO) {
-        if (checkState("start_aspi")) {
-            if (checkRandom(instance.rnd)) {
-                nextState("start_sim")
-                val error = multiSimManager.updateInfo()
-                val slots = multiSimManager.getSlots()
-                synchronized(slots) {
-                    slots.forEach {
-                        Timber.i(it.toString())
-                    }
-                    if (error != null || slots.isEmpty() || slots.none { it.isActive }) {
-                        socketManager.apply {
-                            if (error != null) {
-                                send(ASER().apply {
-                                    errortype = "sim"
-                                    dataerr = error
-                                })
-                            }
+        checkState("start_aspi", instance.rnd) {
+            nextState("start_sim")
+            val error = multiSimManager.updateInfo()
+            val slots = multiSimManager.getSlots()
+            synchronized(slots) {
+                slots.forEach {
+                    Timber.i(it.toString())
+                }
+                if (error != null || slots.isEmpty() || slots.none { it.isActive }) {
+                    socketManager.apply {
+                        if (error != null) {
                             send(ASER().apply {
                                 errortype = "sim"
-                                dataerr = multiSimManager.allFields
-                            })
-                            send(ASER().apply {
-                                errortype = "sim"
-                                dataerr = multiSimManager.allMethods
+                                dataerr = error
                             })
                         }
-                        reference.get()?.onError("[[MSG,0006]]")
-                        return
-                    }
-                    if (slots.none { it.getMCC()?.length == 3 }) {
-                        socketManager.send(ASER().apply {
-                            errortype = "mcc"
-                            dataerr = "${slots[0].getMCC()},${slots.getOrNull(1)?.getMCC()}"
+                        send(ASER().apply {
+                            errortype = "sim"
+                            dataerr = multiSimManager.allFields
                         })
-                        reference.get()?.onError("[[MSG,0007]]")
-                        return
+                        send(ASER().apply {
+                            errortype = "sim"
+                            dataerr = multiSimManager.allMethods
+                        })
                     }
-                    nextState("start_asrv")
-                    nextRandom()
-                    socketManager.send(ASPI().apply {
-                        rnd = random.toShort()
-                    })
+                    reference.get()?.onError("[[MSG,0006]]")
+                    return
                 }
+                if (slots.none { it.getMCC()?.length == 3 }) {
+                    socketManager.send(ASER().apply {
+                        errortype = "mcc"
+                        dataerr = "${slots[0].getMCC()},${slots.getOrNull(1)?.getMCC()}"
+                    })
+                    reference.get()?.onError("[[MSG,0007]]")
+                    return
+                }
+                nextState("start_asrv")
+                socketManager.send(ASPI().apply {
+                    rnd = getShortRandom()
+                })
             }
         }
     }
 
     override fun onSARV(instance: SARV) {
-        if (checkState("start_asrv")) {
-            if (checkRandom(instance.rnd)) {
-                nextState("start_asrr")
-                when (instance.error) {
-                    "0" -> {
-                        //reference.get()?.onSuccess()
-                    }
-                    "0010" -> {
-                        reference.get()?.onError()
-                    }
-                    else -> {
-                        reference.get()?.onError()
-                    }
+        if (checkState("start_asrv", instance.rnd)) {
+            nextState("start_asrr")
+            when (instance.error) {
+                "0" -> {
+                    //reference.get()?.onSuccess()
+                }
+                "0010" -> {
+                    reference.get()?.onError()
+                }
+                else -> {
+                    reference.get()?.onError()
                 }
             }
         }

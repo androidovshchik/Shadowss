@@ -42,20 +42,41 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     protected var random = 0
 
     @Volatile
-    private var state: String? = null
+    protected var state: String? = null
 
-    protected fun checkRandom(value: Short) = checkRandom(value.toInt())
+    init {
+        nextRandom()
+    }
 
-    protected fun checkRandom(value: Int) = random == value
+    protected fun checkRandom(number: Int) = random == number
+
+    protected fun checkRandom(number: Short) = checkRandom(number.toInt())
+
+    protected fun getShortRandom(): Short = random.toShort()
 
     protected fun nextRandom() {
         random = (1..32_000).random()
     }
 
-    protected fun checkState(value: String?) = state == value
+    protected inline fun checkState(value: String?, block: () -> Boolean): Boolean {
+        return if (state == value) {
+            block()
+        } else {
+            false
+        }
+    }
+
+    protected inline fun checkState(value: String, number: Short, block: () -> Boolean): Boolean {
+        return if (checkRandom(number)) {
+            checkState(value, block)
+        } else {
+            false
+        }
+    }
 
     fun nextState(value: String? = null) {
         state = value
+        nextRandom()
     }
 
     open fun start() {
