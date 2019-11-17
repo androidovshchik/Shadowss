@@ -2,7 +2,6 @@ package domain.shadowss.model
 
 import android.annotation.TargetApi
 import android.os.Build
-import android.text.TextUtils
 import domain.shadowss.extension.isLollipopMR1Plus
 
 class Slot {
@@ -20,6 +19,8 @@ class Slot {
 
     var simOperator: String? = null
 
+    var simOperatorName: String? = null
+
     var simCountryIso: String? = null
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
@@ -29,7 +30,7 @@ class Slot {
         get() = simStates.contains(5)
 
     fun getMCC(): String? {
-        if (isLollipopMR1Plus() && !TextUtils.isEmpty(mcc)) {
+        if (isLollipopMR1Plus() && mcc != null) {
             return mcc
         }
         return try {
@@ -64,6 +65,7 @@ class Slot {
             "simStates=$simStates, " +
             "simSerialNumber=$simSerialNumber, " +
             "simOperator=$simOperator, " +
+            "simOperatorName=$simOperatorName, " +
             "simCountryIso=$simCountryIso, " +
             "mcc=$mcc" +
             ")"

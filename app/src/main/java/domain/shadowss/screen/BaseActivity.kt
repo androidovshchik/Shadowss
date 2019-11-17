@@ -59,12 +59,12 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        controller.callback(applicationContext, requestCode)
+        controller.callback(this, requestCode)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        controller.callback(applicationContext, requestCode, resultCode)
+        controller.callback(this, requestCode, resultCode)
         when (requestCode) {
             LocationManager.REQUEST_LOCATION -> {
                 if (resultCode != RESULT_OK) {

@@ -231,6 +231,7 @@ class MultiSimManager(context: Context) {
                         imsi = telephonyManager.subscriberId
                         simState = telephonyManager.simState
                         simOperator = telephonyManager.simOperator
+                        simOperatorName = telephonyManager.simOperatorName
                         simSerialNumber = telephonyManager.simSerialNumber
                         simCountryIso = telephonyManager.simCountryIso
                         return this
@@ -247,6 +248,8 @@ class MultiSimManager(context: Context) {
                 Timber.v("SIMSERIALNUMBER [$simSerialNumber]")
                 simOperator = iterateMethods("getSimOperator", objectParamsSubs) as? String
                 Timber.v("SIMOPERATOR [$simOperator]")
+                simOperatorName = iterateMethods("getSimOperatorName", objectParamsSubs) as? String
+                Timber.v("SIMOPERATORNAME [$simOperatorName]")
                 simCountryIso = iterateMethods("getSimCountryIso", objectParamsSubs) as? String
                 Timber.v("SIMCOUNTRYISO [$simCountryIso]")
             }

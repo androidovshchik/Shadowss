@@ -13,8 +13,8 @@ import domain.shadowss.manager.WebSocketCallback
 import domain.shadowss.manager.WebSocketManager
 import io.reactivex.disposables.CompositeDisposable
 import org.jetbrains.anko.connectivityManager
+import org.jetbrains.anko.longToast
 import org.jetbrains.anko.powerManager
-import org.jetbrains.anko.toast
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
 import org.kodein.di.generic.instance
@@ -87,7 +87,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
                         Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
                         REQUEST_ZONE_MODE
                     )
-                    toast("Let app always run in background")
+                    longToast("Let app always run in background")
                 }
                 return false
             }
