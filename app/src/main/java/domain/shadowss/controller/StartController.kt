@@ -13,6 +13,7 @@ import domain.shadowss.manager.MultiSimManager
 import domain.shadowss.screen.StartView
 import org.jetbrains.anko.connectivityManager
 import org.kodein.di.generic.instance
+import timber.log.Timber
 
 class StartController(referent: StartView) : Controller<StartView>(referent) {
 
@@ -26,14 +27,22 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     @Volatile
     private var attempts = 0
 
-    private val handler = Handler()
+    private val aspiRunnable = object : Runnable {
 
-    private val closableRunnable = Runnable {
-        random = (1..99).random()
-        socketManager.send(ASPI().apply {
-            rnd = random.toShort()
-        })
-        attempts++
+        override fun run() {
+            if (checkState("start_aspi")) {
+                if (attempts < MAX_ATTEMPTS) {
+                    attempts++
+                    random = (1..99).random()
+                    socketManager.send(ASPI().apply {
+                        rnd = random.toShort()
+                    })
+                    Handler().postDelayed(this, 2000)
+                } else {
+                    reference.get()?.onError("[[MSG,0009]]")
+                }
+            }
+        }
     }
 
     fun onChoice(context: Context): Boolean {
@@ -45,7 +54,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                     if (!MainApp.isRooted) {
                         if (context.connectivityManager.isConnected) {
                             nextState("start_aspi")
-                            closableRunnable.run()
+                            aspiRunnable.run()
                             true
                         } else {
                             reference.get()?.onError("[[MSG,0002]]")
@@ -66,9 +75,12 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         } else {
             false
         }
-        /*disposable.add(Observable.just(true)
-            .observeOn(Schedulers.io())
-            .subscribe({
+    }
+
+    override fun onSAPO(instance: SAPO) {
+        if (checkState("start_aspi")) {
+            if (random == instance.rnd.toInt()) {
+                nextState("start_sim")
                 multiSimManager.updateInfo()
                 val slots = multiSimManager.getSlots()
                 synchronized(slots) {
@@ -78,19 +90,6 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                     if (slots.isEmpty()) {
                         Timber.e(multiSimManager.allMethodsAndFields)
                     }
-                }
-            }, {
-                Timber.e(it)
-            })
-        )*/
-    }
-
-    override fun onSAPO(instance: SAPO) {
-        if (checkState("start_aspi")) {
-            if (random == instance.rnd.toInt()) {
-                handler.removeCallbacks(closableRunnable)
-                if () {
-
                 }
             }
         }
@@ -126,6 +125,6 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     companion object {
 
-        private val MAX_ATTEMPTS = 4
+        private const val MAX_ATTEMPTS = 4
     }
 }
