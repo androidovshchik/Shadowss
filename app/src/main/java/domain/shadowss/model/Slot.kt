@@ -47,32 +47,6 @@ class Slot {
         simState = state
     }
 
-    fun indexIn(slots: List<Slot>): Int {
-        for (i in slots.indices) {
-            if (compare(slots[i])) {
-                return i
-            }
-        }
-        return -1
-    }
-
-    fun containsIn(slots: List<Slot>): Boolean {
-        for (slot in slots) {
-            if (compare(slot)) {
-                return true
-            }
-        }
-        return false
-    }
-
-    private fun compare(slot: Slot?): Boolean {
-        return if (slot != null) {
-            imei == slot.imei && imsi == slot.imsi && simSerialNumber == slot.simSerialNumber
-        } else {
-            false
-        }
-    }
-
     override fun toString(): String {
         return "Slot(" +
             "imei=$imei, " +

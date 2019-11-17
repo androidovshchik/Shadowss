@@ -43,19 +43,20 @@ class MultiSimManager(context: Context) {
             slots.clear()
             val error = try {
                 var slotNumber = 0
-                while (true) {
+                for (i in 0 until 100) {
                     val slot = touchSlot(slotNumber) ?: break
-                    if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
-                        // protect from Alcatel infinity bug
-                        break
-                    }
-                    slots.apply {
-                        when {
-                            size > slotNumber -> {
-                                removeAt(slotNumber)
-                                add(slotNumber, slot)
+                    slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
+                    // remove duplicates
+                    val imsi = arrayListOf<String?>()
+                    slots.forEachReversedWithIndex { i, slot ->
+                        if (imsi.contains(slot.imsi)) {
+                            slots.removeAt(i)
+                        } else {
+                            imsi.add(slot.imsi)
+                            slot.simStates.apply {
+                                clear()
+                                addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
                             }
-                            size == slotNumber -> add(slot)
                         }
                     }
                     slotNumber++
@@ -64,20 +65,6 @@ class MultiSimManager(context: Context) {
             } catch (e: Throwable) {
                 Timber.e(e)
                 e.toString()
-            }
-            slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
-            // remove duplicates
-            val imsi = arrayListOf<String?>()
-            slots.forEachReversedWithIndex { i, slot ->
-                if (imsi.contains(slot.imsi)) {
-                    slots.removeAt(i)
-                } else {
-                    imsi.add(slot.imsi)
-                    slot.simStates.apply {
-                        clear()
-                        addAll(slots.filter { it.imsi == slot.imsi }.map { it.simState })
-                    }
-                }
             }
             if (isLollipopMR1Plus()) {
                 val subscriptionManager =
