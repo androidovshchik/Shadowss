@@ -11,8 +11,6 @@ interface ManagerView : BaseView
 
 class ManagerActivity : BaseActivity(), ManagerView {
 
-    override val requireLocation = true
-
     override val controller: ManagerController by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import androidx.annotation.WorkerThread
 import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
 import domain.shadowss.extension.*
@@ -24,16 +25,13 @@ import javax.annotation.OverridingMethodsMustInvokeSuper
 
 typealias Controller<T> = BaseController<T>
 
-interface ControllerReference {
-
-    val context: Context
-}
+interface ControllerReference
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAware,
     WebSocketCallback {
 
-    override val kodein by closestKodein(referent.context)
+    override val kodein by closestKodein(referent as Context)
 
     protected val reference = WeakReference(referent)
 
@@ -106,10 +104,12 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         return preferences.agree
     }
 
+    @WorkerThread
     fun checkRoot(context: Context): Boolean {
         return !RootBeer(context).isRootedWithoutBusyBoxCheck
     }
 
+    @WorkerThread
     fun checkSim(): Boolean {
         return false
     }
@@ -133,10 +133,10 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     }
 
     @OverridingMethodsMustInvokeSuper
-    open fun callback(requestCode: Int, resultCode: Int = 0) {
+    open fun callback(context: Context, requestCode: Int, resultCode: Int = 0) {
         when (requestCode) {
             REQUEST_PERMISSIONS, REQUEST_ZONE_MODE -> {
-                checkRights(reference.get()?.context ?: return)
+                checkRights(context)
             }
         }
     }

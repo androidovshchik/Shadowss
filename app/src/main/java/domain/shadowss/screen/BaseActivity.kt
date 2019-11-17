@@ -1,7 +1,6 @@
 package domain.shadowss.screen
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.view.MenuItem
 import domain.shadowss.controller.Controller
@@ -26,14 +25,9 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
         import(screenModule)
     }
 
-    protected open val requireLocation = false
-
     protected abstract val controller: Controller<out BaseView>
 
     protected val locationManager: LocationManager by instance()
-
-    override val context: Context
-        get() = this
 
     override fun onStart() {
         super.onStart()
@@ -42,8 +36,10 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         if (hasFocus) {
-            if (requireLocation) {
-                locationManager.checkLocation(this)
+            when (this) {
+                is ManagerActivity, is DriverActivity -> {
+                    locationManager.checkLocation(this)
+                }
             }
         }
     }
@@ -63,12 +59,12 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        controller.callback(requestCode)
+        controller.callback(applicationContext, requestCode)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        controller.callback(requestCode, resultCode)
+        controller.callback(applicationContext, requestCode, resultCode)
         when (requestCode) {
             LocationManager.REQUEST_LOCATION -> {
                 if (resultCode != RESULT_OK) {

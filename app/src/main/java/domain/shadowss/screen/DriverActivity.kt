@@ -11,8 +11,6 @@ interface DriverView : BaseView
 
 class DriverActivity : BaseActivity(), DriverView {
 
-    override val requireLocation = true
-
     override val controller: DriverController by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
