@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import androidx.annotation.WorkerThread
 import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
 import domain.shadowss.extension.*
@@ -104,14 +103,8 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         return preferences.agree
     }
 
-    @WorkerThread
     fun checkRoot(context: Context): Boolean {
         return !RootBeer(context).isRootedWithoutBusyBoxCheck
-    }
-
-    @WorkerThread
-    fun checkSim(): Boolean {
-        return false
     }
 
     override fun onSAPI(instance: SAPI) {}

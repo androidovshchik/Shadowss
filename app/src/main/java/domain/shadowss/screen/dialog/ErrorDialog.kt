@@ -34,7 +34,9 @@ class ErrorDialog(activity: Activity) : BaseDialog(activity) {
     fun setData(data: String, instance: Any?) {
         marketLink = if (instance is SARV) {
             instance.dataerr
-        } else null
+        } else {
+            null
+        }
         data.split(",")[1].also {
             dialog_code.text = it.substring(0, it.indexOf("]]"))
         }

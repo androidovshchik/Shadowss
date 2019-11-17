@@ -2,9 +2,7 @@ package domain.shadowss.manager
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.Context
-import android.os.Build
 import android.telephony.SubscriptionManager
 import android.text.TextUtils
 import domain.shadowss.extension.areGranted
@@ -28,26 +26,8 @@ class MultiSimManager(context: Context) {
 
     private val reference = WeakReference(context)
 
-    val slots = arrayListOf<Slot>()
-        @Synchronized get
-
-    @Suppress("unused")
-    val dualMcc: Pair<String?, String?>
-        @SuppressLint("MissingPermission")
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
-        get() = reference.get()?.run {
-            if (isLollipopMR1Plus()) {
-                if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
-                    val subscriptionManager =
-                        getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-                    val list = subscriptionManager.activeSubscriptionInfoList
-                    return list.getOrNull(0)?.mcc?.toString()
-                        ?.padStart(3, '0') to list.getOrNull(1)?.mcc?.toString()
-                        ?.padStart(3, '0')
-                }
-            }
-            null to null
-        } ?: null to null
+    val slots = mutableListOf<Slot>()
+        get() = Collections.synchronizedList(field)
 
     @Synchronized
     @SuppressLint("MissingPermission")
@@ -96,6 +76,13 @@ class MultiSimManager(context: Context) {
                     }
                 }
             }
+            if (isLollipopMR1Plus()) {
+                val subscriptionManager =
+                    getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+                val list = subscriptionManager.activeSubscriptionInfoList
+                list.getOrNull(0)?.mcc?.toString()?.padStart(3, '0')
+                list.getOrNull(1)?.mcc?.toString()?.padStart(3, '0')
+            }
             error
         } else {
             slots.clear()
@@ -111,7 +98,7 @@ class MultiSimManager(context: Context) {
         Timber.v("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
         val subscriberIdIntValue = ArrayList<String>()
         val subscriberIdIntIndex = ArrayList<Int>()
-        for (i in 0..99) {
+        for (i in 0 until 100) {
             val subscriber = runMethodReflect(
                 telephonyManager,
                 "android.telephony.TelephonyManager",
@@ -427,7 +414,7 @@ class MultiSimManager(context: Context) {
                     "M: ${method.name} [${params.size}](${TextUtils.join(
                         ",",
                         params
-                    )}) -> ${method.returnType} ${if (Modifier.isStatic(method.modifiers)) "(static)" else ""}\n"
+                    )}) -> ${method.returnType}${if (Modifier.isStatic(method.modifiers)) " (static)" else ""}\n"
                 )
             }
             for (field in cls.fields) {
