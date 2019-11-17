@@ -6,14 +6,16 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import defpackage.marsh.SARV
 import domain.shadowss.R
 import domain.shadowss.screen.view.setData
+import domain.shadowss.screen.view.updateData
 import kotlinx.android.synthetic.main.dialog_error.*
 import org.jetbrains.anko.browse
 import timber.log.Timber
 
 class ErrorDialog(activity: Activity) : BaseDialog(activity) {
+
+    var textData: String? = null
 
     var marketLink: String? = null
 
@@ -27,25 +29,29 @@ class ErrorDialog(activity: Activity) : BaseDialog(activity) {
         }
     }
 
-    override fun onClosableState() {
-        dialog_close.visibility = View.VISIBLE
+    override fun onShow(dialog: DialogInterface?) {
+        super.onShow(dialog)
+        dialog_title.updateData()
+        textData?.let {
+            it.split(",")[1].apply {
+                dialog_code.text = substring(0, indexOf("]]"))
+            }
+            dialog_text.setData(it)
+        } ?: resetWidgets()
+        dialog_close.apply {
+            dialog_close.visibility = View.GONE
+            updateData()
+        }
     }
 
-    fun setData(data: String, instance: Any?) {
-        marketLink = if (instance is SARV) {
-            instance.dataerr
-        } else {
-            null
-        }
-        data.split(",")[1].also {
-            dialog_code.text = it.substring(0, it.indexOf("]]"))
-        }
-        dialog_text.setData(data)
+    override fun onClosableState() {
+        dialog_close.visibility = View.VISIBLE
     }
 
     override fun resetWidgets() {
         dialog_code.text = ""
         dialog_text.text = ""
+        dialog_close.text = ""
     }
 
     override fun onDismiss(dialog: DialogInterface?) {

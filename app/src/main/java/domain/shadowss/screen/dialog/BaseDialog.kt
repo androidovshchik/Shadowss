@@ -8,6 +8,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Handler
 import android.view.Window
+import android.view.WindowManager
 import domain.shadowss.extension.activity
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
@@ -40,10 +41,12 @@ abstract class BaseDialog(activity: Activity) : Dialog(activity), KodeinAware,
     @OverridingMethodsMustInvokeSuper
     override fun onCreate(savedInstanceState: Bundle?) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
+        window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
     }
 
     @OverridingMethodsMustInvokeSuper
     override fun onShow(dialog: DialogInterface?) {
+        setCancelable(false)
         if (shouldBeClosable) {
             handler.postDelayed(closableRunnable, 5000)
         }

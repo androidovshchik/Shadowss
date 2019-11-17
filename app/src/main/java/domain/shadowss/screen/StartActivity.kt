@@ -10,6 +10,7 @@ import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.ArrayAdapter
 import defpackage.marsh.RGI1Data
+import defpackage.marsh.SARV
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
 import domain.shadowss.local.Preferences
@@ -99,7 +100,12 @@ class StartActivity : BaseActivity(), StartView {
 
     override fun onError(data: String, instance: Any?) {
         errorDialog.apply {
-            setData(data, instance)
+            textData = data
+            marketLink = if (instance is SARV) {
+                instance.dataerr
+            } else {
+                null
+            }
             show()
         }
     }

@@ -17,6 +17,7 @@
         android:gravity="center_vertical">
 
         <domain.shadowss.screen.view.LanguageText
+            android:id="@+id/dialog_title"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -53,11 +54,14 @@
     <domain.shadowss.screen.view.LanguageButton
         android:id="@+id/dialog_close"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_height="40dp"
+        android:layout_below="@+id/dialog_text"
+        android:layout_marginTop="-16dp"
+        android:layout_marginBottom="10dp"
         android:layout_centerHorizontal="true"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
+        android:gravity="center"
         android:textSize="15sp"
         android:textAllCaps="false"
         android:textColor="@color/colorPrimary"

@@ -1,19 +1,20 @@
 package domain.shadowss.controller
 
 import android.content.Context
+import defpackage.marsh.ASPI
 import defpackage.marsh.SAPO
 import defpackage.marsh.SARR
 import defpackage.marsh.SARV
+import domain.shadowss.local.Preferences
 import domain.shadowss.manager.MultiSimManager
 import domain.shadowss.screen.StartView
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
 import org.kodein.di.generic.instance
-import timber.log.Timber
 
 class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     private val multiSimManager: MultiSimManager by instance()
+
+    private val preferences: Preferences by instance()
 
     @Volatile
     private var random = 0
@@ -25,8 +26,28 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         if (!checkHash(null)) {
             return false
         }
-        nextHash("start")
-        disposable.add(Observable.just(true)
+        nextHash("start_none")
+        if (checkRights(context)) {
+            if (checkAgree(preferences)) {
+                if (checkInternet(context.applicationContext)) {
+                    nextHash("start_aspi")
+                    random = (1..99).random()
+                    socketManager.send(ASPI().apply {
+                        rnd = random.toShort()
+                    })
+                } else {
+                    reference.get()?.onError("[[MSG,0002]]")
+                    nextHash(null)
+                }
+            } else {
+                reference.get()?.onError("[[MSG,0001]]")
+                nextHash(null)
+            }
+        } else {
+            reference.get()?.onError("[[MSG,0000]]")
+            nextHash(null)
+        }
+        /*disposable.add(Observable.just(true)
             .observeOn(Schedulers.io())
             .subscribe({
                 multiSimManager.updateInfo()
@@ -42,20 +63,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
             }, {
                 Timber.e(it)
             })
-        )
-        // multiSimManager.updateSlots()
-        /*if (checkRights()) {
-            if (checkAgree(preferences)) {
-                if (checkInternet()) {
-                    random = (1..99).random()
-                    socketManager.send(ASPI().apply {
-                        rnd = random.toShort()
-                    })
-                }
-            }
-        } else {
-
-        }*/
+        )*/
         return false
     }
 
