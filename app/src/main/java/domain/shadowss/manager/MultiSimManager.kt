@@ -35,17 +35,16 @@ class MultiSimManager(context: Context) {
     @Synchronized
     @SuppressLint("MissingPermission")
     fun updateInfo(): String? = reference.get()?.run {
-        if (areGranted(Manifest.permission.READ_PHONE_STATE)) {
+        if (!areGranted(Manifest.permission.READ_PHONE_STATE)) {
+            return null
+        }
+        val slots = getSlots()
+        synchronized(slots) {
+            slots.clear()
             val error = try {
                 var slotNumber = 0
                 while (true) {
-                    val slot = touchSlot(slotNumber)
-                    if (slot == null) {
-                        for (i in slotNumber until slots.size) {
-                            slots.removeAt(i)
-                        }
-                        break
-                    }
+                    val slot = touchSlot(slotNumber) ?: break
                     if (slot.containsIn(slots) && slot.indexIn(slots) < slotNumber) {
                         // protect from Alcatel infinity bug
                         break
@@ -91,9 +90,6 @@ class MultiSimManager(context: Context) {
                 }
             }
             error
-        } else {
-            slots.clear()
-            null
         }
     }
 
@@ -222,24 +218,21 @@ class MultiSimManager(context: Context) {
             }
             Timber.v("IMEI [$imei]")
             if (imei == null) {
-                when (slotNumber) {
-                    0 -> {
-                        imei = if (isOreoPlus()) {
-                            telephonyManager.imei
-                        } else {
-                            telephonyManager.deviceId
-                        }
-                        imsi = telephonyManager.subscriberId
-                        simState = telephonyManager.simState
-                        simOperator = telephonyManager.simOperator
-                        simSerialNumber = telephonyManager.simSerialNumber
-                        simCountryIso = telephonyManager.simCountryIso
-                        return this
+                return if (slotNumber == 0) {
+                    imei = if (isOreoPlus()) {
+                        telephonyManager.imei
+                    } else {
+                        telephonyManager.deviceId
                     }
+                    imsi = telephonyManager.subscriberId
+                    simState = telephonyManager.simState
+                    simOperator = telephonyManager.simOperator
+                    simSerialNumber = telephonyManager.simSerialNumber
+                    simCountryIso = telephonyManager.simCountryIso
+                    this
+                } else {
+                    null
                 }
-            }
-            if (imei == null) {
-                return null
             }
             setSimState(iterateMethods("getSimState", arrayParams) as? Int)
             Timber.v("SIMSTATE [$simState]")
@@ -258,9 +251,6 @@ class MultiSimManager(context: Context) {
     @SuppressLint("WrongConstant")
     private fun iterateMethods(methodName: String, methodParams: Array<Any>): Any? =
         reference.get()?.run {
-            if (methodName.isEmpty()) {
-                return null
-            }
             val telephonyManager = telephonyManager
             val instanceMethods = arrayListOf<Any?>()
             val multiSimTelephonyManagerExists = telephonyManager.toString()

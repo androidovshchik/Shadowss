@@ -47,10 +47,7 @@ class Slot {
         simState = state
     }
 
-    fun indexIn(slots: List<Slot>?): Int {
-        if (slots == null) {
-            return -1
-        }
+    fun indexIn(slots: List<Slot>): Int {
         for (i in slots.indices) {
             if (compare(slots[i])) {
                 return i
@@ -59,10 +56,7 @@ class Slot {
         return -1
     }
 
-    fun containsIn(slots: List<Slot>?): Boolean {
-        if (slots == null) {
-            return false
-        }
+    fun containsIn(slots: List<Slot>): Boolean {
         for (slot in slots) {
             if (compare(slot)) {
                 return true
