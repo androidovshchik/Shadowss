@@ -60,7 +60,7 @@ class MainService : BaseService(), MainWorker {
     companion object {
 
         @Volatile
-        var keepConnection = true
+        var keepConnection = false
 
         @Volatile
         var requestLocation = false

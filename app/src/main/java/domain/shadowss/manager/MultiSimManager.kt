@@ -101,7 +101,6 @@ class MultiSimManager(context: Context) {
                     val subIdLong = subscriberIdLongIndex.getOrNull(slotNumber)
                     val slot = touchSlot(slotNumber, subIdInt, subIdLong) ?: break
                     if (slot.indexIn(slots) in 0 until slotNumber) {
-                        // protect from Alcatel infinity bug
                         break
                     }
                     slots.add(slot)
@@ -113,7 +112,7 @@ class MultiSimManager(context: Context) {
                 e.toString()
             }
             slots.apply {
-                removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
+                removeAll { it.imsi == null }
                 val imsi = arrayListOf<String?>()
                 val iterator = iterator()
                 while (iterator.hasNext()) {
@@ -340,17 +339,17 @@ class MultiSimManager(context: Context) {
                 fieldReflect.isAccessible = accessible
                 result
             } else {
-                var classesParams: Array<Class<*>?>? = null
-                if (methodParams != null) {
-                    classesParams = arrayOfNulls(methodParams.size)
-                    for (i in methodParams.indices) {
-                        classesParams[i] = when {
-                            methodParams[i] is Int -> Int::class.javaPrimitiveType
-                            methodParams[i] is Long -> Long::class.javaPrimitiveType
-                            methodParams[i] is Boolean -> Boolean::class.javaPrimitiveType
-                            else -> methodParams[i].javaClass
-                        }
+                val classesParams = if (methodParams != null) {
+                    Array(methodParams.size) {
+                        when {
+                            methodParams[it] is Int -> Int::class.javaPrimitiveType
+                            methodParams[it] is Long -> Long::class.javaPrimitiveType
+                            methodParams[it] is Boolean -> Boolean::class.javaPrimitiveType
+                            else -> null
+                        } ?: methodParams[it].javaClass
                     }
+                } else {
+                    null
                 }
                 val method = if (classesParams != null) {
                     classInvoke.getDeclaredMethod(methodName.toString(), *classesParams)

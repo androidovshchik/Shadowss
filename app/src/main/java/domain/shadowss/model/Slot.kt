@@ -2,8 +2,10 @@ package domain.shadowss.model
 
 import android.annotation.TargetApi
 import android.os.Build
+import android.telephony.TelephonyManager
 import domain.shadowss.extension.isLollipopMR1Plus
 
+@Suppress("unused")
 class Slot {
 
     var imei: String? = null
@@ -27,7 +29,7 @@ class Slot {
     var mcc: String? = null
 
     val isActive: Boolean
-        get() = simStates.contains(5)
+        get() = simStates.contains(TelephonyManager.SIM_STATE_READY)
 
     fun getMCC(): String? {
         if (isLollipopMR1Plus() && mcc != null) {
@@ -49,8 +51,8 @@ class Slot {
     }
 
     fun indexIn(slots: List<Slot>): Int {
-        for (i in slots.indices) {
-            if (imei == slots[i].imei && imsi == slots[i].imsi && simSerialNumber == slots[i].simSerialNumber) {
+        for ((i, slot) in slots.withIndex()) {
+            if (imei == slot.imei && imsi == slot.imsi && simSerialNumber == slot.simSerialNumber && simOperator == slot.simOperator) {
                 return i
             }
         }
