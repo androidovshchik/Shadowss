@@ -38,13 +38,68 @@ class MultiSimManager(context: Context) {
         if (!areGranted(Manifest.permission.READ_PHONE_STATE)) {
             return null
         }
+        val telephonyManager = telephonyManager
         val slots = getSlots()
         synchronized(slots) {
             slots.clear()
             val error = try {
+                val subscriberIdIntValue = arrayListOf<String>()
+                val subscriberIdIntIndex = arrayListOf<Int>()
+                for (i in 0 until 100) {
+                    val subscriber = runMethodReflect(
+                        telephonyManager,
+                        "android.telephony.TelephonyManager",
+                        "getSubscriberId",
+                        arrayOf(i),
+                        null
+                    ) as? String
+                    if (subscriber != null && !subscriberIdIntValue.contains(subscriber)) {
+                        subscriberIdIntValue.add(subscriber)
+                        subscriberIdIntIndex.add(i)
+                    }
+                }
+                val subscriberIdLongValue = arrayListOf<String>()
+                val subscriberIdLongIndex = arrayListOf<Long>()
+                for (i in 0L until 100L) {
+                    runMethodReflect(
+                        telephonyManager,
+                        "android.telephony.TelephonyManagerSprd",
+                        "getSubInfoForSubscriber",
+                        arrayOf(i),
+                        null
+                    ) ?: continue
+                    val subscriber = runMethodReflect(
+                        telephonyManager,
+                        "android.telephony.TelephonyManager",
+                        "getSubscriberId",
+                        arrayOf(i),
+                        null
+                    ) as? String
+                    if (subscriber != null && !subscriberIdLongValue.contains(subscriber)) {
+                        subscriberIdLongValue.add(subscriber)
+                        subscriberIdLongIndex.add(i)
+                    }
+                }
+                if (subscriberIdLongIndex.size <= 0) {
+                    for (i in 0L until 100L) {
+                        val subscriber = runMethodReflect(
+                            telephonyManager,
+                            "android.telephony.TelephonyManager",
+                            "getSubscriberId",
+                            arrayOf(i),
+                            null
+                        ) as? String
+                        if (subscriber != null && !subscriberIdLongValue.contains(subscriber)) {
+                            subscriberIdLongValue.add(subscriber)
+                            subscriberIdLongIndex.add(i)
+                        }
+                    }
+                }
                 var slotNumber = 0
                 for (i in 0 until 100) {
-                    val slot = touchSlot(slotNumber) ?: break
+                    val subIdInt = subscriberIdIntIndex.getOrNull(slotNumber)
+                    val subIdLong = subscriberIdLongIndex.getOrNull(slotNumber)
+                    val slot = touchSlot(slotNumber, subIdInt, subIdLong) ?: break
                     slots.removeAll { it.imsi == null || it.simOperator?.trim()?.isEmpty() != false }
                     // remove duplicates
                     val imsi = arrayListOf<String?>()
@@ -82,28 +137,12 @@ class MultiSimManager(context: Context) {
 
     @Suppress("SpellCheckingInspection", "DEPRECATION")
     @SuppressLint("MissingPermission", "HardwareIds")
-    private fun touchSlot(slotNumber: Int): Slot? = reference.get()?.run {
+    private fun touchSlot(slotNumber: Int, subIdI: Int?, subIdL: Long?): Slot? =
+        reference.get()?.run {
         val telephonyManager = telephonyManager
         Timber.v("telephonyManager [$telephonyManager] ${telephonyManager.deviceId}")
-        val subscriberIdIntValue = arrayListOf<String>()
-        val subscriberIdIntIndex = arrayListOf<Int>()
-        for (i in 0 until 100) {
-            val subscriber = runMethodReflect(
-                telephonyManager,
-                "android.telephony.TelephonyManager",
-                "getSubscriberId",
-                arrayOf(i),
-                null
-            ) as? String
-            if (subscriber != null && !subscriberIdIntValue.contains(subscriber)) {
-                subscriberIdIntValue.add(subscriber)
-                subscriberIdIntIndex.add(i)
-            }
-        }
-        var subIdInt = subscriberIdIntIndex.getOrNull(slotNumber)
-        if (subIdInt == null) {
-            try {
-                subIdInt = runMethodReflect(
+            val subIdInt = subIdI ?: try {
+                runMethodReflect(
                     telephonyManager,
                     "android.telephony.TelephonyManager",
                     "getSubId",
@@ -111,56 +150,16 @@ class MultiSimManager(context: Context) {
                     null
                 ).toString().toInt()
             } catch (ignored: Throwable) {
-            }
+                null
         }
         Timber.v("subIdInt $subIdInt")
-        val subscriberIdLongValue = arrayListOf<String>()
-        val subscriberIdLongIndex = arrayListOf<Long>()
-        for (i in 0L until 100L) {
-            runMethodReflect(
-                telephonyManager,
-                "android.telephony.TelephonyManagerSprd",
-                "getSubInfoForSubscriber",
-                arrayOf(i),
-                null
-            ) ?: continue
-            val subscriber = runMethodReflect(
-                telephonyManager,
-                "android.telephony.TelephonyManager",
-                "getSubscriberId",
-                arrayOf(i),
-                null
-            ) as? String
-            if (subscriber != null && !subscriberIdLongValue.contains(subscriber)) {
-                subscriberIdLongValue.add(subscriber)
-                subscriberIdLongIndex.add(i)
-            }
-        }
-        if (subscriberIdLongIndex.size <= 0) {
-            for (i in 0L until 100L) {
-                val subscriber = runMethodReflect(
-                    telephonyManager,
-                    "android.telephony.TelephonyManager",
-                    "getSubscriberId",
-                    arrayOf(i),
-                    null
-                ) as? String
-                if (subscriber != null && !subscriberIdLongValue.contains(subscriber)) {
-                    subscriberIdLongValue.add(subscriber)
-                    subscriberIdLongIndex.add(i)
-                }
-            }
-        }
-        var subIdLong = subscriberIdLongIndex.getOrNull(slotNumber)
-        if (subIdLong == null) {
-            subIdLong = runMethodReflect(
+            val subIdLong = subIdL ?: runMethodReflect(
                 telephonyManager,
                 "android.telephony.TelephonyManager",
                 "getSubId",
                 arrayOf(slotNumber),
                 null
             ) as? Long
-        }
         Timber.v("subIdLong $subIdLong")
         val listParams = arrayListOf<Any>()
         if (subIdInt != null && !listParams.contains(subIdInt)) {

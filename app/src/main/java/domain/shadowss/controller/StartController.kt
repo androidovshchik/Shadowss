@@ -35,6 +35,9 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                     slots.forEach {
                         Timber.e(it.toString())
                     }
+                    if (slots.isEmpty()) {
+                        Timber.e(multiSimManager.allMethodsAndFields)
+                    }
                 }
             }, {
                 Timber.e(it)
