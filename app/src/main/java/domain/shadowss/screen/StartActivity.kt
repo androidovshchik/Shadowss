@@ -10,6 +10,7 @@ import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.ArrayAdapter
 import defpackage.marsh.RGI1Data
+import defpackage.marsh.SARR
 import defpackage.marsh.SARV
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
@@ -20,6 +21,8 @@ import domain.shadowss.screen.dialog.ErrorDialog
 import domain.shadowss.screen.view.replaceUnderline
 import domain.shadowss.screen.view.updateData
 import kotlinx.android.synthetic.main.activity_start.*
+import org.jetbrains.anko.intentFor
+import org.jetbrains.anko.newTask
 import org.jetbrains.anko.sdk19.listeners.onItemSelectedListener
 import org.jetbrains.anko.startActivity
 import org.kodein.di.generic.instance
@@ -42,6 +45,7 @@ class StartActivity : BaseActivity(), StartView {
 
     private val errorDialog: ErrorDialog by instance()
 
+    @Volatile
     private var isDriver = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,19 +96,20 @@ class StartActivity : BaseActivity(), StartView {
     }
 
     override fun onSuccess(data: Array<RGI1Data>) {
-        startActivity<RegistrationActivity>(
+        startActivity(
+            intentFor<RegistrationActivity>(
             RegistrationActivity.EXTRA_DRIVER to isDriver,
             RegistrationActivity.EXTRA_ARRAY to data
+            ).newTask()
         )
     }
 
     override fun onError(data: String, instance: Any?) {
         errorDialog.apply {
             txtData = data
-            marketLink = if (instance is SARV) {
-                instance.dataerr
-            } else {
-                null
+            when (instance) {
+                is SARV -> marketLink = instance.dataerr
+                is SARR -> msg0008 = instance.dataerr
             }
             runOnUiThread {
                 if (!isFinishing) {

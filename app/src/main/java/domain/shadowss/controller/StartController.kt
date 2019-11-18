@@ -94,66 +94,65 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         checkProgress("start_asrv", instance.rnd) {
             when (instance.error) {
                 "0" -> {
+                    state = "start_sim"
+                    val error = multiSimManager.updateInfo()
+                    val slots = multiSimManager.getSlots()
+                    synchronized(slots) {
+                        slots.forEach {
+                            Timber.i(it.toString())
+                        }
+                        if (error != null || slots.isEmpty() || slots.none { it.isActive }) {
+                            socketManager.apply {
+                                if (error != null) {
+                                    send(ASER().apply {
+                                        errortype = "sim"
+                                        dataerr = error
+                                    })
+                                }
+                                send(ASER().apply {
+                                    errortype = "sim"
+                                    dataerr = multiSimManager.allFields
+                                })
+                                send(ASER().apply {
+                                    errortype = "sim"
+                                    dataerr = multiSimManager.allMethods
+                                })
+                            }
+                            onError("[[MSG,0006]]")
+                            return
+                        }
+                        if (slots.none { it.getMCC()?.length == 3 }) {
+                            socketManager.send(ASER().apply {
+                                errortype = "mcc"
+                                dataerr = "${slots[0].getMCC()},${slots.getOrNull(1)?.getMCC()}"
+                            })
+                            onError("[[MSG,0007]]")
+                            return
+                        }
+                    }
+                    socketManager.send(ASRR().apply {
+                        rnd = nextProgress("start_asrr")
+                    })
+                    disposable.add(
+                        Single.just(true)
+                            .delay(5000L, TimeUnit.MILLISECONDS)
+                            .subscribe({
+                                checkProgress("start_asrr") {
+                                    onError("[[MSG,0009]]")
+                                }
+                            }, {
+                                Timber.e(it)
+                            })
+                    )
+                    true
                 }
                 "0010" -> {
                     onError("[[MSG,0010]]", instance)
-                    return
                 }
                 else -> {
                     onError(instance.error)
-                    return
                 }
             }
-            nextProgress("start_sim")
-            val error = multiSimManager.updateInfo()
-            val slots = multiSimManager.getSlots()
-            synchronized(slots) {
-                slots.forEach {
-                    Timber.i(it.toString())
-                }
-                if (error != null || slots.isEmpty() || slots.none { it.isActive }) {
-                    socketManager.apply {
-                        if (error != null) {
-                            send(ASER().apply {
-                                errortype = "sim"
-                                dataerr = error
-                            })
-                        }
-                        send(ASER().apply {
-                            errortype = "sim"
-                            dataerr = multiSimManager.allFields
-                        })
-                        send(ASER().apply {
-                            errortype = "sim"
-                            dataerr = multiSimManager.allMethods
-                        })
-                    }
-                    onError("[[MSG,0006]]")
-                    return
-                }
-                if (slots.none { it.getMCC()?.length == 3 }) {
-                    socketManager.send(ASER().apply {
-                        errortype = "mcc"
-                        dataerr = "${slots[0].getMCC()},${slots.getOrNull(1)?.getMCC()}"
-                    })
-                    onError("[[MSG,0007]]")
-                    return
-                }
-            }
-            socketManager.send(ASRR().apply {
-                rnd = nextProgress("start_asrr")
-            })
-            disposable.add(Single.just(true)
-                .delay(5000L, TimeUnit.MILLISECONDS)
-                .subscribe({
-                    checkProgress("start_asrr") {
-                        onError("[[MSG,0009]]")
-                    }
-                }, {
-                    Timber.e(it)
-                })
-            )
-            true
         }
     }
 
@@ -161,19 +160,17 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         checkProgress("start_asrr", instance.rnd) {
             when (instance.error) {
                 "0" -> {
+                    resetProgress()
+                    reference.get()?.onSuccess(instance.data)
+                    true
                 }
                 "0008" -> {
                     onError("[[MSG,0008]]", instance)
-                    return
                 }
                 else -> {
                     onError(instance.error)
-                    return
                 }
             }
-            resetProgress()
-            reference.get()?.onSuccess()
-            true
         }
     }
 
