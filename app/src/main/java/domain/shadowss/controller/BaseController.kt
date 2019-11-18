@@ -39,7 +39,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     protected val socketManager: WebSocketManager by instance()
 
     @Volatile
-    protected var random = 0
+    protected var random: Short = 0
 
     @Volatile
     protected var state: String? = null
@@ -48,13 +48,11 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
         nextRandom()
     }
 
-    protected fun checkRandom(number: Int) = random == number
-
-    protected fun checkRandom(number: Short) = checkRandom(number.toInt())
+    protected fun checkRandom(number: Short) = random == number
 
     protected fun nextRandom(): Short {
-        random = (1..32_000).random()
-        return random.toShort()
+        random = (1..32_000).random().toShort()
+        return random
     }
 
     protected inline fun checkProgress(value: String?, block: () -> Boolean): Boolean {

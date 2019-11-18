@@ -8,9 +8,11 @@ import domain.shadowss.extension.isConnected
 import domain.shadowss.local.Preferences
 import domain.shadowss.manager.MultiSimManager
 import domain.shadowss.screen.StartView
+import io.reactivex.Single
 import org.jetbrains.anko.connectivityManager
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 class StartController(referent: StartView) : Controller<StartView>(referent) {
 
@@ -21,6 +23,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     @Volatile
     private var attempts = 0
 
+    // ui thread
     private val aspiRunnable = object : Runnable {
 
         override fun run() {
@@ -70,17 +73,38 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     override fun onSAPO(instance: SAPO) {
         checkProgress("start_aspi", instance.rnd) {
-            nextProgress("start_sim")
             socketManager.send(ASRV().apply {
-                rnd = nextRandom()
+                rnd = nextProgress("start_asrv")
             })
+            disposable.add(Single.just(true)
+                .delay(5000L, TimeUnit.MILLISECONDS)
+                .subscribe({
+                    checkProgress("start_asrv") {
+                        onError("[[MSG,0009]]")
+                        false
+                    }
+                }, {
+                    Timber.e(it)
+                })
+            )
             true
         }
     }
 
     override fun onSARV(instance: SARV) {
-        checkProgress("start_aspi", instance.rnd) {
+        checkProgress("start_asrv", instance.rnd) {
             nextProgress("start_sim")
+            when (instance.error) {
+                "0" -> {
+
+                }
+                "0008" -> {
+
+                }
+                else -> {
+
+                }
+            }
             val error = multiSimManager.updateInfo()
             val slots = multiSimManager.getSlots()
             synchronized(slots) {
