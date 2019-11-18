@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
+import defpackage.watchLeaks
 import domain.shadowss.controller.ControllerReference
 import org.jetbrains.anko.powerManager
 import org.kodein.di.KodeinAware
@@ -34,6 +35,11 @@ abstract class BaseService : Service(), KodeinAware, BaseWorker {
                 acquire()
             }
         }
+    }
+
+    override fun onDestroy() {
+        watchLeaks(this)
+        super.onDestroy()
     }
 
     protected fun releaseWakeLock() {

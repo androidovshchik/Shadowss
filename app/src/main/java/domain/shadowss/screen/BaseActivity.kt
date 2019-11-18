@@ -3,6 +3,7 @@ package domain.shadowss.screen
 import android.app.Activity
 import android.content.Intent
 import android.view.MenuItem
+import defpackage.watchLeaks
 import domain.shadowss.controller.Controller
 import domain.shadowss.controller.ControllerReference
 import domain.shadowss.manager.LocationManager
@@ -79,8 +80,17 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
         super.onStop()
     }
 
+    protected inline fun onUiThread(crossinline action: () -> Unit) {
+        runOnUiThread {
+            if (!isFinishing) {
+                action()
+            }
+        }
+    }
+
     override fun onDestroy() {
         controller.release()
+        watchLeaks(this)
         super.onDestroy()
     }
 }

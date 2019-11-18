@@ -111,10 +111,8 @@ class StartActivity : BaseActivity(), StartView {
                 is SARV -> marketLink = instance.dataerr
                 is SARR -> msg0008 = instance.dataerr
             }
-            runOnUiThread {
-                if (!isFinishing) {
-                    show()
-                }
+            onUiThread {
+                show()
             }
         }
     }

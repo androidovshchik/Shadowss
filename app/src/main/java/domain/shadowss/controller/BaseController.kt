@@ -5,7 +5,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
+import domain.shadowss.BuildConfig
 import domain.shadowss.extension.areGranted
 import domain.shadowss.extension.isMarshmallowPlus
 import domain.shadowss.extension.isOreoPlus
@@ -130,6 +132,13 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
             }
         }
         true
+    }
+
+    fun checkRoot(context: Context): Boolean {
+        return RootBeer(context.applicationContext).run {
+            setLogging(BuildConfig.DEBUG)
+            !isRootedWithoutBusyBoxCheck
+        }
     }
 
     override fun onSAPI(instance: SAPI) {}

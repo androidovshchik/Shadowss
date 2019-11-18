@@ -2,7 +2,6 @@ package domain.shadowss.controller
 
 import android.content.Context
 import android.os.Handler
-import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
 import domain.shadowss.extension.isConnected
 import domain.shadowss.local.Preferences
@@ -46,7 +45,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         return checkProgress(null) {
             state = "start_none"
             attempts = 0
-            if (!RootBeer(context).isRootedWithoutBusyBoxCheck) {
+            if (checkRoot(context)) {
                 if (checkRights(context)) {
                     if (preferences.agree) {
                         if (context.connectivityManager.isConnected) {
