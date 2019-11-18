@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import domain.shadowss.R
+import domain.shadowss.screen.view.replaceUnderline
 import domain.shadowss.screen.view.setData
 import domain.shadowss.screen.view.updateData
 import kotlinx.android.synthetic.main.dialog_error.*
@@ -20,6 +21,9 @@ class ErrorDialog(activity: Activity) : BaseDialog(activity) {
 
     @Volatile
     var marketLink: String? = null
+
+    @Volatile
+    var msg0008: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +39,18 @@ class ErrorDialog(activity: Activity) : BaseDialog(activity) {
         super.onShow(dialog)
         dialog_title.updateData()
         txtData?.let {
-            it.split(",")[1].apply {
-                dialog_code.text = substring(0, indexOf("]]"))
+            dialog_code.text = try {
+                it.substring(it.indexOf("[[") + 2, it.indexOf("]]")).split(",")[1]
+            } catch (e: Throwable) {
+                Timber.e(e)
+                null
             }
             dialog_text.setData(it)
+            msg0008?.let { msg ->
+                dialog_text.replaceUnderline(msg, "${dialog_text.text}$msg")
+                msg0008 = null
+            }
+            txtData = null
         } ?: resetWidgets()
         dialog_close.apply {
             dialog_close.visibility = View.GONE
