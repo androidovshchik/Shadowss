@@ -160,6 +160,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     }
 
     open fun release() {
+        resetProgress()
         disposable.dispose()
         reference.clear()
     }

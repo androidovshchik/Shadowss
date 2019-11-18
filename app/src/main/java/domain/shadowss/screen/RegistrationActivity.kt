@@ -9,13 +9,17 @@ import domain.shadowss.controller.RegistrationController
 import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.activity_registration.*
 import kotlinx.android.synthetic.main.toolbar.*
-import org.jetbrains.anko.startActivity
 import org.kodein.di.generic.instance
 import ru.tinkoff.decoro.MaskImpl
 import ru.tinkoff.decoro.parser.UnderscoreDigitSlotsParser
 import ru.tinkoff.decoro.watchers.MaskFormatWatcher
 
-interface RegistrationView : BaseView
+interface RegistrationView : BaseView {
+
+    fun onSuccess()
+
+    fun onError(data: String, instance: Any? = null)
+}
 
 class RegistrationActivity : BaseActivity(), RegistrationView {
 
@@ -42,8 +46,14 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
             formatWatcher.installOn(it)
         }
         btn_next.setOnClickListener {
-            startActivity<DriverActivity>()
+            controller.onContinue(applicationContext)
         }
+    }
+
+    override fun onSuccess() {
+    }
+
+    override fun onError(data: String, instance: Any?) {
     }
 
     companion object {

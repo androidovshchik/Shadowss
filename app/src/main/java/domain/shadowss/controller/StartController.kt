@@ -2,8 +2,8 @@ package domain.shadowss.controller
 
 import android.content.Context
 import android.os.Handler
+import com.scottyab.rootbeer.RootBeer
 import defpackage.marsh.*
-import domain.shadowss.MainApp
 import domain.shadowss.extension.isConnected
 import domain.shadowss.local.Preferences
 import domain.shadowss.manager.MultiSimManager
@@ -46,7 +46,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
         return checkProgress(null) {
             state = "start_none"
             attempts = 0
-            if (!MainApp.isRooted) {
+            if (!RootBeer(context).isRootedWithoutBusyBoxCheck) {
                 if (checkRights(context)) {
                     if (preferences.agree) {
                         if (context.connectivityManager.isConnected) {
@@ -133,7 +133,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                             rnd = nextProgress("start_asrr")
                             mcc1 = slots[0].getMCC().toString()
                             mcc2 = slots.getOrNull(1)?.getMCC().toString()
-                            lang = slots[0].simCountryIso.toString()
+                            lang = preferences.language.toString()
                         })
                     }
                     disposable.add(
@@ -176,6 +176,8 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
             }
         }
     }
+
+    override fun stop() {}
 
     private fun onError(data: String, instance: Any? = null): Boolean {
         reference.get()?.onError(data, instance)

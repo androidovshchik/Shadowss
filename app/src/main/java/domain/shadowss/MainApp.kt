@@ -5,7 +5,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import com.scottyab.rootbeer.RootBeer
 import defpackage.noopInit
 import domain.shadowss.controller.controllerModule
 import domain.shadowss.extension.isOreoPlus
@@ -45,12 +44,5 @@ class MainApp : Application(), KodeinAware {
             )
         }
         ForegroundRunnable(applicationContext).run()
-        isRooted = RootBeer(applicationContext).isRootedWithoutBusyBoxCheck
-    }
-
-    companion object {
-
-        @Volatile
-        var isRooted = false
     }
 }

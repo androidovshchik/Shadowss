@@ -49,7 +49,7 @@ class MainService : BaseService(), MainWorker {
                     disconnect()
                 }
             }
-        }, 0L, 2000L, TimeUnit.MILLISECONDS)
+        }, 0L, 20_000L, TimeUnit.MILLISECONDS)
     }
 
     override fun onDestroy() {
