@@ -15,7 +15,7 @@ import org.kodein.di.android.closestKodein
 import javax.annotation.OverridingMethodsMustInvokeSuper
 
 @Suppress("LeakingThis", "MemberVisibilityCanBePrivate")
-abstract class BaseDialog(activity: Activity) : Dialog(activity), KodeinAware,
+abstract class BaseDialog(activity: Activity, theme: Int) : Dialog(activity, theme), KodeinAware,
     DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
 
     override val kodein by closestKodein(activity)
