@@ -163,7 +163,9 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
             when (instance.error) {
                 "0" -> {
                     resetProgress()
-                    reference.get()?.onSuccess(instance.data)
+                    if (instance.data.isNotEmpty()) {
+                        reference.get()?.onSuccess(instance.data)
+                    }
                     true
                 }
                 "0008" -> {

@@ -17,9 +17,12 @@ import kotlinx.android.synthetic.main.toolbar.*
 import org.jetbrains.anko.sdk19.listeners.onItemSelectedListener
 import org.kodein.di.generic.instance
 import ru.tinkoff.decoro.MaskImpl
+import ru.tinkoff.decoro.parser.UnderscoreDigitSlotsParser
 import ru.tinkoff.decoro.watchers.MaskFormatWatcher
 
 interface RegistrationView : BaseView {
+
+    var phone: String
 
     fun onWait()
 
@@ -37,6 +40,9 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     private val overflowDialog: OverflowDialog by instance()
 
     private lateinit var formatWatcher: MaskFormatWatcher
+
+    @Volatile
+    override var phone = ""
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,13 +69,15 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
             it.setSelection(0, false)
             it.onItemSelectedListener {
                 onItemSelected { _, _, position, _ ->
-
+                    updatePhone(data[position])
                 }
             }
         }
-        updatePhone()
+        updatePhone(data[0])
         btn_next.setOnClickListener {
-            controller.onContinue(applicationContext)
+            if (controller.onContinue(applicationContext)) {
+                phone = et_phone.text.toString()
+            }
         }
         controller.checkRights(this)
     }
@@ -98,9 +106,11 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
         }
     }
 
-    private fun updatePhone(mask: MaskImpl, hint: String) {
+    private fun updatePhone(item: RGI1Data) {
+        val raw = "${item.regcode} ${item.numex.replace("[^\\s]".toRegex(), "_")}"
+        val mask = MaskImpl.createTerminated(UnderscoreDigitSlotsParser().parseSlots(raw))
         et_phone.let {
-            it.hint = hint
+            it.hint = "${item.regcode} ${item.numex}"
             if (!::formatWatcher.isInitialized) {
                 formatWatcher = MaskFormatWatcher(mask).apply {
                     installOn(it)
