@@ -26,7 +26,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     private val aspiRunnable = object : Runnable {
 
         override fun run() {
-            checkProgress("start_aspi") {
+            checkProgress("aspi") {
                 if (attempts < MAX_ATTEMPTS) {
                     attempts++
                     socketManager.send(ASPI().apply {
@@ -43,13 +43,13 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     fun onChoice(context: Context): Boolean {
         return checkProgress(null) {
-            state = "start_none"
+            state = "none"
             attempts = 0
             if (checkRoot(context)) {
                 if (checkRights(context)) {
                     if (preferences.agree) {
                         if (context.connectivityManager.isConnected) {
-                            nextProgress("start_aspi")
+                            nextProgress("aspi")
                             aspiRunnable.run()
                             true
                         } else {
@@ -71,14 +71,14 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     }
 
     override fun onSAPO(instance: SAPO) {
-        checkProgress("start_aspi", instance.rnd) {
+        checkProgress("aspi", instance.rnd) {
             socketManager.send(ASRV().apply {
-                rnd = nextProgress("start_asrv")
+                rnd = nextProgress("asrv")
             })
             disposable.add(Single.just(true)
                 .delay(5000L, TimeUnit.MILLISECONDS)
                 .subscribe({
-                    checkProgress("start_asrv") {
+                    checkProgress("asrv") {
                         onError("[[MSG,0009]]")
                     }
                 }, {
@@ -90,10 +90,10 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     }
 
     override fun onSARV(instance: SARV) {
-        checkProgress("start_asrv", instance.rnd) {
+        checkProgress("asrv", instance.rnd) {
             when (instance.error) {
                 "0" -> {
-                    state = "start_sim"
+                    state = "sim"
                     val error = multiSimManager.updateInfo()
                     val slots = multiSimManager.getSlots()
                     synchronized(slots) {
@@ -129,7 +129,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                             return
                         }
                         socketManager.send(ASRR().apply {
-                            rnd = nextProgress("start_asrr")
+                            rnd = nextProgress("asrr")
                             mcc1 = slots[0].getMCC().toString()
                             mcc2 = slots.getOrNull(1)?.getMCC().toString()
                             lang = preferences.language.toString()
@@ -139,7 +139,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                         Single.just(true)
                             .delay(5000L, TimeUnit.MILLISECONDS)
                             .subscribe({
-                                checkProgress("start_asrr") {
+                                checkProgress("asrr") {
                                     onError("[[MSG,0009]]")
                                 }
                             }, {
@@ -159,7 +159,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
     }
 
     override fun onSARR(instance: SARR) {
-        checkProgress("start_asrr", instance.rnd) {
+        checkProgress("asrr", instance.rnd) {
             when (instance.error) {
                 "0" -> {
                     resetProgress()

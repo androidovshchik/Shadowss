@@ -75,8 +75,15 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
         }
         updatePhone(data[0])
         btn_next.setOnClickListener {
-            if (controller.onContinue(applicationContext)) {
-                phone = et_phone.text.toString()
+            val numbers = et_phone.text.toString()
+                .replace("[+\\-() ]".toRegex(), "")
+            val item = data[spn_country.selectedItemPosition]
+            if (numbers.length - item.regcode.length + 3 in item.min..item.max) {
+                if (controller.onContinue(applicationContext)) {
+                    phone = numbers
+                }
+            } else {
+                onError("[[MSG,0011]]")
             }
         }
         controller.checkRights(this)
