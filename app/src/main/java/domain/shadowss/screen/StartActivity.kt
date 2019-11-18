@@ -98,8 +98,8 @@ class StartActivity : BaseActivity(), StartView {
     override fun onSuccess(data: Array<RGI1Data>) {
         startActivity(
             intentFor<RegistrationActivity>(
-            RegistrationActivity.EXTRA_DRIVER to isDriver,
-            RegistrationActivity.EXTRA_ARRAY to data
+                RegistrationActivity.EXTRA_DRIVER to isDriver,
+                RegistrationActivity.EXTRA_ARRAY to data
             ).newTask()
         )
     }

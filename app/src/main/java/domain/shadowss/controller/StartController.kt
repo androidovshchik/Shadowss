@@ -129,10 +129,13 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                             onError("[[MSG,0007]]")
                             return
                         }
+                        socketManager.send(ASRR().apply {
+                            rnd = nextProgress("start_asrr")
+                            mcc1 = slots[0].getMCC().toString()
+                            mcc2 = slots.getOrNull(1)?.getMCC().toString()
+                            lang = slots[0].simCountryIso.toString()
+                        })
                     }
-                    socketManager.send(ASRR().apply {
-                        rnd = nextProgress("start_asrr")
-                    })
                     disposable.add(
                         Single.just(true)
                             .delay(5000L, TimeUnit.MILLISECONDS)
