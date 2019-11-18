@@ -31,7 +31,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                 if (attempts < MAX_ATTEMPTS) {
                     attempts++
                     socketManager.send(ASPI().apply {
-                        rnd = nextRandom()
+                        rnd = random
                     })
                     Handler().postDelayed(this, 2000)
                     true
@@ -44,7 +44,7 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     fun onChoice(context: Context): Boolean {
         return checkProgress(null) {
-            nextProgress("start_none")
+            state = "start_none"
             attempts = 0
             if (!MainApp.isRooted) {
                 if (checkRights(context)) {
@@ -81,7 +81,6 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                 .subscribe({
                     checkProgress("start_asrv") {
                         onError("[[MSG,0009]]")
-                        false
                     }
                 }, {
                     Timber.e(it)
@@ -93,18 +92,19 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
 
     override fun onSARV(instance: SARV) {
         checkProgress("start_asrv", instance.rnd) {
-            nextProgress("start_sim")
             when (instance.error) {
                 "0" -> {
-
                 }
-                "0008" -> {
-
+                "0010" -> {
+                    onError("[[MSG,0010]]", instance)
+                    return
                 }
                 else -> {
-
+                    onError(instance.error)
+                    return
                 }
             }
+            nextProgress("start_sim")
             val error = multiSimManager.updateInfo()
             val slots = multiSimManager.getSlots()
             synchronized(slots) {
@@ -140,39 +140,40 @@ class StartController(referent: StartView) : Controller<StartView>(referent) {
                     return
                 }
             }
-            socketManager.send(ASPI().apply {
-                rnd = nextProgress("start_asrv")
+            socketManager.send(ASRR().apply {
+                rnd = nextProgress("start_asrr")
             })
-            true
-        }
-        checkProgress("start_asrv", instance.rnd) {
-            nextProgress("start_asrr")
-            when (instance.error) {
-                "0" -> {
-                    //reference.get()?.onSuccess()
-                }
-                "0010" -> {
-                    reference.get()?.onError()
-                }
-                else -> {
-                    reference.get()?.onError()
-                }
-            }
+            disposable.add(Single.just(true)
+                .delay(5000L, TimeUnit.MILLISECONDS)
+                .subscribe({
+                    checkProgress("start_asrr") {
+                        onError("[[MSG,0009]]")
+                    }
+                }, {
+                    Timber.e(it)
+                })
+            )
             true
         }
     }
 
     override fun onSARR(instance: SARR) {
-        when (instance.error) {
-            "0" -> {
-
+        checkProgress("start_asrr", instance.rnd) {
+            when (instance.error) {
+                "0" -> {
+                }
+                "0008" -> {
+                    onError("[[MSG,0008]]", instance)
+                    return
+                }
+                else -> {
+                    onError(instance.error)
+                    return
+                }
             }
-            "0008" -> {
-
-            }
-            else -> {
-
-            }
+            resetProgress()
+            reference.get()?.onSuccess()
+            true
         }
     }
 
