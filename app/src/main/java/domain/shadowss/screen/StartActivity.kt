@@ -51,6 +51,7 @@ class StartActivity : BaseActivity(), StartView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        kodeinTrigger.trigger()
         setContentView(R.layout.activity_start)
         spn_language.let {
             val keys = Language.map.keys.toTypedArray()
@@ -94,7 +95,6 @@ class StartActivity : BaseActivity(), StartView {
             }
         }
         controller.checkRights(this)
-        kodeinTrigger.trigger()
     }
 
     override fun onSuccess(data: Array<RGI1Data>) {
