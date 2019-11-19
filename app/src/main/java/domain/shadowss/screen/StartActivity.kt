@@ -109,7 +109,7 @@ class StartActivity : BaseActivity(), StartView {
             txtData = data
             when (instance) {
                 is SARV -> marketLink = instance.dataerr
-                is SARR -> msg0008 = instance.dataerr
+                is SARR -> msg = instance.dataerr
             }
             onUiThread {
                 show()

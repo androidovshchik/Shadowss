@@ -5,8 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import defpackage.marsh.RGI1Data
-import defpackage.marsh.SARR
-import defpackage.marsh.SARV
+import defpackage.marsh.SARM
 import domain.shadowss.R
 import domain.shadowss.controller.RegistrationController
 import domain.shadowss.screen.dialog.ErrorDialog
@@ -14,6 +13,9 @@ import domain.shadowss.screen.dialog.OverflowDialog
 import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.activity_registration.*
 import kotlinx.android.synthetic.main.toolbar.*
+import org.jetbrains.anko.clearTask
+import org.jetbrains.anko.intentFor
+import org.jetbrains.anko.newTask
 import org.jetbrains.anko.sdk19.listeners.onItemSelectedListener
 import org.kodein.di.generic.instance
 import ru.tinkoff.decoro.MaskImpl
@@ -22,7 +24,11 @@ import ru.tinkoff.decoro.watchers.MaskFormatWatcher
 
 interface RegistrationView : BaseView {
 
-    var phone: String
+    var regCode: String
+
+    var mobilePhone: String
+
+    var userType: Int
 
     fun onWait()
 
@@ -42,7 +48,13 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     private lateinit var formatWatcher: MaskFormatWatcher
 
     @Volatile
-    override var phone = ""
+    override var regCode = ""
+
+    @Volatile
+    override var mobilePhone = ""
+
+    @Volatile
+    override var userType = 0
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,14 +110,17 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     }
 
     override fun onSuccess() {
+        when (userType) {
+            1 -> startActivity(intentFor<ManagerActivity>().clearTask().newTask())
+            2 -> startActivity(intentFor<DriverActivity>().clearTask().newTask())
+        }
     }
 
     override fun onError(data: String, instance: Any?) {
         errorDialog.apply {
             txtData = data
             when (instance) {
-                is SARV -> marketLink = instance.dataerr
-                is SARR -> msg0008 = instance.dataerr
+                is SARM -> msg = instance.dataerr
             }
             onUiThread {
                 show()
