@@ -8,7 +8,7 @@ import domain.shadowss.controller.MainController
 import domain.shadowss.extension.isConnected
 import domain.shadowss.extension.isRunning
 import domain.shadowss.extension.startForegroundService
-import domain.shadowss.manager.WebSocketManager
+import domain.shadowss.manager.SocketManager
 import org.jetbrains.anko.activityManager
 import org.jetbrains.anko.connectivityManager
 import org.jetbrains.anko.startService
@@ -24,7 +24,7 @@ class MainService : BaseService(), MainWorker {
 
     private val controller: MainController by instance()
 
-    private val socketManager: WebSocketManager by instance()
+    private val socketManager: SocketManager by instance()
 
     private var timer: ScheduledFuture<*>? = null
 

@@ -27,7 +27,7 @@ import java.net.NetworkInterface
 import kotlin.ByteArray
 
 @Suppress("SpellCheckingInspection")
-interface WebSocketCallback {
+interface SocketCallback {
 
     fun onSAPI(instance: SAPI)
 
@@ -45,7 +45,7 @@ interface WebSocketCallback {
 }
 
 @Suppress("MemberVisibilityCanBePrivate", "SpellCheckingInspection")
-class WebSocketManager(context: Context) {
+class SocketManager(context: Context) {
 
     val observer = PublishSubject.create<Any>().toSerialized()
 
@@ -83,6 +83,10 @@ class WebSocketManager(context: Context) {
             closedByServer: Boolean
         ) {
             Timber.d("onDisconnected")
+        }
+
+        override fun onError(websocket: WebSocket?, cause: WebSocketException?) {
+            Timber.e(cause)
         }
     }
 

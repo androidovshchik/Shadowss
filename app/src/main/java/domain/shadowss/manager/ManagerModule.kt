@@ -9,8 +9,8 @@ val managerModule = Kodein.Module("manager") {
         MultiSimManager(instance())
     }
 
-    bind<WebSocketManager>() with singleton {
-        WebSocketManager(instance())
+    bind<SocketManager>() with singleton {
+        SocketManager(instance())
     }
 
     bind<LocationManager>() with singleton {
