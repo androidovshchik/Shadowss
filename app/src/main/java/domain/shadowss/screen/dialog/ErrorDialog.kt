@@ -24,7 +24,7 @@ class ErrorDialog(activity: Activity) :
     var marketLink: String? = null
 
     @Volatile
-    var msg0008: String? = null
+    var msg: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,9 +47,9 @@ class ErrorDialog(activity: Activity) :
                 null
             }
             dialog_text.setData(it)
-            msg0008?.let { msg ->
-                dialog_text.replaceUnderline(msg, "${dialog_text.text}$msg")
-                msg0008 = null
+            msg?.let { m ->
+                dialog_text.replaceUnderline(m)
+                msg = null
             }
             txtData = null
         } ?: resetWidgets()

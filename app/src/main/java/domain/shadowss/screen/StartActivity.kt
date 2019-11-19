@@ -125,7 +125,7 @@ class StartActivity : BaseActivity(), StartView {
         }
         tv_terms.apply {
             val start = text.indexOf("\u2009") + 1
-            val result = replaceUnderline(appName, "$text$appName")
+            val result = replaceUnderline(appName)
             text = SpannableStringBuilder(result).apply {
                 setSpan(object : ClickableSpan() {
 

@@ -39,7 +39,10 @@ fun LanguageView.updateData() {
 }
 
 @SuppressLint("Recycle")
-fun LanguageView.replaceUnderline(value: String, default: CharSequence = getText()): CharSequence {
+fun LanguageView.replaceUnderline(
+    value: String,
+    default: CharSequence = "${getText()}$value"
+): CharSequence {
     val text = getText().replace(underlineRegex, value)
     setText(if (text.contains(value)) text else default)
     return getText()

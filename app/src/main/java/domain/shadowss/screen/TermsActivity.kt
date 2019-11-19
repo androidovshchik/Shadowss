@@ -33,7 +33,7 @@ class TermsActivity : BaseActivity(), TermsView {
                 marginStart = dip(40)
             }
             setData("[[TOP,0000]]")
-            replaceUnderline(appName, "$text$appName")
+            replaceUnderline(appName)
         }
         assets.open("terms.html")
             .bufferedReader().use {
