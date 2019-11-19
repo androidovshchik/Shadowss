@@ -1,14 +1,30 @@
 package domain.shadowss.controller
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.database.Cursor
+import android.net.Uri
 import android.os.Handler
+import android.telecom.TelecomManager
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
+import androidx.loader.content.CursorLoader
 import defpackage.marsh.*
 import domain.shadowss.extension.isConnected
+import domain.shadowss.extension.isPiePlus
 import domain.shadowss.manager.MultiSimManager
 import domain.shadowss.screen.RegistrationView
 import org.jetbrains.anko.connectivityManager
 import org.kodein.di.generic.instance
 import timber.log.Timber
+
+class CursorCalls(context: Context) : CursorLoader(context) {
+
+    override fun loadInBackground(): Cursor? {
+        val calls = Uri.parse("content://call_log/calls")
+        return context.contentResolver.query(calls, null, null, null, null)
+    }
+}
 
 class RegistrationController(referent: RegistrationView) : Controller<RegistrationView>(referent) {
 
@@ -16,6 +32,19 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
 
     @Volatile
     private var attempts = 0
+
+    private val phoneStateListener = object : PhoneStateListener() {
+
+        override fun onCallStateChanged(state: Int, incomingNumber: String) {
+            when (state) {
+                TelephonyManager.CALL_STATE_IDLE -> {
+                    Timber.v("onCallStateChanged: CALL_STATE_IDLE")
+                }
+                TelephonyManager.CALL_STATE_OFFHOOK -> Timber.v("onCallStateChanged: CALL_STATE_OFFHOOK")
+                else -> Timber.v("onCallStateChanged: $state")
+            }
+        }
+    }
 
     // ui thread
     private val aspiRunnable = object : Runnable {
@@ -59,6 +88,7 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
                 onError("[[MSG,0005]]")
             }
         }
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
     }
 
     override fun onSAPO(instance: SAPO) {
@@ -120,8 +150,8 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
         checkProgress("asrm", instance.rnd) {
             when (instance.error) {
                 "0" -> {
-                    resetProgress()
                     reference.get()?.onSuccess()
+                    resetProgress()
                     true
                 }
                 "0013" -> {
@@ -140,6 +170,25 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
         reference.get()?.onError(data, instance)
         resetProgress()
         return false
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun Context.killCall() {
+        if (isPiePlus()) {
+            val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+            telecomManager.endCall()
+        } else {
+            try {
+                val method = javaClass.getDeclaredMethod("getITelephony")
+                method.isAccessible = true
+                val iTelephony = method.invoke(this)
+                iTelephony.javaClass
+                    .getDeclaredMethod("endCall")
+                    .invoke(iTelephony)
+            } catch (e: Throwable) {
+                Timber.e(e)
+            }
+        }
     }
 
     companion object {
