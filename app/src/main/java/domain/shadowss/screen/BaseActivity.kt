@@ -38,13 +38,17 @@ abstract class BaseActivity : Activity(), KodeinAware, BaseView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        preferences.apply {
-            if (token != null) {
-                when (user) {
-                    User.MANAGER.id -> startActivity(intentFor<ManagerActivity>())
-                    User.DRIVER.id -> startActivity(intentFor<DriverActivity>())
+        when (this) {
+            !is ManagerActivity, !is DriverActivity -> {
+                preferences.apply {
+                    if (token != null) {
+                        when (user) {
+                            User.MANAGER.id -> startActivity(intentFor<ManagerActivity>())
+                            User.DRIVER.id -> startActivity(intentFor<DriverActivity>())
+                        }
+                        finish()
+                    }
                 }
-                finish()
             }
         }
     }
