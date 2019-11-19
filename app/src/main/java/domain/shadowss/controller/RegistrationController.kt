@@ -2,13 +2,10 @@ package domain.shadowss.controller
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.database.Cursor
-import android.net.Uri
 import android.os.Handler
 import android.telecom.TelecomManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
-import androidx.loader.content.CursorLoader
 import defpackage.marsh.*
 import domain.shadowss.extension.isConnected
 import domain.shadowss.extension.isPiePlus
@@ -17,14 +14,6 @@ import domain.shadowss.screen.RegistrationView
 import org.jetbrains.anko.connectivityManager
 import org.kodein.di.generic.instance
 import timber.log.Timber
-
-class CursorCalls(context: Context) : CursorLoader(context) {
-
-    override fun loadInBackground(): Cursor? {
-        val calls = Uri.parse("content://call_log/calls")
-        return context.contentResolver.query(calls, null, null, null, null)
-    }
-}
 
 class RegistrationController(referent: RegistrationView) : Controller<RegistrationView>(referent) {
 

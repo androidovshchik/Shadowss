@@ -12,8 +12,8 @@ import domain.shadowss.extension.areGranted
 import domain.shadowss.extension.isMarshmallowPlus
 import domain.shadowss.extension.isOreoPlus
 import domain.shadowss.extension.requestPermissions
-import domain.shadowss.manager.WebSocketCallback
-import domain.shadowss.manager.WebSocketManager
+import domain.shadowss.manager.SocketCallback
+import domain.shadowss.manager.SocketManager
 import io.reactivex.disposables.CompositeDisposable
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.powerManager
@@ -29,8 +29,7 @@ typealias Controller<T> = BaseController<T>
 interface ControllerReference
 
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAware,
-    WebSocketCallback {
+abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAware, SocketCallback {
 
     override val kodein by closestKodein(referent as Context)
 
@@ -38,7 +37,9 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
 
     protected val disposable = CompositeDisposable()
 
-    protected val socketManager: WebSocketManager by instance()
+    protected val socketDisposable = CompositeDisposable()
+
+    protected val socketManager: SocketManager by instance()
 
     @Volatile
     protected var random: Short = 0
@@ -87,7 +88,8 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     }
 
     open fun start() {
-        disposable.add(socketManager.observer
+        socketDisposable.add(
+            socketManager.observer
             .subscribe({ instance ->
                 when (instance) {
                     is SAPI -> onSAPI(instance)
@@ -156,7 +158,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     override fun onSMNG(instance: SMNG) {}
 
     open fun stop() {
-        disposable.clear()
+        socketDisposable.clear()
     }
 
     @OverridingMethodsMustInvokeSuper
@@ -171,6 +173,7 @@ abstract class BaseController<R : ControllerReference>(referent: R) : KodeinAwar
     open fun release() {
         resetProgress()
         disposable.dispose()
+        socketDisposable.dispose()
         reference.clear()
     }
 
