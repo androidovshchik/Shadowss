@@ -138,4 +138,9 @@ class StartActivity : BaseActivity(), StartView {
             }
         }
     }
+
+    override fun onDestroy() {
+        errorDialog.dismiss()
+        super.onDestroy()
+    }
 }

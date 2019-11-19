@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
         android:layout_centerHorizontal="true"
-        android:textSize="36sp"
+        android:textSize="32sp"
         android:textColor="@android:color/white"
         tools:text="Регистрация" />
 
@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:textSize="56sp"
+        android:textSize="64sp"
         android:textColor="@android:color/white"
         tools:text="58" />
 

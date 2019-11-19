@@ -10,6 +10,7 @@ import defpackage.marsh.SARM
 import domain.shadowss.R
 import domain.shadowss.controller.RegistrationController
 import domain.shadowss.model.User
+import domain.shadowss.screen.dialog.CountCallback
 import domain.shadowss.screen.dialog.ErrorDialog
 import domain.shadowss.screen.dialog.OverflowDialog
 import domain.shadowss.screen.view.setData
@@ -40,7 +41,7 @@ interface RegistrationView : BaseView {
     fun onError(data: String, instance: Any? = null)
 }
 
-class RegistrationActivity : BaseActivity(), RegistrationView {
+class RegistrationActivity : BaseActivity(), RegistrationView, CountCallback {
 
     override val kodeinTrigger = KodeinTrigger()
 
@@ -64,6 +65,7 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        kodeinTrigger.trigger()
         setContentView(R.layout.activity_registration)
         userType = intent.getIntExtra(EXTRA_USER, User.GUEST.id)
         val data = intent.getSerializableExtra(EXTRA_ARRAY) as Array<RGI1Data>
@@ -106,7 +108,6 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
             }
         }
         controller.checkRights(this)
-        kodeinTrigger.trigger()
     }
 
     override fun onWait() {
@@ -114,6 +115,14 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
             onUiThread {
                 show()
             }
+        }
+    }
+
+    override fun onTick(millisUntilFinished: Long) {}
+
+    override fun onFinish() {
+        if (!isFinishing) {
+
         }
     }
 
@@ -153,6 +162,12 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
                 formatWatcher.setMask(mask)
             }
         }
+    }
+
+    override fun onDestroy() {
+        errorDialog.dismiss()
+        overflowDialog.dismiss()
+        super.onDestroy()
     }
 
     companion object {
