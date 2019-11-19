@@ -60,7 +60,7 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
-        val isDriver = intent.getBooleanExtra(EXTRA_DRIVER, false)
+        userType = if (intent.getBooleanExtra(EXTRA_DRIVER, false)) DRIVER else MANAGER
         val data = intent.getSerializableExtra(EXTRA_ARRAY) as Array<RGI1Data>
         toolbar_back.apply {
             visibility = View.VISIBLE
@@ -68,7 +68,7 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
                 finish()
             }
         }
-        toolbar_title.setData(if (isDriver) "[[TOP,0001]]" else "[[TOP,0002]]")
+        toolbar_title.setData(if (userType == DRIVER) "[[TOP,0001]]" else "[[TOP,0002]]")
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         spn_country.let {
             val adapter = ArrayAdapter(
@@ -92,7 +92,9 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
             val item = data[spn_country.selectedItemPosition]
             if (numbers.length - item.regcode.length + 3 in item.min..item.max) {
                 if (controller.onContinue(applicationContext)) {
-                    phone = numbers
+                    regCode
+                    mobilePhone
+                    userType
                 }
             } else {
                 onError("[[MSG,0011]]")
@@ -111,8 +113,8 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
 
     override fun onSuccess() {
         when (userType) {
-            1 -> startActivity(intentFor<ManagerActivity>().clearTask().newTask())
-            2 -> startActivity(intentFor<DriverActivity>().clearTask().newTask())
+            MANAGER -> startActivity(intentFor<ManagerActivity>().clearTask().newTask())
+            DRIVER -> startActivity(intentFor<DriverActivity>().clearTask().newTask())
         }
     }
 
@@ -144,6 +146,10 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     }
 
     companion object {
+
+        const val MANAGER = 1
+
+        const val DRIVER = 2
 
         const val EXTRA_DRIVER = "driver"
 

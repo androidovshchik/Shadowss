@@ -2,9 +2,7 @@ package domain.shadowss.controller
 
 import android.content.Context
 import android.os.Handler
-import defpackage.marsh.ASER
-import defpackage.marsh.ASPI
-import defpackage.marsh.SAPO
+import defpackage.marsh.*
 import domain.shadowss.extension.isConnected
 import domain.shadowss.manager.MultiSimManager
 import domain.shadowss.screen.RegistrationView
@@ -100,9 +98,39 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
                     onError("[[MSG,0007]]")
                     return
                 }
+                reference.get()?.let {
+                    socketManager.send(ASRM().apply {
+                        rnd = nextProgress("asrm")
+                        Regcode = it.regCode
+                        mobile = it.mobilePhone
+                        utype = it.userType.toString()
+                        mcc1 = slots[0].getMCC().toString()
+                        mcc2 = slots.getOrNull(1)?.getMCC().toString()
+                        imsi1 = slots[0].imsi.toString()
+                        imsi2 = slots.getOrNull(1)?.imsi.toString()
+                    })
+                }
             }
             reference.get()?.onWait()
             true
+        }
+    }
+
+    override fun onSARM(instance: SARM) {
+        checkProgress("asrm", instance.rnd) {
+            when (instance.error) {
+                "0" -> {
+                    resetProgress()
+                    reference.get()?.onSuccess()
+                    true
+                }
+                "0013" -> {
+                    onError("[[MSG,0013]]", instance)
+                }
+                else -> {
+                    onError(instance.error)
+                }
+            }
         }
     }
 
