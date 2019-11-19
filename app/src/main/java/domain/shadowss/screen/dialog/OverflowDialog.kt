@@ -8,22 +8,26 @@ import android.view.WindowManager
 import domain.shadowss.R
 import domain.shadowss.screen.view.setData
 import kotlinx.android.synthetic.main.dialog_overflow.*
+import java.lang.ref.WeakReference
+import kotlin.math.ceil
 
 interface CountCallback {
 
-    fun onFinishCount()
+    fun onTick(millisUntilFinished: Long)
+
+    fun onFinish()
 }
 
-class CountTimer : CountDownTimer(60_000L, 100L) {
+class CountTimer(callback: CountCallback) : CountDownTimer(60_000L, 100L) {
 
-    override fun onFinish() {}
+    private val reference = WeakReference(callback)
+
+    override fun onFinish() {
+        reference.get()?.onFinish()
+    }
 
     override fun onTick(millisUntilFinished: Long) {
-        if (millisUntilFinished <= 5000) {
-
-        } else {
-
-        }
+        reference.get()?.onTick(millisUntilFinished)
     }
 }
 
@@ -32,7 +36,7 @@ class OverflowDialog(activity: Activity) : BaseDialog(activity, R.style.Overflow
 
     override val shouldBeClosable = false
 
-    private val countTimer = CountTimer()
+    private val countTimer = CountTimer(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,10 +53,14 @@ class OverflowDialog(activity: Activity) : BaseDialog(activity, R.style.Overflow
 
     override fun onShow(dialog: DialogInterface?) {
         super.onShow(dialog)
-
+        countTimer.start()
     }
 
-    override fun onFinishCount() {
+    override fun onTick(millisUntilFinished: Long) {
+        dialog_time.text = ceil(millisUntilFinished / 1000.0).toInt().toString()
+    }
+
+    override fun onFinish() {
         dismiss()
     }
 
@@ -62,8 +70,9 @@ class OverflowDialog(activity: Activity) : BaseDialog(activity, R.style.Overflow
 
     override fun onDismiss(dialog: DialogInterface?) {
         super.onDismiss(dialog)
+        countTimer.cancel()
         makeCallback<CountCallback> {
-            onFinishCount()
+            onFinish()
         }
     }
 }
