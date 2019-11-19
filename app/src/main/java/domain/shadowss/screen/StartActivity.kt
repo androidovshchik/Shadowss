@@ -25,6 +25,7 @@ import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.newTask
 import org.jetbrains.anko.sdk19.listeners.onItemSelectedListener
 import org.jetbrains.anko.startActivity
+import org.kodein.di.KodeinTrigger
 import org.kodein.di.generic.instance
 import kotlin.math.max
 
@@ -37,6 +38,8 @@ interface StartView : BaseView {
 
 class StartActivity : BaseActivity(), StartView {
 
+    override val kodeinTrigger = KodeinTrigger()
+
     override val controller: StartController by instance()
 
     private val languageManager: LanguageManager by instance()
@@ -44,7 +47,7 @@ class StartActivity : BaseActivity(), StartView {
     private val errorDialog: ErrorDialog by instance()
 
     @Volatile
-    private var userId = User.GUEST.id
+    private var userType = User.GUEST.id
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,21 +85,22 @@ class StartActivity : BaseActivity(), StartView {
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
             if (controller.onChoice(applicationContext)) {
-                userId = User.DRIVER.id
+                userType = User.DRIVER.id
             }
         }
         btn_manager.setOnClickListener {
             if (controller.onChoice(applicationContext)) {
-                userId = User.MANAGER.id
+                userType = User.MANAGER.id
             }
         }
         controller.checkRights(this)
+        kodeinTrigger.trigger()
     }
 
     override fun onSuccess(data: Array<RGI1Data>) {
         startActivity(
             intentFor<RegistrationActivity>(
-                RegistrationActivity.EXTRA_USER to userId,
+                RegistrationActivity.EXTRA_USER to userType,
                 RegistrationActivity.EXTRA_ARRAY to data
             ).newTask()
         )

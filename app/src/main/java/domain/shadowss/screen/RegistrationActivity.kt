@@ -19,6 +19,7 @@ import org.jetbrains.anko.clearTask
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.newTask
 import org.jetbrains.anko.sdk19.listeners.onItemSelectedListener
+import org.kodein.di.KodeinTrigger
 import org.kodein.di.generic.instance
 import ru.tinkoff.decoro.MaskImpl
 import ru.tinkoff.decoro.parser.UnderscoreDigitSlotsParser
@@ -28,9 +29,9 @@ interface RegistrationView : BaseView {
 
     var regCode: String
 
-    var phone: String
+    var phoneNumber: String
 
-    var userId: Int
+    var userType: Int
 
     fun onWait()
 
@@ -40,6 +41,8 @@ interface RegistrationView : BaseView {
 }
 
 class RegistrationActivity : BaseActivity(), RegistrationView {
+
+    override val kodeinTrigger = KodeinTrigger()
 
     override val controller: RegistrationController by instance()
 
@@ -53,16 +56,16 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     override var regCode = ""
 
     @Volatile
-    override var phone = ""
+    override var phoneNumber = ""
 
     @Volatile
-    override var userId = 0
+    override var userType = 0
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
-        userId = intent.getIntExtra(EXTRA_USER, User.GUEST.id)
+        userType = intent.getIntExtra(EXTRA_USER, User.GUEST.id)
         val data = intent.getSerializableExtra(EXTRA_ARRAY) as Array<RGI1Data>
         toolbar_back.apply {
             visibility = View.VISIBLE
@@ -70,7 +73,7 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
                 finish()
             }
         }
-        toolbar_title.setData(if (userId == User.DRIVER.id) "[[TOP,0001]]" else "[[TOP,0002]]")
+        toolbar_title.setData(if (userType == User.DRIVER.id) "[[TOP,0001]]" else "[[TOP,0002]]")
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         spn_country.let {
             val adapter = ArrayAdapter(
@@ -96,13 +99,14 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
             if (numbers.length - codeLength in item.min..item.max) {
                 if (controller.onContinue(applicationContext)) {
                     regCode = item.regcode.substring(1, item.regcode.length - 1)
-                    phone = numbers.substring(codeLength)
+                    phoneNumber = numbers.substring(codeLength)
                 }
             } else {
                 onError("[[MSG,0011]]")
             }
         }
         controller.checkRights(this)
+        kodeinTrigger.trigger()
     }
 
     override fun onWait() {
@@ -115,10 +119,10 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
 
     override fun onSuccess(value: String) {
         preferences.blockingBulk {
-            user = userId
+            user = userType
             token = value
         }
-        when (userId) {
+        when (userType) {
             User.MANAGER.id -> startActivity(intentFor<ManagerActivity>().clearTask().newTask())
             User.DRIVER.id -> startActivity(intentFor<DriverActivity>().clearTask().newTask())
         }
