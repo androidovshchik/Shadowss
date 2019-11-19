@@ -4,10 +4,12 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import com.chibatching.kotpref.blockingBulk
 import defpackage.marsh.RGI1Data
 import defpackage.marsh.SARM
 import domain.shadowss.R
 import domain.shadowss.controller.RegistrationController
+import domain.shadowss.local.Preferences
 import domain.shadowss.screen.dialog.ErrorDialog
 import domain.shadowss.screen.dialog.OverflowDialog
 import domain.shadowss.screen.view.setData
@@ -32,7 +34,7 @@ interface RegistrationView : BaseView {
 
     fun onWait()
 
-    fun onSuccess()
+    fun onSuccess(value: String)
 
     fun onError(data: String, instance: Any? = null)
 }
@@ -40,6 +42,8 @@ interface RegistrationView : BaseView {
 class RegistrationActivity : BaseActivity(), RegistrationView {
 
     override val controller: RegistrationController by instance()
+
+    private val preferences: Preferences by instance()
 
     private val errorDialog: ErrorDialog by instance()
 
@@ -111,7 +115,11 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
         }
     }
 
-    override fun onSuccess() {
+    override fun onSuccess(value: String) {
+        preferences.blockingBulk {
+            user = userType
+            token = value
+        }
         when (userType) {
             MANAGER -> startActivity(intentFor<ManagerActivity>().clearTask().newTask())
             DRIVER -> startActivity(intentFor<DriverActivity>().clearTask().newTask())

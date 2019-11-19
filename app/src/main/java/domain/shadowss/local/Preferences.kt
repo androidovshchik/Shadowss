@@ -11,5 +11,7 @@ class Preferences(context: Context) : KotprefModel(context) {
 
     var agree by booleanPref(false, "0x01")
 
-    var userId by nullableStringPref(null, "0x02")
+    var user by intPref(0, "0x02")
+
+    var token by nullableStringPref(null, "0x03")
 }
