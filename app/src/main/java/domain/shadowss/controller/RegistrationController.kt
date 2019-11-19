@@ -1,5 +1,6 @@
 package domain.shadowss.controller
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
@@ -7,13 +8,16 @@ import android.telecom.TelecomManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import defpackage.marsh.*
+import domain.shadowss.extension.areGranted
 import domain.shadowss.extension.isConnected
 import domain.shadowss.extension.isPiePlus
 import domain.shadowss.manager.MultiSimManager
 import domain.shadowss.screen.RegistrationView
 import org.jetbrains.anko.connectivityManager
+import org.jetbrains.anko.telephonyManager
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import java.util.*
 
 class RegistrationController(referent: RegistrationView) : Controller<RegistrationView>(referent) {
 
@@ -34,6 +38,7 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
             }
         }
     }
+    //telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
 
     // ui thread
     private val aspiRunnable = object : Runnable {
@@ -77,7 +82,6 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
                 onError("[[MSG,0005]]")
             }
         }
-        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
     }
 
     override fun onSAPO(instance: SAPO) {
@@ -121,7 +125,7 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
                     socketManager.send(ASRM().apply {
                         rnd = nextProgress("asrm")
                         Regcode = it.regCode
-                        mobile = it.mobilePhone
+                        mobile = it.phoneNumber
                         utype = it.userType.toString()
                         mcc1 = slots[0].getMCC().toString()
                         mcc2 = slots.getOrNull(1)?.getMCC().toString()
@@ -139,7 +143,13 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
         checkProgress("asrm", instance.rnd) {
             when (instance.error) {
                 "0" -> {
-                    reference.get()?.onSuccess()
+                    val now = System.currentTimeMillis()
+                    socketManager.send(ASAU().apply {
+                        token = instance.token
+                        time = now
+                        timezone = TimeZone.getDefault().getOffset(now).toFloat()
+                    })
+                    reference.get()?.onSuccess(instance.token)
                     resetProgress()
                     true
                 }
@@ -164,18 +174,22 @@ class RegistrationController(referent: RegistrationView) : Controller<Registrati
     @SuppressLint("MissingPermission")
     private fun Context.killCall() {
         if (isPiePlus()) {
-            val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
-            telecomManager.endCall()
+            if (areGranted(Manifest.permission.ANSWER_PHONE_CALLS)) {
+                val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+                telecomManager.endCall()
+            }
         } else {
-            try {
-                val method = javaClass.getDeclaredMethod("getITelephony")
-                method.isAccessible = true
-                val iTelephony = method.invoke(this)
-                iTelephony.javaClass
-                    .getDeclaredMethod("endCall")
-                    .invoke(iTelephony)
-            } catch (e: Throwable) {
-                Timber.e(e)
+            if (areGranted(Manifest.permission.CALL_PHONE)) {
+                try {
+                    val method = javaClass.getDeclaredMethod("getITelephony")
+                    method.isAccessible = true
+                    val iTelephony = method.invoke(telephonyManager)
+                    iTelephony.javaClass
+                        .getDeclaredMethod("endCall")
+                        .invoke(iTelephony)
+                } catch (e: Throwable) {
+                    Timber.e(e)
+                }
             }
         }
     }
