@@ -14,9 +14,9 @@ import defpackage.marsh.SARR
 import defpackage.marsh.SARV
 import domain.shadowss.R
 import domain.shadowss.controller.StartController
-import domain.shadowss.local.Preferences
 import domain.shadowss.manager.LanguageManager
 import domain.shadowss.model.Language
+import domain.shadowss.model.User
 import domain.shadowss.screen.dialog.ErrorDialog
 import domain.shadowss.screen.view.replaceUnderline
 import domain.shadowss.screen.view.updateData
@@ -41,12 +41,10 @@ class StartActivity : BaseActivity(), StartView {
 
     private val languageManager: LanguageManager by instance()
 
-    private val preferences: Preferences by instance()
-
     private val errorDialog: ErrorDialog by instance()
 
     @Volatile
-    private var isDriver = false
+    private var userId = User.GUEST.id
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,12 +82,12 @@ class StartActivity : BaseActivity(), StartView {
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         btn_driver.setOnClickListener {
             if (controller.onChoice(applicationContext)) {
-                isDriver = true
+                userId = User.DRIVER.id
             }
         }
         btn_manager.setOnClickListener {
             if (controller.onChoice(applicationContext)) {
-                isDriver = false
+                userId = User.MANAGER.id
             }
         }
         controller.checkRights(this)
@@ -98,7 +96,7 @@ class StartActivity : BaseActivity(), StartView {
     override fun onSuccess(data: Array<RGI1Data>) {
         startActivity(
             intentFor<RegistrationActivity>(
-                RegistrationActivity.EXTRA_DRIVER to isDriver,
+                RegistrationActivity.EXTRA_USER to userId,
                 RegistrationActivity.EXTRA_ARRAY to data
             ).newTask()
         )

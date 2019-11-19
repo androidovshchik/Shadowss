@@ -9,7 +9,7 @@ import defpackage.marsh.RGI1Data
 import defpackage.marsh.SARM
 import domain.shadowss.R
 import domain.shadowss.controller.RegistrationController
-import domain.shadowss.local.Preferences
+import domain.shadowss.model.User
 import domain.shadowss.screen.dialog.ErrorDialog
 import domain.shadowss.screen.dialog.OverflowDialog
 import domain.shadowss.screen.view.setData
@@ -28,9 +28,9 @@ interface RegistrationView : BaseView {
 
     var regCode: String
 
-    var mobilePhone: String
+    var phone: String
 
-    var userType: Int
+    var userId: Int
 
     fun onWait()
 
@@ -43,8 +43,6 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
 
     override val controller: RegistrationController by instance()
 
-    private val preferences: Preferences by instance()
-
     private val errorDialog: ErrorDialog by instance()
 
     private val overflowDialog: OverflowDialog by instance()
@@ -55,16 +53,16 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
     override var regCode = ""
 
     @Volatile
-    override var mobilePhone = ""
+    override var phone = ""
 
     @Volatile
-    override var userType = 0
+    override var userId = 0
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
-        userType = if (intent.getBooleanExtra(EXTRA_DRIVER, false)) DRIVER else MANAGER
+        userId = intent.getIntExtra(EXTRA_USER, User.GUEST.id)
         val data = intent.getSerializableExtra(EXTRA_ARRAY) as Array<RGI1Data>
         toolbar_back.apply {
             visibility = View.VISIBLE
@@ -72,7 +70,7 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
                 finish()
             }
         }
-        toolbar_title.setData(if (userType == DRIVER) "[[TOP,0001]]" else "[[TOP,0002]]")
+        toolbar_title.setData(if (userId == User.DRIVER.id) "[[TOP,0001]]" else "[[TOP,0002]]")
         iv_logo.setImageBitmap(BitmapFactory.decodeStream(assets.open("logo.png")))
         spn_country.let {
             val adapter = ArrayAdapter(
@@ -98,7 +96,7 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
             if (numbers.length - codeLength in item.min..item.max) {
                 if (controller.onContinue(applicationContext)) {
                     regCode = item.regcode.substring(1, item.regcode.length - 1)
-                    mobilePhone = numbers.substring(codeLength)
+                    phone = numbers.substring(codeLength)
                 }
             } else {
                 onError("[[MSG,0011]]")
@@ -117,12 +115,12 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
 
     override fun onSuccess(value: String) {
         preferences.blockingBulk {
-            user = userType
+            user = userId
             token = value
         }
-        when (userType) {
-            MANAGER -> startActivity(intentFor<ManagerActivity>().clearTask().newTask())
-            DRIVER -> startActivity(intentFor<DriverActivity>().clearTask().newTask())
+        when (userId) {
+            User.MANAGER.id -> startActivity(intentFor<ManagerActivity>().clearTask().newTask())
+            User.DRIVER.id -> startActivity(intentFor<DriverActivity>().clearTask().newTask())
         }
     }
 
@@ -155,11 +153,7 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
 
     companion object {
 
-        const val MANAGER = 1
-
-        const val DRIVER = 2
-
-        const val EXTRA_DRIVER = "driver"
+        const val EXTRA_USER = "user"
 
         const val EXTRA_ARRAY = "array"
     }
