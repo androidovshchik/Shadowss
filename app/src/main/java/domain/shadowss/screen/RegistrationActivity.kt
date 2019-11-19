@@ -87,14 +87,14 @@ class RegistrationActivity : BaseActivity(), RegistrationView {
         }
         updatePhone(data[0])
         btn_next.setOnClickListener {
-            val numbers = et_phone.text.toString()
-                .replace("[+\\-() ]".toRegex(), "")
             val item = data[spn_country.selectedItemPosition]
-            if (numbers.length - item.regcode.length + 3 in item.min..item.max) {
+            val codeLength = item.regcode.length - 3
+            val numbers = et_phone.text.toString()
+                .replace("[(+) ]".toRegex(), "")
+            if (numbers.length - codeLength in item.min..item.max) {
                 if (controller.onContinue(applicationContext)) {
-                    regCode
-                    mobilePhone
-                    userType
+                    regCode = item.regcode.substring(1, item.regcode.length - 1)
+                    mobilePhone = numbers.substring(codeLength)
                 }
             } else {
                 onError("[[MSG,0011]]")
