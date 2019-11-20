@@ -3,7 +3,7 @@
 -repackageclasses
 
 -keepnames class defpackage.marsh.*
--keep,allowobfuscation class defpackage.marsh.* {
+-keep class defpackage.marsh.* {
     <init>(...);
     *** marshal(...);
     *** next();

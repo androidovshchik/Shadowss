@@ -12,17 +12,35 @@ import android.view.WindowManager
 import domain.shadowss.extension.activity
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.closestKodein
-import javax.annotation.OverridingMethodsMustInvokeSuper
+import java.lang.ref.WeakReference
+
+private typealias L = DialogListener
+
+private interface DialogListener : DialogInterface.OnShowListener, DialogInterface.OnDismissListener
+
+private class DialogObserver(listener: L) : L {
+
+    private val reference = WeakReference(listener)
+
+    override fun onShow(dialog: DialogInterface?) {
+        reference.get()?.onShow(dialog)
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+        reference.get()?.onDismiss(dialog)
+    }
+}
 
 @Suppress("LeakingThis", "MemberVisibilityCanBePrivate")
-abstract class BaseDialog(activity: Activity, theme: Int) : Dialog(activity, theme), KodeinAware,
-    DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
+abstract class BaseDialog(activity: Activity, id: Int) : Dialog(activity, id), KodeinAware, L {
 
     override val kodein by closestKodein(activity)
 
     protected open val shouldBeClosable = true
 
     protected var isClosable = false
+
+    private val observer = DialogObserver(this)
 
     private val handler = Handler()
 
@@ -34,17 +52,15 @@ abstract class BaseDialog(activity: Activity, theme: Int) : Dialog(activity, the
 
     init {
         setCancelable(false)
-        setOnShowListener(this)
-        setOnDismissListener(this)
+        setOnShowListener(observer)
+        setOnDismissListener(observer)
     }
 
-    @OverridingMethodsMustInvokeSuper
     override fun onCreate(savedInstanceState: Bundle?) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
     }
 
-    @OverridingMethodsMustInvokeSuper
     override fun onShow(dialog: DialogInterface?) {
         setCancelable(false)
         if (shouldBeClosable) {
@@ -56,7 +72,6 @@ abstract class BaseDialog(activity: Activity, theme: Int) : Dialog(activity, the
 
     abstract fun resetWidgets()
 
-    @OverridingMethodsMustInvokeSuper
     override fun onDismiss(dialog: DialogInterface?) {
         handler.removeCallbacks(closableRunnable)
         resetWidgets()

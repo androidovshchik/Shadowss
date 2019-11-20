@@ -14,8 +14,7 @@ import kotlinx.android.synthetic.main.dialog_error.*
 import org.jetbrains.anko.browse
 import timber.log.Timber
 
-class ErrorDialog(activity: Activity) :
-    BaseDialog(activity, android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar) {
+class ErrorDialog(activity: Activity) : BaseDialog(activity, R.style.ErrorDialog) {
 
     @Volatile
     var txtData: String? = null
